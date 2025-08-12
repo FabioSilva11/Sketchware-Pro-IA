@@ -284,6 +284,8 @@
             android:theme="@style/Theme.SketchwarePro.ProjectPreview" />
 
         <activity android:name="pro.sketchware.activities.settings.SettingsActivity" />
+        <activity android:name="pro.sketchware.activities.ai.ManageGroqActivity"
+            android:configChanges="orientation|screenSize" />
 
         <activity android:name="pro.sketchware.activities.resourceseditor.ResourcesEditorActivity" />
 

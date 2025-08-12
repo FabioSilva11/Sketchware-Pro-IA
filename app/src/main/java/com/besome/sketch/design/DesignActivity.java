@@ -31,6 +31,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -60,6 +61,7 @@ import com.besome.sketch.lib.ui.CustomViewPager;
 import com.besome.sketch.tools.CompileLogActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -621,9 +623,108 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
             }
         } else if (itemId == R.id.design_option_menu_title_save_project) {
             saveProject();
+        } else if (itemId == R.id.design_option_menu_ai_generate_layout) {
+            launchAiGenerateLayout();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void launchAiGenerateLayout() {
+        // Check credentials first
+        String api = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance()
+                .getString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, "");
+        if (api == null || api.isEmpty()) {
+            showMissingGroqDialog();
+            return;
+        }
+        try {
+            var currentFile = Helper.getText(fileName);
+            var dialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("AI Generate Layout")
+                    .setMessage("Describe the layout you want. It will replace the current layout content.")
+                    .setView(getLayoutInflater().inflate(R.layout.dialog_input_text, null))
+                    .setPositiveButton(R.string.common_word_generate, (d, w) -> {
+                        var view = ((AlertDialog) d).findViewById(R.id.input_text);
+                        if (view instanceof TextInputEditText edit) {
+                            String prompt = String.valueOf(edit.getText());
+                            generateAndApplyLayoutAsync(currentFile, prompt);
+                        }
+                    })
+                    .setNegativeButton(R.string.common_word_cancel, null)
+                    .create();
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            SketchwareUtil.toastError(e.toString());
+        }
+    }
+
+    private void showMissingGroqDialog() {
+        var dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("AI (Groq) not configured")
+                .setMessage("Configure your API key and model in App settings → AI (Groq). You can get a free API key on Groq Console.")
+                .setPositiveButton("Open Groq settings", (v, w) -> {
+                    startActivity(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                })
+                .setNeutralButton("Open Groq console", (v, w) -> {
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/dashboard/"));
+                    startActivity(i);
+                })
+                .setNegativeButton(R.string.common_word_cancel, null)
+                .create();
+        dialog.show();
+    }
+
+    private void generateAndApplyLayoutAsync(String filename, String prompt) {
+        k(); // show loading
+        new Thread(() -> {
+            try {
+                var generator = new pro.sketchware.ai.AiCodeGenerator();
+                String xml = generator.generateLayoutXml(prompt);
+                if (xml == null || xml.isEmpty()) {
+                    runOnUiThread(() -> {
+                        h(); // hide loading
+                        SketchwareUtil.toastError("AI returned no content");
+                    });
+                    return;
+                }
+                // Parse XML into ViewBeans and apply
+                var parser = new pro.sketchware.tools.ViewBeanParser(xml);
+                parser.setSkipRoot(true);
+                var parsedLayout = parser.parse();
+                var root = parser.getRootAttributes();
+
+                var rootLayoutManager = new pro.sketchware.managers.inject.InjectRootLayoutManager(sc_id);
+                rootLayoutManager.set(filename, pro.sketchware.managers.inject.InjectRootLayoutManager.toRoot(root));
+
+                var bean = new com.besome.sketch.beans.HistoryViewBean();
+                bean.actionOverride(parsedLayout, a.a.a.jC.a(sc_id).d(filename));
+                var cc = a.a.a.cC.c(sc_id);
+                if (!cc.c.containsKey(filename)) {
+                    cc.e(filename);
+                }
+                cc.a(filename);
+                cc.a(filename, bean);
+                a.a.a.jC.a(sc_id).c.put(filename, parsedLayout);
+
+                runOnUiThread(() -> {
+                    h(); // hide loading
+                    if (viewTabAdapter != null) viewTabAdapter.i();
+                    SketchwareUtil.toast("Layout updated by AI");
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    h(); // hide loading
+                    String msg = String.valueOf(e.getMessage());
+                    if (msg != null && msg.contains("Missing Groq API key")) {
+                        showMissingGroqDialog();
+                    } else {
+                        SketchwareUtil.toastError(e.toString());
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override

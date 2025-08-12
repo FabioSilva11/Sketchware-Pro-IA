@@ -3,6 +3,7 @@ package mod.hilal.saif.activities.tools;
 import static pro.sketchware.utility.GsonUtils.getGson;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -275,6 +276,14 @@ public class ConfigActivity extends BaseAppCompatActivity {
                 dialog.show();
                 return true;
             });
+
+            Preference groq = findPreference("ai-groq-settings");
+            if (groq != null) {
+                groq.setOnPreferenceClickListener(p -> {
+                    startActivity(new Intent(requireContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                    return true;
+                });
+            }
         }
 
         public DataStore getDataStore() {
