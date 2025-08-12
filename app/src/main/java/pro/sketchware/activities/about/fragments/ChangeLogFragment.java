@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Gravity;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -33,10 +35,23 @@ public class ChangeLogFragment extends Fragment {
     }
 
     private void initViews() {
-        aboutAppData.getChangelog().observe(getViewLifecycleOwner(), changeLogsArrayList -> {
-            if (changeLogsArrayList != null && !changeLogsArrayList.isEmpty()) {
-                binding.list.setAdapter(new ChangeLogAdapter(changeLogsArrayList));
-            }
-        });
+        // Changelog descontinuado: esconder a lista e mostrar mensagem
+        binding.list.setVisibility(View.GONE);
+
+        TextView messageView = new TextView(requireContext());
+        messageView.setText("Changelog descontinuado.");
+        messageView.setGravity(Gravity.CENTER);
+        messageView.setPadding(48, 48, 48, 48);
+
+        View rootView = binding.getRoot();
+        if (rootView instanceof ViewGroup) {
+            ((ViewGroup) rootView).addView(
+                messageView,
+                new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            );
+        }
     }
 }
