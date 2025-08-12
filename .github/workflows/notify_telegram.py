@@ -22,9 +22,9 @@ def main():
     commit_author, commit_message, commit_hash, commit_hash_short = get_git_commit_info()
 
     message = (
-        f"A new [commit](https://github.com/FabioSilva11/Sketchware-Pro-IA/commit/{commit_hash}) has been merged to the repository by *{commit_author}*.\n\n"
-        f"*What has changed:*\n>{commit_message}\n\n"
-        f"I'm currently building it and will send you the APKs here within ~6 mins if the build is successful.\n\n#{commit_hash_short}"
+        f"Um novo [commit](https://github.com/FabioSilva11/Sketchware-Pro-IA/commit/{commit_hash}) foi adicionado ao repositório por *{commit_author}*.\n\n"
+        f"*O que foi alterado:*\n>{commit_message}\n\n"
+        f"Estou iniciando a compilação e enviarei os APKs aqui em aproximadamente ~6 minutos se a build for bem-sucedida.\n\n#{commit_hash_short}"
     )
     
     escaped_message = escape_markdown_v2(message)
@@ -41,9 +41,9 @@ def main():
     
     response = requests.post(url, json=payload)
     if response.status_code != 200:
-        print(f"Failed to send message: {response.status_code} {response.text}")
+        print(f"Falha ao enviar mensagem: {response.status_code} {response.text}")
     else:
-        print("Message sent successfully.")
+        print("Mensagem enviada com sucesso.")
 
 if __name__ == "__main__":
     main()
