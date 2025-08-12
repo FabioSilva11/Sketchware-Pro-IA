@@ -16,16 +16,16 @@ def escape_markdown_v2(text):
 
 def main():
     # Credenciais do Telegram - Bot Alicy
-    bot_token = "7320764076:AAFkoDkaMMlrZMsYJVoyXoiecBUrlBO7Z04"
-    chat_id = "-4851663824"
-    topic_id = None  # Deixe None se não usar tópicos
+    bot_token = os.environ['TELEGRAM_BOT_TOKEN']
+    chat_id = os.environ['TELEGRAM_CHAT_ID']
+    topic_id = os.environ.get('TELEGRAM_TOPIC_ID')
     
     commit_author, commit_message, commit_hash, commit_hash_short = get_git_commit_info()
 
     message = (
-        f"A new [commit](https://github.com/FabioSilva11/Sketchware-Pro/commit/{commit_hash}) has been merged to the repository by *{commit_author}*.\n\n"
-        f"*What has changed:*\n>{commit_message}\n\n"
-        f"I'm currently building it and will send you the APKs here within ~6 mins if the build is successful.\n\n#{commit_hash_short}"
+        f"Um novo [commit](https://github.com/FabioSilva11/Sketchware-Pro-IA/commit/{commit_hash}) foi mesclado no repositório por *{commit_author}*.\n\n"
+        f"*O que mudou:*\n>{commit_message}\n\n"
+        f"Estou compilando agora e enviarei os APKs aqui em ~6 minutos se a compilação for bem-sucedida.\n\n#{commit_hash_short}"
     )
     
     escaped_message = escape_markdown_v2(message)

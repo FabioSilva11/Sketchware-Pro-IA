@@ -33,6 +33,10 @@ jobs:
           pip install requests
 
       - name: Send a message to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
         run: |
           python ./.github/workflows/notify_telegram.py
         continue-on-error: true

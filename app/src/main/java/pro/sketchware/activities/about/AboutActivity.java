@@ -53,12 +53,7 @@ public class AboutActivity extends BaseAppCompatActivity {
 
     private void initViews() {
         binding.toolbar.setNavigationOnClickListener(Helper.getBackPressedClickListener(this));
-        binding.discordButton.setOnClickListener(v -> {
-            String discordLink = aboutAppData.getDiscordInviteLink().getValue();
-            if (discordLink != null) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(discordLink)));
-            }
-        });
+
         AboutAdapter adapter = new AboutAdapter(this);
         binding.viewPager.setOffscreenPageLimit(3);
         binding.viewPager.setAdapter(adapter);

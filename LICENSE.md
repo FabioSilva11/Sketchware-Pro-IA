@@ -1,15 +1,20 @@
-# License
+# Licença MIT
 
-It's a complicated situation as mod. Basically, try not to use parts of Sketchware Pro's code in other serious projects which
-aren't for personal use only, as the code might and probably is an infringement of Sketchware's copyright.
+Copyright (c) 2024 FabioSilva11
 
-Sketchware Pro is **not** open-source by official definition, but rather source-available - you can view it, and maybe even
-make/submit changes to it, but you don't own the code. Neither do we, in my opinion.
+A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
+deste software e arquivos de documentação associados (o "Software"), para lidar
+no Software sem restrições, incluindo, sem limitação, os direitos de usar, copiar,
+modificar, mesclar, publicar, distribuir, sublicenciar e/ou vender cópias do Software,
+e permitir que as pessoas a quem o Software é fornecido o façam, sob as seguintes condições:
 
-Still, feel free to fork this and improve it for personal purposes or just making Sketchware Pro better in general.
+O aviso de direitos autorais acima e este aviso de permissão devem ser incluídos em
+todas as cópias ou partes substanciais do Software.
 
-## Exceptions
-
-Since compiling Kotlin code in Sketchware Pro projects was supported, two new modules were added to the codebase: `build-logic` and
-`kotlinc`, both taken from [CodeAssist](https://github.com/tyron12233/CodeAssist). The upstream project's licensed under GPL-3.0,
-so these modules are licensed under the same license.
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU
+IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIABILIDADE,
+ADEQUAÇÃO A UM DETERMINADO FIM E NÃO VIOLAÇÃO. EM NENHUM CASO OS AUTORES OU
+DETENTORES DE DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANOS
+OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA,
+DECORRENTE DE, FORA DE OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES
+NO SOFTWARE.

@@ -68,9 +68,7 @@ public class MainDrawer extends NavigationView {
     private void initializeSocialLinks(@IdRes int id) {
         if (!mB.a()) {
             @StringRes int url = -1;
-            if (id == R.id.social_discord) {
-                url = R.string.link_discord_invite;
-            } else if (id == R.id.social_telegram) {
+            if (id == R.id.social_telegram) {
                 url = R.string.link_telegram_invite;
             } else if (id == R.id.social_github) {
                 url = R.string.link_github_url;

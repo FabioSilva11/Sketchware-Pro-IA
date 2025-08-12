@@ -25,7 +25,7 @@ public class ProgramInfoActivity extends BaseAppCompatActivity {
     private static final int ITEM_SYSTEM_INFORMATION = 1;
     private static final int ITEM_DOCS_LOG = 4;
     private static final int ITEM_SOCIAL_NETWORK = 5;
-    private static final int ITEM_DISCORD = 6;
+
     private static final int ITEM_TELEGRAM = 8;
     private static final int ITEM_OPEN_SOURCE_LICENSES = 15;
     private static final int ITEM_SUGGEST_IDEAS = 17;
@@ -124,7 +124,7 @@ public class ProgramInfoActivity extends BaseAppCompatActivity {
                             openUrl(Helper.getResString(R.string.link_ideas_url));
                     case ITEM_TELEGRAM ->
                             openUrl(Helper.getResString(R.string.link_telegram_invite));
-                    case ITEM_DISCORD -> openUrl(Helper.getResString(R.string.link_discord_invite));
+
                 }
             }
         }
@@ -148,7 +148,7 @@ public class ProgramInfoActivity extends BaseAppCompatActivity {
         addTwoLineItem(ITEM_DOCS_LOG, R.string.program_information_title_docs, R.string.link_docs_url);
         addTwoLineItem(ITEM_SUGGEST_IDEAS, R.string.program_information_title_suggest_ideas, R.string.link_ideas_url);
         addSingleLineItem(ITEM_SOCIAL_NETWORK, R.string.title_community);
-        addTwoLineItem(ITEM_DISCORD, R.string.title_discord_community, R.string.link_discord_invite);
+
         addTwoLineItem(ITEM_TELEGRAM, R.string.title_telegram_community, R.string.link_telegram_invite);
         addSingleLineItem(ITEM_SYSTEM_INFORMATION, R.string.program_information_title_system_information);
         addSingleLineItem(ITEM_OPEN_SOURCE_LICENSES, R.string.program_information_title_open_source_license, true);
