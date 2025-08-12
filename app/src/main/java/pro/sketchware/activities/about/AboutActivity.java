@@ -69,11 +69,7 @@ public class AboutActivity extends BaseAppCompatActivity {
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                if (position == 0) {
-                    binding.discordButton.extend();
-                } else {
-                    binding.discordButton.shrink();
-                }
+                // No-op after removing Discord-related UI
             }
         });
 
@@ -98,7 +94,7 @@ public class AboutActivity extends BaseAppCompatActivity {
 
             Gson gson = new Gson();
             AboutResponseModel aboutResponseModel = gson.fromJson(response, AboutResponseModel.class);
-            aboutAppData.setDiscordInviteLink(aboutResponseModel.getDiscordInviteLink());
+    
             aboutAppData.setTeamMembers(aboutResponseModel.getTeam());
             aboutAppData.setChangelog(aboutResponseModel.getChangelog());
         });

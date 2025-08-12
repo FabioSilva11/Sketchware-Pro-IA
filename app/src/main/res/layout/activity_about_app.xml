@@ -50,16 +50,6 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/discordButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom"
-        android:layout_margin="16dp"
-        android:text="@string/about_joindiscord"
-        android:textColor="#FFF"
-        app:backgroundTint="#5865F2"
-        app:icon="@drawable/ic_discord"
-        app:iconTint="#FFF" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

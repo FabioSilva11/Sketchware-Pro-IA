@@ -7,18 +7,12 @@ import androidx.lifecycle.ViewModel;
 import java.util.ArrayList;
 
 public class AboutAppViewModel extends ViewModel {
-    private final MutableLiveData<String> discordInviteLink = new MutableLiveData<>();
+
     private final MutableLiveData<ArrayList<AboutResponseModel.TeamMember>> teamMembers = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<AboutResponseModel.ChangeLogs>> changelog = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<AboutResponseModel.CommitDetails>> commitDetailsList = new MutableLiveData<>();
 
-    public LiveData<String> getDiscordInviteLink() {
-        return discordInviteLink;
-    }
 
-    public void setDiscordInviteLink(String discordInviteLink) {
-        this.discordInviteLink.setValue(discordInviteLink);
-    }
 
     public LiveData<ArrayList<AboutResponseModel.TeamMember>> getTeamMembers() {
         return teamMembers;

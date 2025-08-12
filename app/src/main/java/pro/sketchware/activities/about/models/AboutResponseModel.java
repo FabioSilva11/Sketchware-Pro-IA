@@ -13,14 +13,12 @@ import mod.hey.studios.util.Helper;
 import pro.sketchware.R;
 
 public class AboutResponseModel {
-    private String discordInviteLink;
+
     private ArrayList<TeamMember> team;
     private ArrayList<ChangeLogs> changelog;
 
     // Getters
-    public String getDiscordInviteLink() {
-        return discordInviteLink;
-    }
+
 
     public ArrayList<TeamMember> getTeam() {
         return team;
