@@ -1,83 +1,99 @@
 <p align="center">
-  <img src="assets/Sketchware-Pro.png" style="width: 30%;" />
+  <img src="1754765154620.png" style="width: 30%;" />
 </p>
 
-# Sketchware Pro
-[![GitHub contributors](https://img.shields.io/github/contributors/Sketchware-Pro/Sketchware-Pro)](https://github.com/Sketchware-Pro/Sketchware-Pro/graphs/contributors)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Sketchware-Pro/Sketchware-Pro)](https://github.com/Sketchware-Pro/Sketchware-Pro/commits/)
-[![Discord server stats](https://img.shields.io/discord/790686719753846785)](http://discord.gg/kq39yhT4rX)
-[![Total downloads](https://img.shields.io/github/downloads/Sketchware-Pro/Sketchware-Pro/total)](https://github.com/Sketchware-Pro/Sketchware-Pro/releases)
-[![Repository Size](https://img.shields.io/github/repo-size/Sketchware-Pro/Sketchware-Pro)](https://github.com/Sketchware-Pro/Sketchware-Pro)
+# Meu Mod do Sketchware com IA
 
-Welcome to Sketchware Pro! Here you'll find the source code of many classes in Sketchware Pro and, most importantly, the place to contribute to Sketchware Pro.
+Este projeto é um **mod derivado do Sketchware Pro**.  
+Ele foi criado porque, na comunidade original, **os moderadores não aceitavam recursos de inteligência artificial no código nem a adição de novos blocos**.  
+Por conta disso, decidi desenvolver minha própria versão, baseada na **última versão oficial do Sketchware Pro**, para oferecer mais liberdade, inovação e recursos para criadores de apps.
 
-## Building the App
-To build the app, you must use Gradle. It's highly recommended to use Android Studio for the best experience.
+---
 
-### Source Code Map
+## Compilando o aplicativo
 
-| Class           | Role                                        |
-| --------------- | ------------------------------------------- |
-| `a.a.a.ProjectBuilder`      | Helper for compiling an entire project       |
-| `a.a.a.Ix`      | Responsible for generating AndroidManifest.xml |
-| `a.a.a.Jx`      | Generates source code of activities          |
-| `a.a.a.Lx`      | Generates source code of components, such as listeners, etc. |
-| `a.a.a.Ox`      | Responsible for generating XML files of layouts |
-| `a.a.a.qq`      | Registry of built-in libraries' dependencies |
-| `a.a.a.tq`      | Responsible for the compiling dialog's quizzes |
-| `a.a.a.yq`      | Organizes Sketchware projects' file paths    |
+Para compilar o app, é necessário usar o **Gradle**.  
+É altamente recomendável usar o **Android Studio** para ter a melhor experiência.
 
-> [!TIP]
-> You can also check the `mod` package, which contains the majority of contributors' changes.
+### Mapa do código-fonte
 
-## Contributing
+| Classe                | Função                                               |
+| --------------------- | ---------------------------------------------------- |
+| `a.a.a.ProjectBuilder`| Auxiliar para compilar um projeto inteiro            |
+| `a.a.a.Ix`            | Responsável por gerar o arquivo AndroidManifest.xml  |
+| `a.a.a.Jx`            | Gera o código-fonte das atividades                   |
+| `a.a.a.Lx`            | Gera o código-fonte de componentes, como listeners, etc. |
+| `a.a.a.Ox`            | Responsável por gerar arquivos XML de layouts        |
+| `a.a.a.qq`            | Registro das dependências das bibliotecas internas   |
+| `a.a.a.tq`            | Responsável pelos diálogos de compilação             |
+| `a.a.a.yq`            | Organiza os caminhos de arquivos dos projetos do Sketchware |
 
-If you'd like to contribute to Sketchware Pro, follow these steps:
+> 💡 **Dica:**  
+> Você também pode verificar o pacote `mod`, que contém a maioria das alterações feitas pelos contribuidores.
 
-1. Fork this repository.
-2. Make changes in your forked repository.
-3. Test out those changes.
-4. Create a pull request in this repository.
-5. Your pull request will be reviewed by the repository members and merged if accepted.
+---
 
-We welcome contributions of any size, whether they are major features or bug fixes, but please note that all contributions will be thoroughly reviewed.
+## Como contribuir
 
-### Commit Message
+Se você quiser contribuir para este mod, siga estes passos:
 
-When you make changes to one or more files, you need to commit those changes with a commit message. Here are some guidelines:
+1. Faça um fork deste repositório.  
+2. Faça as alterações no seu fork.  
+3. Teste as alterações.  
+4. Crie um pull request neste repositório.  
+5. Seu pull request será revisado e, se aceito, será mesclado.
 
-- Keep the commit message short and detailed.
-- Use one of these commit types as a prefix:
-  - `feat:` for a feature, possibly improving something already existing.
-  - `fix:` for a fix, such as a bug fix.
-  - `style:` for features and updates related to styling.
-  - `refactor:` for refactoring a specific section of the codebase.
-  - `test:` for everything related to testing.
-  - `docs:` for everything related to documentation.
-  - `chore:` for code maintenance (you can also use emojis to represent commit types).
+Aceitamos contribuições de qualquer tamanho, sejam novos recursos ou correções de bugs, mas todas as contribuições passam por revisão.
 
-Examples:
-- `feat: Speed up compiling with new technique`
-- `fix: Fix crash during launch on certain phones`
-- `refactor: Reformat code in File.java`
+---
 
-> [!IMPORTANT]
-> If you want to add new features that don't require editing other packages other than `pro.sketchware`, make your changes in `pro.sketchware` package, and respect the directories and files structure and names. Also, even though the project compiles just fine with Kotlin classes that you might add, try to make your changes or additions in Java, not Kotlin unless it is more than necessary.
+### Mensagem de commit
 
-## Thanks for Contributing
+Ao alterar um ou mais arquivos, você deve fazer um commit com uma mensagem adequada.  
+Siga estas orientações:
 
-Thank you for contributing to Sketchware Pro! Your contributions help keep Sketchware Pro alive. Each accepted contribution will be noted down in the "About Team" activity. We'll use your GitHub name and profile picture initially, but they can be changed, of course.
+- Mantenha a mensagem curta e descritiva.  
+- Use um destes prefixos para indicar o tipo de commit:
+  - `feat:` para um novo recurso.
+  - `fix:` para uma correção de bug.
+  - `style:` para mudanças de estilo.
+  - `refactor:` para refatoração de código.
+  - `test:` para testes.
+  - `docs:` para documentação.
+  - `chore:` para manutenção (pode usar emojis também).
 
-## Discord
+**Exemplos:**
+- `feat: Aumentar velocidade da compilação com nova técnica`
+- `fix: Corrigir travamento na inicialização em certos celulares`
+- `refactor: Reformatar código no File.java`
 
-Want to chat with us, discuss changes, or just hang out? We have a Discord server just for that.
+> ⚠ **Importante:**  
+> Se for adicionar novos recursos que não precisam modificar outros pacotes além de `pro.sketchware`, faça as mudanças dentro deste pacote, respeitando a estrutura de diretórios e nomes dos arquivos.  
+> Embora o projeto compile com classes Kotlin, prefira escrever em Java, exceto quando for realmente necessário usar Kotlin.
 
-[![Join our Discord server!](https://invidget.switchblade.xyz/kq39yhT4rX)](http://discord.gg/kq39yhT4rX)
+---
 
-## Disclaimer
+## Agradecimentos por contribuir
 
-This mod was not created for any harmful purposes, such as harming Sketchware; quite the opposite, actually. It was made to keep Sketchware alive by the community for the community. Please use it at your own discretion and consider becoming a Patreon backer to support the developers. Unfortunately, other ways to support them are not working anymore, so Patreon is the only available option currently. You can find their Patreon page [here](https://www.patreon.com/sketchware).
+Obrigado por contribuir! Sua ajuda mantém o projeto vivo.  
+Cada contribuição aceita será registrada na atividade "Sobre a equipe", usando seu nome e foto de perfil do GitHub (que podem ser alterados depois).
 
-We do NOT permit publishing Sketchware Pro as it is, or with modifications, on Play Store or on any other app store. Keep in mind that this project is still a mod. Unauthorized modding of apps is considered illegal and we discourage such behavior.
+---
 
-We love Sketchware very much and are grateful to Sketchware's developers for creating such an amazing app. However, we haven't received updates for a long time. That's why we decided to keep Sketchware alive by creating this mod, and it's completely free. We don't demand any money :)
+## Telegram
+
+Quer conversar conosco, discutir mudanças ou apenas bater papo? Temos um canal no Telegram para isso.
+
+[Junte-se ao nosso canal do Telegram!](https://t.me/+8rUUdcvjZxk0YTIx)
+
+---
+
+## Aviso legal
+
+Este mod é **derivado** do Sketchware Pro e mantém sua essência, mas com melhorias e novas funcionalidades.  
+Ele **não foi criado com propósitos prejudiciais** ao Sketchware ou ao Sketchware Pro — pelo contrário, meu objetivo é expandir o potencial da ferramenta e permitir que desenvolvedores possam usar IA, novos blocos e recursos sem limitações impostas por moderadores.
+
+O projeto continua sendo **gratuito** e **completamente independente**.  
+Não é permitido publicar este mod, seja original ou modificado, na **Play Store** ou em qualquer outra loja de aplicativos sem autorização.
+
+Agradeço aos criadores originais do Sketchware e do Sketchware Pro pelo excelente trabalho, que serviu de base para este projeto.
