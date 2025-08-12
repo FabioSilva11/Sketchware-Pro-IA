@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="1754765154620.png" style="width: 30%;" />
+  <img src="[1754765154620.png](https://github.com/FabioSilva11/Sketchware-Pro-IA/blob/main/app/src/main/res/drawable-xhdpi/sketch_app_icon.png)" style="width: 30%;" />
 </p>
 
 # Meu Mod do Sketchware com IA
