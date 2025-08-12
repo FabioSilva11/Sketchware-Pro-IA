@@ -2,6 +2,63 @@ name: Android CI
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses (resilient)
+        shell: bash
+        run: |
+          # Evita falha por Broken pipe em ambientes do GitHub Actions
+          yes | sdkmanager --licenses || true
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -e
+          # Instala ferramentas e plataformas necessárias ao build
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;35.0.0" || true
+          # Caso a API 36 esteja apenas em canais preview, tenta o canal canary
+          sdkmanager --channel=3 "platforms;android-36" || true
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
+
+name: Android CI
+
+on:
+  push:
     paths:
       - '.github/workflows/android.yml'
       - 'app/**'
