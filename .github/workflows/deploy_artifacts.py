@@ -9,24 +9,36 @@ def get_git_commit_info():
     commit_hash_short = subprocess.check_output(['git', 'log', '-1', '--pretty=format:%h']).decode('utf-8')
     return commit_author, commit_message, commit_hash, commit_hash_short
 
+def find_apk_file(base_path='app/build/outputs/apk'):
+    for root, dirs, files in os.walk(base_path):
+        for file in files:
+            if file.endswith('.apk'):
+                return os.path.join(root, file)
+    return None
+
 # Telegram API credentials
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 bot_token = os.getenv("BOT_TOKEN")
 group_id = int(os.getenv("CHAT_ID"))
 
-# File paths to send
-apk_path = os.getenv("APK_PATH")
+# Detecta o APK automaticamente
+apk_path = find_apk_file()
+if not apk_path:
+    print("APK não encontrado na pasta padrão.")
+    exit(1)
+else:
+    print(f"APK encontrado: {apk_path}")
 
-# Get the latest commit info
+# Pega info do último commit
 commit_author, commit_message, commit_hash, commit_hash_short = get_git_commit_info()
 
-# Cleanup last session(if exists) before create client
+# Limpa sessão anterior
 session_file = "bot_session.session"
 if os.path.exists(session_file):
     os.remove(session_file)
 
-# Create the client with bot token directly
+# Cria cliente Telegram com token de bot
 client = TelegramClient('bot_session', api_id, api_hash).start(bot_token=bot_token)
 client.parse_mode = 'markdown'
 
@@ -37,26 +49,24 @@ def human_readable_size(size, decimal_places=2):
         size /= 1024.0
     return f"{size:.{decimal_places}f} {unit}"
 
-
 async def progress(current, total):
     progress_percentage = (current / total) * 100
     uploaded_size_readable = human_readable_size(current)
     total_size_readable = human_readable_size(total)
     print(f"{progress_percentage:.2f}% uploaded - {uploaded_size_readable}/{total_size_readable}", end='\r')
 
-
 async def send_file(file_path):
     if not os.path.exists(file_path):
-        print("File not found", file_path)
+        print("Arquivo não encontrado:", file_path)
         return
 
-    print(f"Sending file: {file_path} to the Telegram group")
+    print(f"Enviando arquivo: {file_path} para o grupo Telegram")
 
     message = (
-        f"**Commit by:** {commit_author}\n"
-        f"**Commit message:** {commit_message}\n"
-        f"**Commit hash:** #{commit_hash_short}\n"
-        f"**Version:** Android >= 8"
+        f"**Commit por:** {commit_author}\n"
+        f"**Mensagem:** {commit_message}\n"
+        f"**Hash:** #{commit_hash_short}\n"
+        f"**Versão:** Android >= 8"
     )
 
     try:
@@ -66,11 +76,11 @@ async def send_file(file_path):
             parse_mode='markdown',
             caption=message,
             progress_callback=progress,
-            reply_to=int(os.getenv("TOPIC_ID"))
+            reply_to=int(os.getenv("TOPIC_ID")) if os.getenv("TOPIC_ID") else None
         )
-        print("\nFile sent successfully")
+        print("\nArquivo enviado com sucesso")
     except Exception as e:
-        print(f"Failed to send file: {e}")
+        print(f"Falha ao enviar arquivo: {e}")
 
 try:
     with client:
