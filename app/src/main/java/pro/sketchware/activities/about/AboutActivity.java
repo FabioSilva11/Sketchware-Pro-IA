@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import mod.hey.studios.util.Helper;
 import pro.sketchware.R;
 import pro.sketchware.activities.about.fragments.BetaChangesFragment;
-import pro.sketchware.activities.about.fragments.ChangeLogFragment;
 import pro.sketchware.activities.about.fragments.TeamFragment;
 import pro.sketchware.activities.about.models.AboutAppViewModel;
 import pro.sketchware.activities.about.models.AboutResponseModel;
@@ -55,12 +54,11 @@ public class AboutActivity extends BaseAppCompatActivity {
         binding.toolbar.setNavigationOnClickListener(Helper.getBackPressedClickListener(this));
 
         AboutAdapter adapter = new AboutAdapter(this);
-        binding.viewPager.setOffscreenPageLimit(3);
+        binding.viewPager.setOffscreenPageLimit(2);
         binding.viewPager.setAdapter(adapter);
 
         String[] tabTitles = new String[]{
                 Helper.getResString(R.string.about_team_title),
-                Helper.getResString(R.string.about_changelog_title),
                 Helper.getResString(R.string.about_beta_changes_title)
         };
 
@@ -75,10 +73,8 @@ public class AboutActivity extends BaseAppCompatActivity {
 
         String toSelect = getIntent().getStringExtra("select");
         if (toSelect != null) {
-            if ("changelog".equals(toSelect)) {
+            if ("betaChanges".equals(toSelect)) {
                 binding.viewPager.setCurrentItem(1);
-            } else if ("betaChanges".equals(toSelect)) {
-                binding.viewPager.setCurrentItem(2);
             }
         }
     }
@@ -94,9 +90,8 @@ public class AboutActivity extends BaseAppCompatActivity {
 
             Gson gson = new Gson();
             AboutResponseModel aboutResponseModel = gson.fromJson(response, AboutResponseModel.class);
-    
+
             aboutAppData.setTeamMembers(aboutResponseModel.getTeam());
-            aboutAppData.setChangelog(aboutResponseModel.getChangelog());
         });
     }
 
@@ -111,15 +106,14 @@ public class AboutActivity extends BaseAppCompatActivity {
         @Override
         public Fragment createFragment(int position) {
             return switch (position) {
-                case 1 -> new ChangeLogFragment();
-                case 2 -> new BetaChangesFragment();
+                case 1 -> new BetaChangesFragment();
                 default -> new TeamFragment();
             };
         }
 
         @Override
         public int getItemCount() {
-            return 3;
+            return 2;
         }
     }
 }

@@ -6,11 +6,6 @@
         android:title="About the team" />
 
     <item
-        android:id="@+id/changelog"
-        android:icon="@drawable/ic_mtrl_update"
-        android:title="Changelog" />
-
-    <item
         android:id="@+id/program_info"
         android:icon="@drawable/ic_sketchware_24"
         android:title="App information" />

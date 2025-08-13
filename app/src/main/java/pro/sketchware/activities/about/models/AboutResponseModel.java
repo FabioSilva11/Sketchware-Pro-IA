@@ -15,7 +15,6 @@ import pro.sketchware.R;
 public class AboutResponseModel {
 
     private ArrayList<TeamMember> team;
-    private ArrayList<ChangeLogs> changelog;
 
     // Getters
 
@@ -24,9 +23,7 @@ public class AboutResponseModel {
         return team;
     }
 
-    public ArrayList<ChangeLogs> getChangelog() {
-        return changelog;
-    }
+    // Removed changelog accessors
 
     public static class TeamMember {
         private String user_username;
@@ -60,33 +57,7 @@ public class AboutResponseModel {
         }
     }
 
-    public static class ChangeLogs {
-        private String title;
-        private String description;
-        private long releaseDate;
-        private boolean isBeta;
-        private boolean isTitled;
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public long getReleaseDate() {
-            return releaseDate;
-        }
-
-        public boolean isBeta() {
-            return isBeta;
-        }
-
-        public boolean isTitled() {
-            return isTitled;
-        }
-    }
+    // Removed ChangeLogs model as changelog feature is gone
 
     public static class CommitDetails {
 

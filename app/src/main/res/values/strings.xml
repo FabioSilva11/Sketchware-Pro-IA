@@ -1527,7 +1527,7 @@ But, components should be added manually for working correctly."</string>
     <string name="main_drawer_title_system_settings">System Settings</string>
     <string name="main_tab_title_competitions">Competitions</string>
     <string name="main_tab_title_myproject">My Projects</string>
-    <string name="main_tab_title_projects_store">Projects store</string>
+    <!-- removed: Projects store -->
     <string name="main_tab_title_tutorials">Tutorials</string>
     <string name="manage_export_url_actionbar_title">Manage Exported URLs</string>
     <string name="manage_export_url_list_app_name">App Name</string>
@@ -2223,7 +2223,7 @@ Please try again later"</string>
     <string name="about_title">Sobre o Sketchware IA</string>
     <string name="about_team_title">The team</string>
     <string name="about_specialthanks_title">Special Thanks</string>
-    <string name="about_changelog_title">Descontinuado</string>
+    <!-- removed changelog title -->
     <string name="about_beta_changes_title">Beta Changes</string>
     <string name="about_loading_title">Getting data…</string>
     <string name="about_loading_subtitle">Don\'t worry, it won\'t take more than a second.</string>

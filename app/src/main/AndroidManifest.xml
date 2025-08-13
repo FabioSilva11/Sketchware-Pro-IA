@@ -19,7 +19,7 @@
         android:name=".SketchApplication"
         android:allowBackup="true"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/sketch_app_icon"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
@@ -84,15 +84,19 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard"
             android:theme="@style/Theme.SketchwarePro.SmallToolbar" />
         <activity
-            android:name="pro.sketchware.activities.main.activities.MainActivity"
-            android:configChanges="orientation|screenSize"
+            android:name="pro.sketchware.activities.splash.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.SketchwarePro.Starting">
+            android:theme="@style/Theme.SketchwarePro">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="pro.sketchware.activities.main.activities.MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

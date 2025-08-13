@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class AboutAppViewModel extends ViewModel {
 
     private final MutableLiveData<ArrayList<AboutResponseModel.TeamMember>> teamMembers = new MutableLiveData<>();
-    private final MutableLiveData<ArrayList<AboutResponseModel.ChangeLogs>> changelog = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<AboutResponseModel.CommitDetails>> commitDetailsList = new MutableLiveData<>();
 
 
@@ -60,13 +59,7 @@ public class AboutAppViewModel extends ViewModel {
         return coreTeam;
     }
 
-    public LiveData<ArrayList<AboutResponseModel.ChangeLogs>> getChangelog() {
-        return changelog;
-    }
-
-    public void setChangelog(ArrayList<AboutResponseModel.ChangeLogs> changelog) {
-        this.changelog.setValue(changelog);
-    }
+    // Removed changelog LiveData
 
     public LiveData<ArrayList<AboutResponseModel.CommitDetails>> getCommitDetailsList() {
         return commitDetailsList;
