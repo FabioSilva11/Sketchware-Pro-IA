@@ -16,6 +16,7 @@ def find_apk_file(base_path='app/build/outputs/apk'):
             if file.endswith('.apk'):
                 return os.path.join(root, file)
     return None
+    
 
 def find_apk_file_multi(base_paths):
     for path in base_paths:
