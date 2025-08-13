@@ -17,6 +17,18 @@ def find_apk_file(base_path='app/build/outputs/apk'):
                 return os.path.join(root, file)
     return None
 
+def find_apk_file_multi(base_paths):
+    for path in base_paths:
+        if not path:
+            continue
+        if os.path.isfile(path) and path.endswith('.apk'):
+            return path
+        if os.path.isdir(path):
+            found = find_apk_file(path)
+            if found:
+                return found
+    return None
+
 def exit_with_error(message: str):
     print(f"[deploy_artifacts] Error: {message}")
     sys.exit(1)
@@ -48,10 +60,19 @@ api_hash = get_required_env("API_HASH")
 bot_token = get_required_env("BOT_TOKEN")
 group_id = get_entity_env("CHAT_ID")
 
-# Detecta o APK automaticamente
-apk_path = find_apk_file()
+# Permite usar um caminho explícito (preferível no workflow), senão tenta localizar
+apk_env = os.getenv("APK_PATH")
+apk_candidates = [
+    apk_env if apk_env else None,
+    os.getenv("APK_DIR", "downloaded-artifact"),
+    "./downloaded-artifact",
+    "downloaded-artifact",
+    "app/build/outputs/apk",
+    "app/build/outputs",
+]
+apk_path = find_apk_file_multi(apk_candidates)
 if not apk_path:
-    print("APK não encontrado na pasta padrão.")
+    print("APK não encontrado. Informe APK_PATH ou garanta que exista em downloaded-artifact/ ou app/build/outputs/apk.")
     exit(1)
 else:
     print(f"APK encontrado: {apk_path}")
