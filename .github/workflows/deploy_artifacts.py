@@ -1,5 +1,6 @@
 from telethon import TelegramClient
 import os
+import sys
 import subprocess
 
 def get_git_commit_info():
@@ -16,11 +17,36 @@ def find_apk_file(base_path='app/build/outputs/apk'):
                 return os.path.join(root, file)
     return None
 
-# Telegram API credentials
-api_id = int(os.getenv("API_ID"))
-api_hash = os.getenv("API_HASH")
-bot_token = os.getenv("BOT_TOKEN")
-group_id = int(os.getenv("CHAT_ID"))
+def exit_with_error(message: str):
+    print(f"[deploy_artifacts] Error: {message}")
+    sys.exit(1)
+
+def get_required_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        exit_with_error(f"Missing required environment variable: {name}")
+    return value
+
+def get_required_env_int(name: str) -> int:
+    value = get_required_env(name)
+    try:
+        return int(value)
+    except ValueError:
+        exit_with_error(f"Environment variable {name} must be an integer, got: '{value}'")
+
+def get_entity_env(name: str):
+    """CHAT_ID can be an int (-100...) or a @username. Accept both."""
+    value = get_required_env(name)
+    try:
+        return int(value)
+    except ValueError:
+        return value  # treat as username or link
+
+# Telegram API credentials (fail-fast with clear messages)
+api_id = get_required_env_int("API_ID")
+api_hash = get_required_env("API_HASH")
+bot_token = get_required_env("BOT_TOKEN")
+group_id = get_entity_env("CHAT_ID")
 
 # Detecta o APK automaticamente
 apk_path = find_apk_file()
