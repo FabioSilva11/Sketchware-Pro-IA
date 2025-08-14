@@ -26,11 +26,7 @@
         android:theme="@style/Theme.SketchwarePro"
         android:usesCleartextTraffic="true"
         tools:targetApi="p">
-        <activity
-            android:name=".activities.iconcreator.IconCreatorActivity"
-            android:exported="false"
-            android:label="@string/title_activity_icon_creator"
-            android:theme="@style/Theme.SketchwarePro" />
+
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -70,6 +66,13 @@
         <activity
             android:name="com.besome.sketch.projects.MyProjectSettingActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" />
+
+
+
+        <activity
+            android:name="pro.sketchware.activities.iconcreator.ShapeCropActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro.SmallToolbar" />
 
         <activity android:name="com.besome.sketch.tools.CompileLogActivity" />
         <activity android:name="com.besome.sketch.tools.CollectErrorActivity" />

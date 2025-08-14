@@ -6,7 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
 import android.os.Bundle;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +21,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+
 
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,6 +31,8 @@ import androidx.transition.TransitionManager;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.besome.sketch.lib.ui.ColorPickerDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.yalantis.ucrop.UCrop;
+import com.yalantis.ucrop.UCropActivity;
 
 
 import java.io.File;
@@ -50,7 +60,6 @@ import mod.hey.studios.util.Helper;
 import mod.hey.studios.util.ProjectFile;
 import mod.hilal.saif.activities.tools.ConfigActivity;
 import pro.sketchware.R;
-import pro.sketchware.activities.iconcreator.IconCreatorActivity;
 import pro.sketchware.control.VersionDialog;
 import pro.sketchware.databinding.MyprojectSettingBinding;
 import pro.sketchware.lib.validator.AppNameValidator;
@@ -60,7 +69,6 @@ import pro.sketchware.utility.SketchwareUtil;
 
 public class MyProjectSettingActivity extends BaseAppCompatActivity implements View.OnClickListener {
 
-    private static final int REQUEST_CODE_CREATE_ICON = 200212;
     private final String[] themeColorKeys = {"color_accent", "color_primary", "color_primary_dark", "color_control_highlight", "color_control_normal"};
     private final String[] themeColorLabels = {"colorAccent", "colorPrimary", "colorPrimaryDark", "colorControlHighlight", "colorControlNormal"};
     private final int[] projectThemeColors = new int[themeColorKeys.length];
@@ -78,12 +86,33 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
     private Bitmap icon;
     private String sc_id;
 
+    private static final int CROP_SHAPE_RECT = 0;
+    private static final int CROP_SHAPE_CIRCLE = 1;
+    private static final int CROP_SHAPE_OVAL = 2;
+    private static final int CROP_SHAPE_SQUIRCLE_LIGHT = 3;
+    private static final int CROP_SHAPE_SQUIRCLE_DARK = 4;
+    private int currentCropShape = CROP_SHAPE_RECT;
+
     private ThemePresetAdapter themePresetAdapter;
+    
+    private static final int REQUEST_CODE_PICK_ICON = 1001;
+    private static final int REQUEST_CODE_PICK_ICON_FOR_CROP = 1002;
+    private static final int REQUEST_CODE_CROP_ICON = 1003;
+    private static final int REQUEST_CODE_SHAPE_CROP = 1004;
 
     public static void saveBitmapTo(Bitmap bitmap, String path) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-            fileOutputStream.flush();
+        try {
+            // Criar o diretório pai se não existir
+            File file = new File(path);
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            
+            try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                fileOutputStream.flush();
+            }
         } catch (IOException ignored) {
         }
     }
@@ -160,7 +189,8 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
             binding.verName.setText(yB.c(metadata, "sc_ver_name"));
             projectHasCustomIcon = yB.a(metadata, "custom_icon");
             if (projectHasCustomIcon) {
-                binding.appIcon.setImageURI(FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", getCustomIcon()));
+                // Usar o ícone padrão para projetos existentes
+                binding.appIcon.setImageResource(R.drawable.default_icon);
             }
 
             for (int i = 0; i < themeColorKeys.length; i++) {
@@ -193,7 +223,8 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
             binding.verName.setText(newProjectVersionName);
             projectHasCustomIcon = getIntent().getBooleanExtra("custom_icon", false);
             if (projectHasCustomIcon) {
-                binding.appIcon.setImageURI(FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", getCustomIcon()));
+                // Usar o ícone padrão para novos projetos
+                binding.appIcon.setImageResource(R.drawable.default_icon);
             }
         }
         syncThemeColors();
@@ -202,35 +233,61 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (data == null) {
-            return;
-        }
-
-        if (requestCode == REQUEST_CODE_CREATE_ICON && resultCode == RESULT_OK) {
-            if (data.getParcelableExtra("appIco") != null) {
-                icon = data.getParcelableExtra("appIco");
-
-                isIconAdaptive = data.getBooleanExtra("isIconAdaptive", false);
-                binding.appIcon.setImageBitmap(icon);
-                projectHasCustomIcon = true;
+        
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == REQUEST_CODE_PICK_ICON) {
+                // Selecionar imagem da galeria
+                handleImageSelection(data.getData());
+            } else if (requestCode == REQUEST_CODE_PICK_ICON_FOR_CROP) {
+                // Selecionar imagem para cortar
+                handleImageSelectionForCrop(data.getData());
+            } else if (requestCode == REQUEST_CODE_SHAPE_CROP) {
+                Uri resultUri = data.getData();
+                if (resultUri != null) {
+                    binding.appIcon.setImageURI(resultUri);
+                    projectHasCustomIcon = true;
+                    saveIconFromUri(resultUri);
+                }
+            } else if (requestCode == UCrop.REQUEST_CROP) {
+                Uri resultUri = UCrop.getOutput(data);
+                if (resultUri != null) {
+                    try {
+                        if (currentCropShape != CROP_SHAPE_RECT) {
+                            Bitmap cropped = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
+                            Bitmap masked = switch (currentCropShape) {
+                                case CROP_SHAPE_CIRCLE -> maskToCircle(cropped);
+                                case CROP_SHAPE_OVAL -> maskToOval(cropped);
+                                case CROP_SHAPE_SQUIRCLE_LIGHT -> maskToRounded(cropped, 0.4f);
+                                case CROP_SHAPE_SQUIRCLE_DARK -> maskToRounded(cropped, 0.25f);
+                                default -> cropped;
+                            };
+                            saveBitmapTo(masked, new File(resultUri.getPath()).getAbsolutePath());
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    binding.appIcon.setImageURI(resultUri);
+                    projectHasCustomIcon = true;
+                    saveIconFromUri(resultUri);
+                }
+            } else if (requestCode == REQUEST_CODE_CROP_ICON) { // Fallback intents antigos
+                // Resultado do crop
+                handleCroppedImage(data);
             }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            Throwable cropError = UCrop.getError(data);
+            if (cropError != null) cropError.printStackTrace();
         }
-
     }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.app_icon_layout) {
-            Intent intent = new Intent();
-            intent.setClass(getApplicationContext(), IconCreatorActivity.class);
-            intent.putExtra("sc_id", sc_id);
-            startActivityForResult(intent, REQUEST_CODE_CREATE_ICON);
+            showIconOptionsDialog();
         } else if (id == R.id.ok_button) {
             mB.a(v);
             if (isInputValid()) {
                 new SaveProjectAsyncTask(getApplicationContext()).execute();
-                if (icon != null) saveBitmapTo(icon, getCustomIconPath());
             }
         } else if (id == R.id.cancel) {
             finish();
@@ -270,10 +327,229 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
         File o = getCustomIcon();
         if (!o.exists()) {
             try {
+                // Criar o diretório pai se não existir
+                File parentDir = o.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
                 o.createNewFile();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void showIconOptionsDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(Helper.getResString(R.string.myprojects_settings_context_menu_title_choose));
+        builder.setItems(new String[]{
+                Helper.getResString(R.string.myprojects_settings_context_menu_title_choose_gallery),
+                Helper.getResString(R.string.myprojects_settings_context_menu_title_choose_gallery_with_crop),
+                Helper.getResString(R.string.myprojects_settings_context_menu_title_choose_gallery_default)
+        }, (dialog, which) -> {
+            switch (which) {
+                case 0 -> pickImageFromGallery();
+                case 1 -> pickImageForCrop();
+                case 2 -> resetToDefaultIcon();
+            }
+        });
+        builder.create().show();
+    }
+
+    private void pickImageFromGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_CODE_PICK_ICON);
+    }
+
+    private void pickImageForCrop() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_CODE_PICK_ICON_FOR_CROP);
+    }
+
+    private void resetToDefaultIcon() {
+        binding.appIcon.setImageResource(R.drawable.default_icon);
+        projectHasCustomIcon = false;
+        icon = null;
+        // Remover o arquivo de ícone personalizado se existir
+        File customIconFile = getCustomIcon();
+        if (customIconFile.exists()) {
+            customIconFile.delete();
+        }
+    }
+
+    private void handleImageSelection(Uri imageUri) {
+        if (imageUri != null) {
+            try {
+                // Carregar a imagem selecionada
+                binding.appIcon.setImageURI(imageUri);
+                projectHasCustomIcon = true;
+                
+                // Salvar o ícone
+                saveIconFromUri(imageUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                SketchwareUtil.toastError("Erro ao carregar imagem");
+            }
+        }
+    }
+
+    private void handleImageSelectionForCrop(Uri imageUri) {
+        if (imageUri != null) {
+            Intent intent = new Intent(this, pro.sketchware.activities.iconcreator.ShapeCropActivity.class);
+            intent.putExtra(pro.sketchware.activities.iconcreator.ShapeCropActivity.EXTRA_IMAGE_URI, imageUri);
+            intent.putExtra(pro.sketchware.activities.iconcreator.ShapeCropActivity.EXTRA_SHAPE, 0);
+            startActivityForResult(intent, REQUEST_CODE_SHAPE_CROP);
+        }
+    }
+
+    private void startUCrop(Uri sourceUri) {
+        startUCrop(sourceUri, currentCropShape);
+    }
+
+    private void startUCrop(Uri sourceUri, int cropShape) {
+        try {
+            File destination = new File(getCacheDir(), "icon_cropped_" + System.currentTimeMillis() + ".png");
+            Uri destinationUri = Uri.fromFile(destination);
+
+            UCrop.Options options = new UCrop.Options();
+            options.setFreeStyleCropEnabled(true);
+            options.setHideBottomControls(false);
+            options.setCompressionFormat(Bitmap.CompressFormat.PNG);
+            options.setToolbarTitle("Editar");
+            options.setToolbarColor(Color.parseColor("#6D4C41"));
+            options.setStatusBarColor(Color.parseColor("#5D4037"));
+            options.setActiveControlsWidgetColor(Color.parseColor("#FFA000"));
+            options.setCropGridColor(Color.WHITE);
+            options.setCropGridStrokeWidth(2);
+            options.setDimmedLayerColor(Color.parseColor("#66000000"));
+            options.setToolbarWidgetColor(Color.WHITE);
+            options.setRootViewBackgroundColor(Color.BLACK);
+            options.setShowCropGrid(true);
+            if (cropShape == CROP_SHAPE_CIRCLE) {
+                options.setCircleDimmedLayer(true);
+                options.setShowCropGrid(true);
+                options.setShowCropFrame(false);
+            }
+
+            UCrop uCrop = UCrop.of(sourceUri, destinationUri)
+                    .withMaxResultSize(512, 512)
+                    .withOptions(options);
+
+            if (cropShape == CROP_SHAPE_CIRCLE || cropShape == CROP_SHAPE_OVAL || cropShape == CROP_SHAPE_SQUIRCLE_LIGHT || cropShape == CROP_SHAPE_SQUIRCLE_DARK) {
+                uCrop = uCrop.withAspectRatio(1, 1);
+            }
+
+            // Gestos: escala, rotação e ajuste de proporção
+            options.setAllowedGestures(UCropActivity.SCALE, UCropActivity.ROTATE, UCropActivity.ALL);
+            uCrop.start(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            handleImageSelection(sourceUri);
+        }
+    }
+
+    private void showCropShapeSelector(Uri imageUri) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Formato do recorte");
+        String[] items = new String[]{
+                "Livre (retângulo)",
+                "Círculo",
+                "Oval",
+                "Squircle claro",
+                "Squircle escuro"
+        };
+        builder.setItems(items, (dialog, which) -> {
+            switch (which) {
+                case 0 -> currentCropShape = CROP_SHAPE_RECT;
+                case 1 -> currentCropShape = CROP_SHAPE_CIRCLE;
+                case 2 -> currentCropShape = CROP_SHAPE_OVAL;
+                case 3 -> currentCropShape = CROP_SHAPE_SQUIRCLE_LIGHT;
+                case 4 -> currentCropShape = CROP_SHAPE_SQUIRCLE_DARK;
+            }
+            startUCrop(imageUri, currentCropShape);
+        });
+        builder.show();
+    }
+
+    private Bitmap maskToCircle(Bitmap src) {
+        int size = Math.min(src.getWidth(), src.getHeight());
+        int x = (src.getWidth() - size) / 2;
+        int y = (src.getHeight() - size) / 2;
+        Bitmap squared = Bitmap.createBitmap(src, x, y, size, size);
+        Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(squared, 0, 0, paint);
+        return output;
+    }
+
+    private Bitmap maskToOval(Bitmap src) {
+        Bitmap output = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        RectF rect = new RectF(0, 0, src.getWidth(), src.getHeight());
+        canvas.drawOval(rect, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(src, 0, 0, paint);
+        return output;
+    }
+
+    private Bitmap maskToRounded(Bitmap src, float radiusRatio) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        float r = Math.min(w, h) * radiusRatio;
+        Bitmap output = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        RectF rect = new RectF(0, 0, w, h);
+        canvas.drawRoundRect(rect, r, r, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(src, 0, 0, paint);
+        return output;
+    }
+
+    private void handleCroppedImage(Intent data) {
+        try {
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap croppedBitmap = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    croppedBitmap = extras.getParcelable("data", Bitmap.class);
+                } else {
+                    croppedBitmap = extras.getParcelable("data");
+                }
+                
+                if (croppedBitmap != null) {
+                    binding.appIcon.setImageBitmap(croppedBitmap);
+                    projectHasCustomIcon = true;
+                    icon = croppedBitmap;
+                    
+                    // Salvar o ícone cortado
+                    saveBitmapTo(croppedBitmap, getCustomIconPath());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            SketchwareUtil.toastError("Erro ao processar imagem cortada");
+        }
+    }
+
+    private void saveIconFromUri(Uri imageUri) {
+        try {
+            // Converter URI para Bitmap e salvar
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            if (bitmap != null) {
+                icon = bitmap;
+                saveBitmapTo(bitmap, getCustomIconPath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            SketchwareUtil.toastError("Erro ao salvar ícone");
         }
     }
 

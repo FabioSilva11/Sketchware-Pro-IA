@@ -51,6 +51,7 @@ public class IconCreatorActivity extends BaseAppCompatActivity {
 
     private final int REQUEST_CODE_PICK_CROPPED_ICON = 216;
     private final int REQUEST_CODE_PICK_ICON = 207;
+    private final int REQUEST_CODE_PICK_ICON_FOR_CROP = 208;
     private float cardRadius = 20;
     private ActivityIconCreatorBinding binding;
     private GradientDrawable.Orientation gradDirection = GradientDrawable.Orientation.BOTTOM_TOP;
@@ -365,6 +366,13 @@ public class IconCreatorActivity extends BaseAppCompatActivity {
 
                 }
             }
+        } else if (requestCode == REQUEST_CODE_PICK_ICON_FOR_CROP) {
+            if (resultCode == RESULT_OK && uri != null) {
+                String imagePath = HB.a(getApplicationContext(), uri);
+                if (imagePath != null) {
+                    cropSelectedImage(imagePath);
+                }
+            }
         } else {
             Bundle extras = data.getExtras();
             if (requestCode == REQUEST_CODE_PICK_CROPPED_ICON && resultCode == RESULT_OK && extras != null) {
@@ -484,25 +492,40 @@ public class IconCreatorActivity extends BaseAppCompatActivity {
     }
 
     private void pickAndCropCustomIcon() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        Context applicationContext = getApplicationContext();
-        Uri uri = FileProvider.getUriForFile(applicationContext, getApplicationContext().getPackageName() + ".provider", getCustomIcon());
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-
-        intent.setDataAndType(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "image/*");
-        intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 96);
-        intent.putExtra("outputY", 96);
-        intent.putExtra("scale", true);
-        intent.putExtra("output", uri);
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString());
-        intent.putExtra("return-data", true);
-        startActivityForResult(Intent.createChooser(intent, Helper.getResString(R.string.common_word_choose)),
-                REQUEST_CODE_PICK_CROPPED_ICON);
+        // Primeiro selecionar a imagem da galeria
+        Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        pickIntent.setType("image/*");
+        startActivityForResult(pickIntent, REQUEST_CODE_PICK_ICON_FOR_CROP);
+    }
+    
+    private void cropSelectedImage(String imagePath) {
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            File imageFile = new File(imagePath);
+            Uri imageUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", imageFile);
+            
+            cropIntent.setDataAndType(imageUri, "image/*");
+            cropIntent.putExtra("crop", "true");
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            cropIntent.putExtra("outputX", 512);
+            cropIntent.putExtra("outputY", 512);
+            cropIntent.putExtra("scale", true);
+            cropIntent.putExtra("return-data", true);
+            
+            startActivityForResult(cropIntent, REQUEST_CODE_PICK_CROPPED_ICON);
+        } catch (Exception e) {
+            // Se o crop falhar, mostrar mensagem e usar a imagem sem crop
+            SketchwareUtil.toastError("Crop not supported on this device. Using original image.");
+            // Usar a imagem original
+            Bitmap bitmap = iB.a(imagePath, 512, 512);
+            if (bitmap != null) {
+                appIconBitmap = bitmap;
+                iconFilePath = null;
+                BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
+                binding.appIcoImg.setBackground(bd);
+            }
+        }
     }
 
     private void showCustomIconOptions() {

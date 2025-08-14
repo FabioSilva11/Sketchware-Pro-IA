@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_save"
+        android:title="@string/common_word_save"
+        android:icon="@android:drawable/ic_menu_save"
+        app:showAsAction="ifRoom" />
+
+    <item android:title="Formas" >
+        <menu>
+            <item android:id="@+id/shape_rect" android:title="Retângulo" />
+            <item android:id="@+id/shape_circle" android:title="Círculo" />
+            <item android:id="@+id/shape_oval" android:title="Oval" />
+            <item android:id="@+id/shape_squircle_light" android:title="Squircle claro" />
+            <item android:id="@+id/shape_squircle_dark" android:title="Squircle escuro" />
+        </menu>
+    </item>
+
+</menu>
+
+
