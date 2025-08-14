@@ -120,9 +120,10 @@ public class DesignDrawer extends LinearLayout {
         addDrawerItem(R.id.item_logcat_reader, R.drawable.ic_mtrl_article, R.string.design_drawer_menu_title_logcat_reader, R.string.design_drawer_menu_subtitle_logcat_reader, content);
 
         // if you want to show text "Global", uncomment next line
-        // addDrawerSubheaderItem(R.string.design_drawer_menu_bottom_title, this);
-        addDrawerDivider(this);
-        addDrawerItem(R.id.item_collection_manager, R.drawable.ic_mtrl_bookmark, R.string.design_drawer_menu_title_collection, R.string.design_drawer_menu_description_collection, this);
+        // addDrawerSubheaderItem(R.string.design_drawer_menu_bottom_title, content);
+        // Move bottom items into scrollable content to avoid large bottom margin below Collection
+        addDrawerDivider(content);
+        addDrawerItem(R.id.item_collection_manager, R.drawable.ic_mtrl_bookmark, R.string.design_drawer_menu_title_collection, R.string.design_drawer_menu_description_collection, content);
     }
 
     @Override
