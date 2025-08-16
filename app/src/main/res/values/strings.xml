@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Sketchware IA</string>
     <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    
+    <!-- Template strings -->
+    <string name="template_by_sketchware">by Sketchware</string>
+    <string name="template_enter_dev_world">Entre para o mundo dev</string>
+    <string name="template_upload_icon_description">Upload template</string>
     <string name="common_word_generate">Generate</string>
     <string name="besome_blog_url">http://medium.com/sketchware</string>
     <string name="block_add_list_int_body_1">to</string>

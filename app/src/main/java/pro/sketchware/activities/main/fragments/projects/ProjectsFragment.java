@@ -131,6 +131,9 @@ public class ProjectsFragment extends DA {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         preference = new DB(requireContext(), "project");
 
+        // Mostrar estado de carregamento inicialmente
+        showLoadingState();
+
         ExtendedFloatingActionButton fab = requireActivity().findViewById(R.id.create_new_project);
         fab.setOnClickListener((v) -> toProjectSettingsActivity());
         Insetter.builder().margin(WindowInsetsCompat.Type.navigationBars()).applyToView(fab);
@@ -217,17 +220,43 @@ public class ProjectsFragment extends DA {
 
             requireActivity().runOnUiThread(() -> {
                 if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
-                if (binding.loadingContainer.getVisibility() == View.VISIBLE) {
-                    binding.loadingContainer.setVisibility(View.GONE);
-                    binding.myprojects.setVisibility(View.VISIBLE);
-                }
+                
                 projectsList.clear();
                 projectsList.addAll(loadedProjects);
                 diffResult.dispatchUpdatesTo(projectsAdapter);
+                
+                updateUIState();
+                
                 if (projectsSearchView != null)
                     projectsAdapter.filterData(projectsSearchView.getQuery().toString());
             });
         });
+    }
+
+    private void updateUIState() {
+        if (projectsList.isEmpty()) {
+            showEmptyState();
+        } else {
+            showProjectsList();
+        }
+    }
+
+    private void showEmptyState() {
+        binding.loadingContainer.setVisibility(View.GONE);
+        binding.myprojects.setVisibility(View.GONE);
+        binding.emptyStateContainer.setVisibility(View.VISIBLE);
+    }
+
+    private void showProjectsList() {
+        binding.loadingContainer.setVisibility(View.GONE);
+        binding.emptyStateContainer.setVisibility(View.GONE);
+        binding.myprojects.setVisibility(View.VISIBLE);
+    }
+
+    private void showLoadingState() {
+        binding.loadingContainer.setVisibility(View.VISIBLE);
+        binding.emptyStateContainer.setVisibility(View.GONE);
+        binding.myprojects.setVisibility(View.GONE);
     }
 
     private void addProject(String sc_id) {

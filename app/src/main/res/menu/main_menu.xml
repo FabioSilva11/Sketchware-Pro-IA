@@ -5,4 +5,9 @@
         android:icon="@drawable/ic_mtrl_list"
         android:title="Projects" />
 
+    <item
+        android:id="@+id/item_templates"
+        android:icon="@drawable/ic_mtrl_code"
+        android:title="Templates" />
+
 </menu>

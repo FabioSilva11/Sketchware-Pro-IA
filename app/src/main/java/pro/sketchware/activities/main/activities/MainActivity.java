@@ -30,6 +30,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.besome.sketch.lib.base.BasePermissionAppCompatActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -51,6 +53,7 @@ import mod.jbk.util.LogUtil;
 import mod.tyron.backup.SingleCopyTask;
 import pro.sketchware.R;
 import pro.sketchware.activities.about.AboutActivity;
+import pro.sketchware.activities.main.adapters.MainPagerAdapter;
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
 // Removed Store feature
 import pro.sketchware.databinding.MainBinding;
@@ -59,6 +62,7 @@ import pro.sketchware.utility.DataResetter;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.UI;
+import androidx.viewpager2.widget.ViewPager2;
 
 public class MainActivity extends BasePermissionAppCompatActivity {
     private static final String PROJECTS_FRAGMENT_TAG = "projects_fragment";
@@ -67,6 +71,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     private DB u;
     private Snackbar storageAccessDenied;
     private MainBinding binding;
+    private MainPagerAdapter pagerAdapter;
     private final OnBackPressedCallback closeDrawer = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -86,8 +91,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         if (i == 9501) {
             allFilesAccessCheck();
 
-            if (activeFragment instanceof ProjectsFragment) {
-                projectsFragment.refreshProjectsList();
+            // Atualizar a lista de projetos se estiver na aba Projects
+            if (binding.viewPager.getCurrentItem() == 0) {
+                refreshProjectsList();
             }
         }
     }
@@ -108,8 +114,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     }
 
     public void n() {
-        if (activeFragment instanceof ProjectsFragment) {
-            projectsFragment.refreshProjectsList();
+        // Atualizar a lista de projetos se estiver na aba Projects
+        if (binding.viewPager.getCurrentItem() == 0) {
+            refreshProjectsList();
         }
     }
 
@@ -134,8 +141,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
                 case 212:
                     if (!(data.getStringExtra("save_as_new_id") == null ? "" : data.getStringExtra("save_as_new_id")).isEmpty() && isStoragePermissionGranted()) {
-                        if (activeFragment instanceof ProjectsFragment) {
-                            projectsFragment.refreshProjectsList();
+                        // Atualizar a lista de projetos se estiver na aba Projects
+                        if (binding.viewPager.getCurrentItem() == 0) {
+                            refreshProjectsList();
                         }
                     }
                     break;
@@ -267,24 +275,61 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
 
         if (savedInstanceState != null) {
-            projectsFragment = (ProjectsFragment) getSupportFragmentManager().findFragmentByTag(PROJECTS_FRAGMENT_TAG);
             currentNavItemId = savedInstanceState.getInt("selected_tab_id");
-            Fragment current = getFragmentForNavId(currentNavItemId);
-            if (current instanceof ProjectsFragment) {
-                navigateToProjectsFragment();
-            }
-
-            return;
         }
 
-        navigateToProjectsFragment();
+        // Configurar o sistema de abas
+        setupTabs();
+        
+        // Navegar para a aba correta
+        if (currentNavItemId == R.id.item_projects) {
+            binding.viewPager.setCurrentItem(0);
+        } else if (currentNavItemId == R.id.item_templates) {
+            binding.viewPager.setCurrentItem(1);
+        }
     }
 
-    private Fragment getFragmentForNavId(int navItemId) {
-        if (navItemId == R.id.item_projects) {
-            return projectsFragment;
+    private void setupTabs() {
+        // Inicializar o fragmento de projetos
+        projectsFragment = new ProjectsFragment();
+        
+        // Configurar o ViewPager2
+        pagerAdapter = new MainPagerAdapter(this);
+        binding.viewPager.setAdapter(pagerAdapter);
+        
+        // Configurar o TabLayout com o ViewPager2
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText("Projects");
+                    break;
+                case 1:
+                    tab.setText("Templates");
+                    break;
+            }
+        }).attach();
+        
+        // Listener para mudanças de aba
+        binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                switch (position) {
+                    case 0:
+                        currentNavItemId = R.id.item_projects;
+                        break;
+                    case 1:
+                        currentNavItemId = R.id.item_templates;
+                        break;
+                }
+            }
+        });
+    }
+
+    private void refreshProjectsList() {
+        if (projectsFragment != null) {
+            projectsFragment.refreshProjectsList();
         }
-        throw new IllegalArgumentException();
     }
 
     @Override
@@ -293,29 +338,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         outState.putInt("selected_tab_id", currentNavItemId);
     }
 
-    private void navigateToProjectsFragment() {
-        if (projectsFragment == null) {
-            projectsFragment = new ProjectsFragment();
-        }
-
-        boolean shouldShow = true;
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-
-        binding.createNewProject.show();
-        if (activeFragment != null) transaction.hide(activeFragment);
-        if (fm.findFragmentByTag(PROJECTS_FRAGMENT_TAG) == null) {
-            shouldShow = false;
-            transaction.add(binding.container.getId(), projectsFragment, PROJECTS_FRAGMENT_TAG);
-        }
-        if (shouldShow) transaction.show(projectsFragment);
-        transaction.commit();
-
-        activeFragment = projectsFragment;
-        currentNavItemId = R.id.item_projects;
-    }
-
-    // Removed navigateToSketchubFragment()
+    // Removed old navigation methods
 
     @NonNull
     private BottomSheetDialogView getBottomSheetDialogView() {
