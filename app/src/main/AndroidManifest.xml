@@ -297,6 +297,15 @@
         <activity android:name="pro.sketchware.activities.resourceseditor.ResourcesEditorActivity" />
 
         <activity
+            android:name="pro.sketchware.activities.auth.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+        <activity
+            android:name="pro.sketchware.activities.auth.RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+
+        <activity
             android:name="com.besome.sketch.editor.manage.library.material3.Material3LibraryActivity"
             android:configChanges="orientation|screenSize" />
 

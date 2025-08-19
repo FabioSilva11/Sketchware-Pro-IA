@@ -304,7 +304,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     tab.setText("Projects");
                     break;
                 case 1:
-                    tab.setText("Templates");
+                    tab.setText("Loja");
                     break;
             }
         }).attach();

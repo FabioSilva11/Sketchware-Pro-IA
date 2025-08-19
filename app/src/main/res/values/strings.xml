@@ -2293,4 +2293,33 @@ Please try again later"</string>
     <string name="attr_already_exist">This attribute already exists</string>
 
 
+    <!-- auth strings moved from strings_auth.xml -->
+    <string name="auth_login_title">Login</string>
+    <string name="auth_register_title">Cadastro</string>
+    <string name="auth_email">E-mail</string>
+    <string name="auth_password">Senha</string>
+    <string name="auth_confirm_password">Confirmar senha</string>
+    <string name="auth_sign_in">Entrar</string>
+    <string name="auth_sign_up">Cadastrar</string>
+    <string name="auth_no_account_register">Não tem conta? Cadastre-se</string>
+    <string name="auth_have_account_login">Já tem conta? Entrar</string>
+    <string name="auth_invalid_email">E-mail inválido</string>
+    <string name="auth_required_field">Campo obrigatório</string>
+    <string name="auth_password_min">Mínimo de 6 caracteres</string>
+    <string name="auth_password_mismatch">As senhas não coincidem</string>
+    <string name="auth_login_success">Login realizado</string>
+    <string name="auth_register_success">Cadastro realizado</string>
+    <string name="auth_or">ou</string>
+    <string name="auth_login_header_title">Bem-vindo de volta!</string>
+    <string name="auth_login_header_subtitle">Faça login para continuar</string>
+    <string name="auth_register_header_title">Criar Conta</string>
+    <string name="auth_register_header_subtitle">Preencha os dados para se cadastrar</string>
+    <string name="auth_create_new_account">CRIAR NOVA CONTA</string>
+    <string name="auth_already_have_account">JÁ TENHO UMA CONTA</string>
+
+    <!-- Loja -->
+    <string name="loja_title">Loja</string>
+    <string name="loja_empty_title">Nada por aqui</string>
+    <string name="loja_empty_subtitle">Em breve você encontrará conteúdos nesta seção</string>
+
 </resources>

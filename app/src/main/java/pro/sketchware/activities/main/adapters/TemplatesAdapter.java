@@ -104,22 +104,15 @@ public class TemplatesAdapter extends RecyclerView.Adapter<TemplatesAdapter.Temp
         holder.itemView.setTag("template");
 
         // Configurar click para usar o template
-        holder.binding.getRoot().setOnClickListener(v -> {
-            templatesFragment.onTemplateClicked(scId);
-        });
+        holder.binding.getRoot().setOnClickListener(v -> {});
 
         // Configurar click no ícone para mostrar opções
-        holder.binding.imgIcon.setOnClickListener(v -> {
-            templatesFragment.onTemplateClicked(scId);
-        });
+        holder.binding.imgIcon.setOnClickListener(v -> {});
 
 
 
         // Configurar long click para mostrar opções
-        holder.binding.getRoot().setOnLongClickListener(v -> {
-            templatesFragment.onTemplateClicked(scId);
-            return true;
-        });
+        holder.binding.getRoot().setOnLongClickListener(v -> true);
     }
 
     @NonNull

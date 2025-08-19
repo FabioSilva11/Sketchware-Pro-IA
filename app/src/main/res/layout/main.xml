@@ -25,20 +25,22 @@
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags="scroll|enterAlways|snap" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal"
                 app:cardBackgroundColor="?colorSurfaceContainer"
-                app:cardCornerRadius="50dp"
                 app:layout_scrollFlags="scroll|enterAlways|snap">
 
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="4dp"
+                    android:layout_weight="1"
                     tools:menu="@menu/projects_fragment_menu">
 
                     <TextView
@@ -47,7 +49,18 @@
                         android:text="Search for projects..."
                         android:textColor="?attr/colorOnSurfaceVariant" />
                 </com.google.android.material.appbar.MaterialToolbar>
-            </com.google.android.material.card.MaterialCardView>
+
+                <ImageView
+                    android:id="@+id/profile_icon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:padding="4dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_profile"
+                    tools:ignore="ContentDescription" />
+            </LinearLayout>
+
 
             <!-- TabLayout para as abas -->
             <com.google.android.material.tabs.TabLayout

@@ -235,9 +235,7 @@ public class TemplatesFragment extends Fragment {
     }
     
     public void onTemplateClicked(String scId) {
-        // Mostrar diálogo customizado totalmente via XML
-        TemplateUseDialogFragment dialog = TemplateUseDialogFragment.newInstance(scId);
-        dialog.show(getChildFragmentManager(), "template_use_dialog");
+        // Desativado temporariamente: lógica da Store removida, mantendo apenas UI
     }
 
     public void useTemplate(String scId) {
@@ -253,11 +251,7 @@ public class TemplatesFragment extends Fragment {
         // Gerar um novo ID único para o projeto
         String newProjectId = generateUniqueProjectId();
         
-        // Usar a BackupRestoreManager para restaurar o template como um novo projeto
-        BackupRestoreManager backupManager = new BackupRestoreManager(requireActivity());
-        backupManager.doRestore(templateFile.getAbsolutePath(), false); // false = não copiar local libs
-        
-        Toast.makeText(requireContext(), "Template copiado para a aba de projetos com sucesso!", Toast.LENGTH_SHORT).show();
+        // Desativado: ação de copiar template removida por enquanto
     }
 
     private String generateUniqueProjectId() {

@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
-import pro.sketchware.activities.main.fragments.templates.TemplatesFragment;
+import pro.sketchware.activities.main.fragments.loja.LojaFragment;
 
 public class MainPagerAdapter extends FragmentStateAdapter {
 
@@ -21,7 +21,7 @@ public class MainPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return new ProjectsFragment();
             case 1:
-                return new TemplatesFragment();
+                return new LojaFragment();
             default:
                 return new ProjectsFragment();
         }
