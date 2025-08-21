@@ -69,4 +69,23 @@
         <item>com.google.android.material.progressindicator.CircularProgressIndicator</item>
         <item>com.google.android.material.progressindicator.LinearProgressIndicator</item>
     </string-array>
+
+    <!-- App Categories -->
+    <string-array name="app_categories">
+        <item>Produtividade</item>
+        <item>Entretenimento</item>
+        <item>Educação</item>
+        <item>Jogos</item>
+        <item>Social</item>
+        <item>Ferramentas</item>
+        <item>Saúde</item>
+        <item>Finanças</item>
+        <item>Música</item>
+        <item>Fotografia</item>
+        <item>Viagem</item>
+        <item>Esportes</item>
+        <item>Notícias</item>
+        <item>Lifestyle</item>
+        <item>Outros</item>
+    </string-array>
 </resources>

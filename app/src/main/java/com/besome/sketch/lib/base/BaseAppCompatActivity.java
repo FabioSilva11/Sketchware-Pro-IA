@@ -30,6 +30,7 @@ import a.a.a.lC;
 import a.a.a.xB;
 import dev.chrisbanes.insetter.Insetter;
 import pro.sketchware.dialogs.ProgressDialog;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public abstract class BaseAppCompatActivity extends AppCompatActivity {
 

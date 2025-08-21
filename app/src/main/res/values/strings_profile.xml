@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Perfil</string>
+    <string name="profile_edit">Editar perfil</string>
+    <string name="profile_logout">Sair</string>
+    <string name="profile_save">Salvar</string>
+    <string name="profile_name">Nome</string>
+    <string name="profile_username">Username</string>
+    <string name="profile_email">E-mail</string>
+    <string name="profile_bio">Bio</string>
+    <string name="profile_site">Site</string>
+    <string name="profile_github">GitHub</string>
+    <string name="profile_linkedin">LinkedIn</string>
+    <string name="auth_username_taken">Este nome de usuário já está em uso</string>
+    <string name="profile_logout_done">Sessão encerrada</string>
+</resources>
+
+

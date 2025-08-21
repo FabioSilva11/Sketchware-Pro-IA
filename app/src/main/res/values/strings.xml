@@ -2240,7 +2240,7 @@ Please try again later"</string>
     <string name="link_ideas_url">https://t.me/+8rUUdcvjZxk0YTIx</string>
     <string name="link_telegram_invite">https://t.me/+8rUUdcvjZxk0YTIx</string>
     <string name="link_about_team">https://sketchware-pro.github.io/Sketchware-Pro/about.json</string>
-    <string name="link_github_commits_url"><![CDATA[https://api.github.com/repos/FabioSilva11/Sketchware-Pro-IA/commits?per_page=%s&page=%s]]></string>
+    <string name="link_github_commits_url" formatted="false"><![CDATA[https://api.github.com/repos/FabioSilva11/Sketchware-Pro-IA/commits?per_page=%s&page=%s]]></string>
     <string name="github_api_error_message">Something went wrong. Please wait and try again.</string>
     <string name="github_api_date_unavailable">Date unavailable</string>
     <string name="link_github_url">https://github.com/FabioSilva11/Sketchware-Pro-IA</string>
@@ -2316,6 +2316,13 @@ Please try again later"</string>
     <string name="auth_register_header_subtitle">Preencha os dados para se cadastrar</string>
     <string name="auth_create_new_account">CRIAR NOVA CONTA</string>
     <string name="auth_already_have_account">JÁ TENHO UMA CONTA</string>
+    <string name="auth_name">Nome</string>
+    <string name="auth_full_name">Nome completo</string>
+    <string name="auth_username">Username</string>
+    <string name="auth_bio">Bio</string>
+    <string name="auth_site">Site</string>
+    <string name="auth_profile_photo">Foto de perfil</string>
+    <string name="auth_optional_note">Bio, site, GitHub e LinkedIn são opcionais.</string>
 
     <!-- Loja -->
     <string name="loja_title">Loja</string>

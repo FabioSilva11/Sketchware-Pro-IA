@@ -32,6 +32,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -53,6 +54,8 @@ import mod.jbk.util.LogUtil;
 import mod.tyron.backup.SingleCopyTask;
 import pro.sketchware.R;
 import pro.sketchware.activities.about.AboutActivity;
+import pro.sketchware.activities.auth.LoginActivity;
+import pro.sketchware.activities.profile.ProfileActivity;
 import pro.sketchware.activities.main.adapters.MainPagerAdapter;
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
 // Removed Store feature
@@ -62,7 +65,9 @@ import pro.sketchware.utility.DataResetter;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.UI;
+import pro.sketchware.analytics.SketchwareAnalytics;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.appcompat.widget.SearchView;
 
 public class MainActivity extends BasePermissionAppCompatActivity {
     private static final String PROJECTS_FRAGMENT_TAG = "projects_fragment";
@@ -79,7 +84,6 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             binding.drawerLayout.closeDrawers();
         }
     };
-    private ProjectsFragment projectsFragment;
     // Removed Store fragment instance
     private Fragment activeFragment;
     @IdRes
@@ -230,7 +234,8 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     @Override
                     public void onCopyPostExecute(String path, boolean wasSuccessful, String reason) {
                         if (wasSuccessful) {
-                            BackupRestoreManager manager = new BackupRestoreManager(MainActivity.this, projectsFragment);
+                            ProjectsFragment fragment = (ProjectsFragment) pagerAdapter.getFragment(0);
+                            BackupRestoreManager manager = new BackupRestoreManager(MainActivity.this, fragment);
 
                             if (BackupFactory.zipContainsFile(path, "local_libs")) {
                                 new MaterialAlertDialogBuilder(MainActivity.this)
@@ -287,12 +292,37 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         } else if (currentNavItemId == R.id.item_templates) {
             binding.viewPager.setCurrentItem(1);
         }
+
+        // Verificar login ao clicar no ícone de perfil
+        binding.profileIcon.setOnClickListener(v -> {
+            try {
+                com.google.firebase.FirebaseApp.initializeApp(this);
+            } catch (Throwable ignored) {}
+
+            java.util.List<com.google.firebase.FirebaseApp> apps = com.google.firebase.FirebaseApp.getApps(this);
+            if (apps == null || apps.isEmpty()) {
+                // Sem Firebase configurado, apenas abrir tela de login
+                startActivity(new Intent(this, LoginActivity.class));
+                return;
+            }
+
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+            if (auth.getCurrentUser() != null) {
+                // Registrar acesso ao perfil
+                SketchwareAnalytics.getInstance(this).logScreenView("ProfileActivity");
+                startActivity(new Intent(this, ProfileActivity.class));
+            } else {
+                // Registrar tentativa de login
+                SketchwareAnalytics.getInstance(this).logScreenView("LoginActivity");
+                startActivity(new Intent(this, LoginActivity.class));
+            }
+        });
+
+        // Configurar busca
+        setupSearch();
     }
 
     private void setupTabs() {
-        // Inicializar o fragmento de projetos
-        projectsFragment = new ProjectsFragment();
-        
         // Configurar o ViewPager2
         pagerAdapter = new MainPagerAdapter(this);
         binding.viewPager.setAdapter(pagerAdapter);
@@ -317,9 +347,13 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                 switch (position) {
                     case 0:
                         currentNavItemId = R.id.item_projects;
+                        // Registrar visualização da aba de projetos
+                        SketchwareAnalytics.getInstance(MainActivity.this).logScreenView("ProjectsTab");
                         break;
                     case 1:
                         currentNavItemId = R.id.item_templates;
+                        // Registrar visualização da aba de templates
+                        SketchwareAnalytics.getInstance(MainActivity.this).logScreenView("TemplatesTab");
                         break;
                 }
             }
@@ -327,8 +361,36 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     }
 
     private void refreshProjectsList() {
-        if (projectsFragment != null) {
-            projectsFragment.refreshProjectsList();
+        ProjectsFragment fragment = (ProjectsFragment) pagerAdapter.getFragment(0);
+        if (fragment != null) {
+            fragment.refreshProjectsList();
+        }
+    }
+
+    private void setupSearch() {
+        SearchView searchView = binding.searchView;
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                performSearch(newText);
+                return true;
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        // Buscar apenas em projetos
+        if (binding.viewPager.getCurrentItem() == 0) {
+            ProjectsFragment fragment = (ProjectsFragment) pagerAdapter.getFragment(0);
+            if (fragment != null) {
+                fragment.performSearch(query);
+            }
         }
     }
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="store_title">Loja</string>
+    <string name="store_empty">Nenhum app publicado ainda</string>
+    <string name="store_error_load">Erro ao carregar apps</string>
+    <string name="store_details">Detalhes do app</string>
+    <string name="store_download">Baixar</string>
+    <string name="store_likes">Curtidas</string>
+    <string name="store_screenshots">Screenshots</string>
+    <string name="store_description">Descrição</string>
+    <string name="store_publisher">Publicador</string>
+    <string name="store_publish_app">Publicar app</string>
+    <string name="store_edit_publication">Editar publicação</string>
+    <string name="store_app_name">Nome do App</string>
+    <string name="store_icon_url">URL do ícone</string>
+    <string name="store_short_desc">Descrição curta</string>
+    <string name="store_long_desc">Descrição longa</string>
+    <string name="store_screenshots_urls">URLs das screenshots (uma por linha)</string>
+    <string name="store_download_url">URL de download (APK)</string>
+    <string name="store_save">Salvar publicação</string>
+    <string name="store_saved">Publicação salva</string>
+    <string name="store_invalid_required">Preencha os campos obrigatórios</string>
+    <string name="store_comments">Comentários</string>
+    <string name="store_add_comment">Adicionar comentário</string>
+    <string name="store_edit">Editar</string>
+    <string name="store_cancel">Cancelar</string>
+    <string name="store_comment_hint">Digite seu comentário...</string>
+    <string name="store_comment_saved">Comentário salvo!</string>
+    <string name="store_comment_updated">Comentário atualizado!</string>
+    <string name="store_comment_limit">Você já tem um comentário. Edite o existente.</string>
+    <string name="store_app_evaluation">Avaliação do app</string>
+    <string name="store_give_opinion">Dê sua opinião</string>
+    <string name="store_write_review">Escreva uma resenha</string>
+    <string name="store_ratings_reviews">Notas e avaliações</string>
+    <string name="store_ratings_verified">As notas e avaliações são verificadas e enviadas por usuários com o mesmo tipo de dispositivo que você</string>
+    <string name="store_rating_saved">Avaliação salva!</string>
+    <string name="store_rating_updated">Avaliação atualizada!</string>
+    <string name="store_rating_limit">Você já avaliou este app. Edite sua avaliação.</string>
+</resources>
+
+

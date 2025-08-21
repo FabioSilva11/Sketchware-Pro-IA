@@ -135,6 +135,7 @@ import pro.sketchware.utility.FilePathUtil;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.SvgUtils;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 @SuppressLint({"ClickableViewAccessibility", "RtlHardcoded", "SetTextI18n", "DefaultLocale"})
 public class LogicEditorActivity extends BaseAppCompatActivity implements View.OnClickListener, Vs, View.OnTouchListener, MoreblockImporterDialog.CallBack {
@@ -2089,6 +2090,11 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
         setContentView(R.layout.logic_editor);
         if (!super.isStoragePermissionGranted()) {
             finish();
+        }
+        
+        // Registrar abertura do editor de lógica
+        if (B != null) {
+            SketchwareAnalytics.getInstance(this).logLogicEditorUsed(B);
         }
         Parcelable parcelable;
         if (savedInstanceState == null) {

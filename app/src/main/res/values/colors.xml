@@ -63,6 +63,7 @@
     <color name="colorBottomBarSW">#ff008dcd</color>
     <color name="color_text_onSurface">#1A1C1E</color>
     <color name="color_text_onSurfaceVariant">#41474D</color>
+    <color name="error">#FF5252</color>
 
     <!--  input layout  -->
     <color name="inputLayoutBackgroundColor">#BFFAFAFA</color>
