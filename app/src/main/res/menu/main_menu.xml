@@ -6,7 +6,7 @@
         android:title="Projects" />
 
     <item
-        android:id="@+id/item_templates"
+        android:id="@+id/item_loja"
         android:icon="@drawable/ic_mtrl_code"
         android:title="Loja" />
 

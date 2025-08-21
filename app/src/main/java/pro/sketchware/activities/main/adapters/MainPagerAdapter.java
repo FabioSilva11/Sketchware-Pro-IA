@@ -29,6 +29,6 @@ public class MainPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // Projects e Templates
+        return 2; // Projects e Loja
     }
 }

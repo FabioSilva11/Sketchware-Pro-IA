@@ -284,7 +284,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         // Navegar para a aba correta
         if (currentNavItemId == R.id.item_projects) {
             binding.viewPager.setCurrentItem(0);
-        } else if (currentNavItemId == R.id.item_templates) {
+        } else if (currentNavItemId == R.id.item_loja) {
             binding.viewPager.setCurrentItem(1);
         }
     }
@@ -319,7 +319,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                         currentNavItemId = R.id.item_projects;
                         break;
                     case 1:
-                        currentNavItemId = R.id.item_templates;
+                        currentNavItemId = R.id.item_loja;
                         break;
                 }
             }
