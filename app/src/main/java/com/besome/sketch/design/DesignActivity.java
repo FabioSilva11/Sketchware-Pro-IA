@@ -126,6 +126,7 @@ import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.ThemeUtils;
 import pro.sketchware.utility.apk.ApkSignatures;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public class DesignActivity extends BaseAppCompatActivity implements View.OnClickListener {
     public static String sc_id;
@@ -440,6 +441,9 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
         if (!isStoragePermissionGranted()) {
             finish();
         }
+        
+        // Registrar abertura do editor de design
+        SketchwareAnalytics.getInstance(this).logDesignEditorUsed(sc_id);
 
         if (savedInstanceState == null) {
             sc_id = getIntent().getStringExtra("sc_id");
@@ -472,6 +476,9 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 return;
             }
 
+            // Registrar início da compilação
+            SketchwareAnalytics.getInstance(this).logProjectBuilt(sc_id, "debug", 0, true);
+            
             BuildTask buildTask = new BuildTask(this);
             currentBuildTask = buildTask;
             buildTask.execute();
@@ -624,6 +631,8 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
         } else if (itemId == R.id.design_option_menu_title_save_project) {
             saveProject();
         } else if (itemId == R.id.design_option_menu_ai_generate_layout) {
+            // Registrar uso de funcionalidade de IA
+            SketchwareAnalytics.getInstance(this).logAiFeatureUsed("generate_layout", "groq");
             launchAiGenerateLayout();
         }
 

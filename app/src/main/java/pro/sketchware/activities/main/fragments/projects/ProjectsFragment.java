@@ -40,6 +40,7 @@ import java.util.stream.IntStream;
 import a.a.a.DA;
 import a.a.a.DB;
 import a.a.a.lC;
+import a.a.a.yB;
 import dev.chrisbanes.insetter.Insetter;
 import mod.hey.studios.project.ProjectTracker;
 import mod.hey.studios.project.backup.BackupRestoreManager;
@@ -48,6 +49,7 @@ import pro.sketchware.activities.main.activities.MainActivity;
 import pro.sketchware.databinding.MyprojectsBinding;
 import pro.sketchware.databinding.SortProjectDialogBinding;
 import pro.sketchware.utility.UI;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public class ProjectsFragment extends DA {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -77,6 +79,13 @@ public class ProjectsFragment extends DA {
     }
 
     public void toDesignActivity(String sc_id) {
+        // Registrar abertura de projeto no analytics
+        HashMap<String, Object> projectInfo = lC.b(sc_id);
+        if (projectInfo != null) {
+            String projectName = yB.c(projectInfo, "my_ws_name");
+            SketchwareAnalytics.getInstance(requireContext()).logProjectOpened(sc_id, projectName);
+        }
+        
         Intent intent = new Intent(requireContext(), DesignActivity.class);
         ProjectTracker.setScId(sc_id);
         intent.putExtra("sc_id", sc_id);
@@ -106,12 +115,16 @@ public class ProjectsFragment extends DA {
     }
 
     public void toProjectSettingsActivity() {
+        // Registrar criação de novo projeto
+        SketchwareAnalytics.getInstance(requireContext()).logScreenView("ProjectSettingsActivity");
         Intent intent = new Intent(getActivity(), MyProjectSettingActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         openProjectSettings.launch(intent);
     }
 
     public void restoreProject() {
+        // Registrar restauração de backup
+        SketchwareAnalytics.getInstance(requireContext()).logScreenView("BackupRestore");
         new BackupRestoreManager(getActivity(), this).restore();
     }
 
@@ -328,6 +341,12 @@ public class ProjectsFragment extends DA {
         });
         dialog.setNegativeButton("Cancel", null);
         dialog.show();
+    }
+
+    public void performSearch(String query) {
+        if (projectsAdapter != null) {
+            projectsAdapter.filterData(query);
+        }
     }
 
     private static class ProjectDiffCallback extends DiffUtil.Callback {

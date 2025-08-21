@@ -66,6 +66,7 @@ import pro.sketchware.lib.validator.AppNameValidator;
 import pro.sketchware.lib.validator.PackageNameValidator;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public class MyProjectSettingActivity extends BaseAppCompatActivity implements View.OnClickListener {
 
@@ -751,6 +752,14 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
         @Override
         public void a() {
             h();
+            
+            // Registrar criação de projeto no analytics
+            if (!updatingExistingProject) {
+                String projectName = Helper.getText(binding.etProjectName);
+                String projectType = "android_app";
+                SketchwareAnalytics.getInstance(getApplicationContext()).logProjectCreated(sc_id, projectName, projectType);
+            }
+            
             Intent intent = getIntent();
             intent.putExtra("sc_id", sc_id);
             intent.putExtra("is_new", !updatingExistingProject);

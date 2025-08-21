@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import pro.sketchware.R;
 import pro.sketchware.activities.main.activities.MainActivity;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public class SplashActivity extends Activity {
 
@@ -40,6 +41,9 @@ public class SplashActivity extends Activity {
         subtitle.startAnimation(fadeIn);
 
         new Handler().postDelayed(() -> {
+            // Registrar abertura do app no analytics
+            SketchwareAnalytics.getInstance(this).logAppOpened();
+            
             startActivity(new Intent(SplashActivity.this, MainActivity.class));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();

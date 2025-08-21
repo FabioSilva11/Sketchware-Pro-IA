@@ -13,6 +13,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import mod.hilal.saif.activities.tools.ConfigActivity;
 import mod.hey.studios.util.Helper;
 import pro.sketchware.R;
+import pro.sketchware.analytics.SketchwareAnalytics;
 
 public class ManageGroqActivity extends BaseAppCompatActivity {
 
@@ -49,8 +50,20 @@ public class ManageGroqActivity extends BaseAppCompatActivity {
         save.setText(Helper.getResString(R.string.common_word_save));
         save.setOnClickListener(v -> {
             var ds = ConfigActivity.DataStore.getInstance();
-            ds.putString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, Helper.getText(apiKeyInput));
-            ds.putString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_MODEL, Helper.getText(modelInput));
+            String apiKey = Helper.getText(apiKeyInput);
+            String model = Helper.getText(modelInput);
+            
+            ds.putString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, apiKey);
+            ds.putString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_MODEL, model);
+            
+            // Registrar configuração de IA
+            if (!apiKey.isEmpty()) {
+                SketchwareAnalytics.getInstance(this).logSettingsChanged("ai_groq_enabled", "true");
+                SketchwareAnalytics.getInstance(this).logSettingsChanged("ai_groq_model", model);
+            } else {
+                SketchwareAnalytics.getInstance(this).logSettingsChanged("ai_groq_enabled", "false");
+            }
+            
             finish();
         });
     }

@@ -43,11 +43,15 @@
                     android:layout_weight="1"
                     tools:menu="@menu/projects_fragment_menu">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <androidx.appcompat.widget.SearchView
+                        android:id="@+id/searchView"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Search for projects..."
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:background="@android:color/transparent"
+                        android:queryHint="Search for projects..."
+                        app:iconifiedByDefault="false"
+                        app:queryBackground="@null"
+                        app:searchIcon="@null" />
                 </com.google.android.material.appbar.MaterialToolbar>
 
                 <ImageView

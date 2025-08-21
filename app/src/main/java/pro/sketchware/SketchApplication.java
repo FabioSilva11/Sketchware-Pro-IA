@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.besome.sketch.tools.CollectErrorActivity;
 
+
 import pro.sketchware.utility.theme.ThemeManager;
 
 public class SketchApplication extends Application {
@@ -32,6 +33,8 @@ public class SketchApplication extends Application {
             }
         });
         super.onCreate();
+        // Firebase configuration is now handled via google-services.json from GitHub Actions
+        // No hardcoded configuration for security reasons
         ThemeManager.applyTheme(this, ThemeManager.getCurrentTheme(this));
     }
 }

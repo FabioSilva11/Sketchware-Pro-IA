@@ -8,6 +8,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import pro.sketchware.databinding.ActivityLoginBinding;
 
@@ -26,7 +30,9 @@ public class LoginActivity extends BaseAppCompatActivity {
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         binding.btnLogin.setOnClickListener(v -> attemptLogin());
-        binding.btnGoToRegister.setOnClickListener(v -> finish());
+        binding.btnGoToRegister.setOnClickListener(v ->
+                startActivity(new android.content.Intent(this, RegisterActivity.class))
+        );
     }
 
     private void attemptLogin() {
@@ -56,8 +62,29 @@ public class LoginActivity extends BaseAppCompatActivity {
 
         if (!valid) return;
 
-        Toast.makeText(this, getTranslatedString(pro.sketchware.R.string.auth_login_success), Toast.LENGTH_SHORT).show();
-        finish();
+        try {
+            com.google.firebase.FirebaseApp.initializeApp(this);
+        } catch (Throwable ignored) {}
+        java.util.List<com.google.firebase.FirebaseApp> apps = com.google.firebase.FirebaseApp.getApps(this);
+        if (apps == null || apps.isEmpty()) {
+            Toast.makeText(this, "Firebase não está configurado neste app.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> {
+                    FirebaseUser user = result.getUser();
+                    if (user != null) {
+                        // Atualiza último login no Realtime Database
+                        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("usuarios").child(user.getUid());
+                        java.util.HashMap<String, Object> updates = new java.util.HashMap<>();
+                        updates.put("ultimo_login", java.time.Instant.now().toString());
+                        ref.updateChildren(updates);
+                    }
+                    Toast.makeText(this, getTranslatedString(pro.sketchware.R.string.auth_login_success), Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show());
     }
 }
 

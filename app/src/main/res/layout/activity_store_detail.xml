@@ -1,0 +1,598 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:title="@string/store_details" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:dividerColor="?attr/colorSurfaceContainerHighest" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+
+
+        <!-- Content -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- App Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/icon"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:src="@drawable/sketch_app_icon"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.SmallComponent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp">
+
+                        <TextView
+                            android:id="@+id/name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/shortDesc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="8dp">
+
+                            <TextView
+                                android:id="@+id/downloads"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:text="0 downloads" />
+
+                            <TextView
+                                android:id="@+id/likes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:text="0 likes" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Action Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDownload"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/store_download"
+                        app:icon="@drawable/ic_download" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLike"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="0"
+                        app:icon="@drawable/ic_favorite_border" />
+                </LinearLayout>
+
+                <!-- Description -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardUseCompatPadding="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/store_description"
+                            android:textStyle="bold"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/longDesc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Category -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardUseCompatPadding="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Categoria"
+                            android:textStyle="bold"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/category"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Produtividade"
+                            android:textColor="?attr/colorPrimary"
+                            android:background="@drawable/category_badge"
+                            android:padding="8dp"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Screenshots -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/store_screenshots"
+                    android:textStyle="bold"
+                    android:textSize="16sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/screenshots"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:nestedScrollingEnabled="false" />
+
+
+
+                <!-- Rating and Comments Section -->
+                <LinearLayout
+                    android:id="@+id/ratingSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="20dp">
+
+                    <!-- Rating Header -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/store_app_evaluation"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/store_give_opinion"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <!-- Rating Stars -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/star1"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/ic_star_border"
+                            android:contentDescription="1 star"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+
+                        <ImageView
+                            android:id="@+id/star2"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/ic_star_border"
+                            android:contentDescription="2 stars"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+
+                        <ImageView
+                            android:id="@+id/star3"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/ic_star_border"
+                            android:contentDescription="3 stars"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+
+                        <ImageView
+                            android:id="@+id/star4"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/ic_star_border"
+                            android:contentDescription="4 stars"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+
+                        <ImageView
+                            android:id="@+id/star5"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_star_border"
+                            android:contentDescription="5 stars"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+                    </LinearLayout>
+
+                    <!-- Write Review Link -->
+                    <TextView
+                        android:id="@+id/btnWriteReview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/store_write_review"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="14sp"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="4dp" />
+
+                    <!-- Ratings Summary -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="20dp">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/store_ratings_reviews"
+                                android:textStyle="bold"
+                                android:textSize="16sp" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_arrow_forward"
+                                android:contentDescription="Ver todas"
+                                android:alpha="0.6" />
+                        </LinearLayout>
+
+                        <!-- Verification Note -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/store_ratings_verified"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <!-- Rating Stats -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:orientation="horizontal">
+
+                            <!-- Overall Rating -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/overallRating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="4.8"
+                                    android:textSize="48sp"
+                                    android:textStyle="bold" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_star"
+                                        android:contentDescription="Star" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_star"
+                                        android:contentDescription="Star" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_star"
+                                        android:contentDescription="Star" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_star"
+                                        android:contentDescription="Star" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_star_half"
+                                        android:contentDescription="Half Star" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/totalRatings"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:text="4.042.969"
+                                    android:textSize="14sp"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <!-- Rating Distribution -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="24dp"
+                                android:orientation="vertical">
+
+                                <!-- 5 stars -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="4dp">
+
+                                    <TextView
+                                        android:layout_width="20dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="5"
+                                        android:textSize="12sp" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@drawable/rating_bar_bg" />
+
+                                    <View
+                                        android:id="@+id/bar5"
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="0.8"
+                                        android:background="@drawable/rating_bar_filled" />
+                                </LinearLayout>
+
+                                <!-- 4 stars -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="4dp">
+
+                                    <TextView
+                                        android:layout_width="20dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="4"
+                                        android:textSize="12sp" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@drawable/rating_bar_bg" />
+
+                                    <View
+                                        android:id="@+id/bar4"
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="0.15"
+                                        android:background="@drawable/rating_bar_filled" />
+                                </LinearLayout>
+
+                                <!-- 3 stars -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="4dp">
+
+                                    <TextView
+                                        android:layout_width="20dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="3"
+                                        android:textSize="12sp" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@drawable/rating_bar_bg" />
+
+                                    <View
+                                        android:id="@+id/bar3"
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="0.03"
+                                        android:background="@drawable/rating_bar_filled" />
+                                </LinearLayout>
+
+                                <!-- 2 stars -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="4dp">
+
+                                    <TextView
+                                        android:layout_width="20dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="2"
+                                        android:textSize="12sp" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@drawable/rating_bar_bg" />
+
+                                    <View
+                                        android:id="@+id/bar2"
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="0.01"
+                                        android:background="@drawable/rating_bar_filled" />
+                                </LinearLayout>
+
+                                <!-- 1 star -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:layout_width="20dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="1"
+                                        android:textSize="12sp" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@drawable/rating_bar_bg" />
+
+                                    <View
+                                        android:id="@+id/bar1"
+                                        android:layout_width="0dp"
+                                        android:layout_height="8dp"
+                                        android:layout_weight="0.01"
+                                        android:background="@drawable/rating_bar_filled" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Comments Section -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/store_comments"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <!-- Add Comment Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddComment"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/store_add_comment"
+                        app:icon="@drawable/ic_comment" />
+
+                    <!-- Comments List -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/comments"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+
