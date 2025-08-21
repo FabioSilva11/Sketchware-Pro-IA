@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 import a.a.a.yB;
 import a.a.a.wq;
 import pro.sketchware.R;
-import pro.sketchware.activities.main.adapters.TemplatesAdapter;
+import pro.sketchware.activities.main.adapters.LojaTemplatesAdapter;
 import pro.sketchware.databinding.FragmentTemplatesBinding;
 import android.content.Intent;
 import android.os.Environment;
@@ -34,7 +34,7 @@ import mod.hey.studios.project.backup.BackupRestoreManager;
 
 public class TemplatesFragment extends Fragment {
     private FragmentTemplatesBinding binding;
-    private TemplatesAdapter templatesAdapter;
+    private LojaTemplatesAdapter templatesAdapter;
     private final List<HashMap<String, Object>> templatesList = new ArrayList<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -57,7 +57,7 @@ public class TemplatesFragment extends Fragment {
         showLoadingState();
         
         // Configurar o RecyclerView
-        templatesAdapter = new TemplatesAdapter(this, templatesList);
+        templatesAdapter = new LojaTemplatesAdapter(this, templatesList);
         binding.templates.setAdapter(templatesAdapter);
         binding.templates.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.templates.setHasFixedSize(true);

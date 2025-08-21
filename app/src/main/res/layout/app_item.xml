@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical">
+	<LinearLayout
+		android:id="@+id/linear1"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="8dp"
+		android:orientation="horizontal">
+		<ImageView
+			android:id="@+id/app_icon"
+			android:focusable="false"
+			android:layout_width="60dp"
+			android:layout_height="60dp"
+			android:src="@drawable/ic_mtrl_store"
+			android:scaleType="centerCrop" />
+
+		<LinearLayout
+			android:id="@+id/linear2"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="8dp"
+			android:layout_weight="1"
+			android:gravity="center_vertical"
+			android:orientation="vertical"
+			android:padding="3dp">
+
+			<TextView
+				android:id="@+id/app_name"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:focusable="false"
+				android:padding="3dp"
+				android:textColor="#000000"
+				android:textSize="14sp"
+				tools:text="ClickBus - Passagens de BUS onibus" />
+
+			<TextView
+				android:id="@+id/app_categoria"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:focusable="false"
+				android:paddingLeft="3dp"
+				android:textColor="#000000"
+				android:textSize="12sp"
+				tools:text="Finanças" />
+
+			<LinearLayout
+				android:id="@+id/linear3"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_vertical"
+				android:orientation="horizontal">
+
+				<TextView
+					android:id="@+id/app_rating"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:focusable="false"
+					android:padding="3dp"
+					android:textColor="#000000"
+					android:textSize="12sp"
+					tools:text="4.5" />
+
+				<ImageView
+					android:id="@+id/imageview3"
+					android:layout_width="15dp"
+					android:layout_height="15dp"
+					android:focusable="false"
+					android:scaleType="fitCenter"
+					android:src="@drawable/icon_star_rate_round"
+					android:tint="#03A9F4" />
+			</LinearLayout>
+		</LinearLayout>
+		<TextView
+			android:id="@+id/app_autor"
+			android:focusable="false"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:padding="3dp"
+			android:textSize="12sp"
+			android:textColor="#000000"
+			tools:text="Fábio Silva" />
+	</LinearLayout>
+</LinearLayout>
+
+

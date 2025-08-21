@@ -18,14 +18,14 @@ import java.util.List;
 import a.a.a.yB;
 import pro.sketchware.R;
 import pro.sketchware.activities.main.fragments.templates.TemplatesFragment;
-import pro.sketchware.activities.main.adapters.TemplatesItemBinding;
+import pro.sketchware.activities.main.adapters.LojaItemBinding;
 
-public class TemplatesAdapter extends RecyclerView.Adapter<TemplatesAdapter.TemplateViewHolder> {
+public class LojaTemplatesAdapter extends RecyclerView.Adapter<LojaTemplatesAdapter.TemplateViewHolder> {
     private final TemplatesFragment templatesFragment;
     private final List<HashMap<String, Object>> shownTemplates = new ArrayList<>();
     private final List<HashMap<String, Object>> allTemplates;
 
-    public TemplatesAdapter(TemplatesFragment templatesFragment, List<HashMap<String, Object>> allTemplates) {
+    public LojaTemplatesAdapter(TemplatesFragment templatesFragment, List<HashMap<String, Object>> allTemplates) {
         this.templatesFragment = templatesFragment;
         this.allTemplates = new ArrayList<>();
         if (allTemplates != null) {
@@ -118,14 +118,14 @@ public class TemplatesAdapter extends RecyclerView.Adapter<TemplatesAdapter.Temp
     @NonNull
     @Override
     public TemplateViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        TemplatesItemBinding binding = TemplatesItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        LojaItemBinding binding = LojaItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new TemplateViewHolder(binding);
     }
 
     static class TemplateViewHolder extends RecyclerView.ViewHolder {
-        final TemplatesItemBinding binding;
+        final LojaItemBinding binding;
 
-        TemplateViewHolder(TemplatesItemBinding binding) {
+        TemplateViewHolder(LojaItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
