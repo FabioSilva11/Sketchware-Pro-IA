@@ -7,8 +7,7 @@ import android.os.Process;
 import android.util.Log;
 
 import com.besome.sketch.tools.CollectErrorActivity;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+
 
 import pro.sketchware.utility.theme.ThemeManager;
 
@@ -34,19 +33,8 @@ public class SketchApplication extends Application {
             }
         });
         super.onCreate();
-        try {
-            if (FirebaseApp.getApps(this) == null || FirebaseApp.getApps(this).isEmpty()) {
-                FirebaseOptions options = new FirebaseOptions.Builder()
-                        .setApplicationId("1:655995167352:android:29a0031e1c75901c30838d")
-                        .setApiKey("AIzaSyBAljf_5JAAJfPHMQYtgCqqxYOGo2N4PI0")
-                        .setProjectId("sketchware-pro-ia")
-                        .setDatabaseUrl("https://sketchware-pro-ia-default-rtdb.firebaseio.com")
-                        .setStorageBucket("sketchware-pro-ia.firebasestorage.app")
-                        .setGcmSenderId("655995167352")
-                        .build();
-                FirebaseApp.initializeApp(this, options);
-            }
-        } catch (Throwable ignored) {}
+        // Firebase configuration is now handled via google-services.json from GitHub Actions
+        // No hardcoded configuration for security reasons
         ThemeManager.applyTheme(this, ThemeManager.getCurrentTheme(this));
     }
 }
