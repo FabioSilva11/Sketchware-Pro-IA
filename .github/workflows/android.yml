@@ -15,6 +15,15 @@ on:
     branches-ignore:
       - 'wip/**'
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
 
 jobs:
   notifyTelegram:
@@ -46,6 +55,7 @@ jobs:
     runs-on: ${{ vars.IS_USING_HOSTED_RUNNERS == 'true' && 'self-hosted' || 'ubuntu-latest' }}
     outputs:
       short_sha: ${{ steps.set_sha.outputs.short_sha }}
+      build_type: ${{ steps.set_build_type.outputs.build_type }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,10 +78,18 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build Debug APK
+      - name: Set build type variables
+        id: set_build_type
+        run: |
+          build_type=${{ inputs.build_type || 'debug' }}
+          capitalized_build_type=$(echo $build_type | awk '{print toupper(substr($0,1,1))substr($0,2)}')
+          echo "build_type=$build_type" >> $GITHUB_OUTPUT
+          echo "capitalized_build_type=$capitalized_build_type" >> $GITHUB_OUTPUT
+
+      - name: Build APK
         env:
           SKETCHUB_API_KEY: ${{ secrets.SKETCHUB_API_KEY }}
-        run: gradle assembleDebug
+        run: gradle assemble${{ steps.set_build_type.outputs.capitalized_build_type }}
 
       - name: Set short SHA
         id: set_sha
@@ -79,14 +97,14 @@ jobs:
 
       - name: Rename APK with commit hash
         run: |
-          mv app/build/outputs/apk/debug/app-debug.apk \
-             app/build/outputs/apk/debug/app-debug-${{ steps.set_sha.outputs.short_sha }}.apk
+          mv app/build/outputs/apk/${{ steps.set_build_type.outputs.build_type }}/app-${{ steps.set_build_type.outputs.build_type }}.apk \
+             app/build/outputs/apk/${{ steps.set_build_type.outputs.build_type }}/app-${{ steps.set_build_type.outputs.build_type }}-${{ steps.set_sha.outputs.short_sha }}.apk
 
-      - name: Upload Debug APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug-${{ steps.set_sha.outputs.short_sha }}
-          path: app/build/outputs/apk/debug/app-debug-${{ steps.set_sha.outputs.short_sha }}.apk
+          name: apk-${{ steps.set_build_type.outputs.build_type }}-${{ steps.set_sha.outputs.short_sha }}
+          path: app/build/outputs/apk/${{ steps.set_build_type.outputs.build_type }}/app-${{ steps.set_build_type.outputs.build_type }}-${{ steps.set_sha.outputs.short_sha }}.apk
 
   aggregateAndSend:
     name: Send APKs to Telegram
@@ -98,7 +116,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: apk-debug-${{ needs.build.outputs.short_sha }}
+          name: apk-${{ needs.build.outputs.build_type }}-${{ needs.build.outputs.short_sha }}
           path: ./downloaded-artifact
 
       - name: Set up Python 3
@@ -129,7 +147,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
-          APK_PATH: ./downloaded-artifact/app-debug-${{ needs.build.outputs.short_sha }}.apk
+          APK_PATH: ./downloaded-artifact/app-${{ needs.build.outputs.build_type }}-${{ needs.build.outputs.short_sha }}.apk
         run: |
           python ./.github/workflows/deploy_artifacts.py
         continue-on-error: true
