@@ -51,13 +51,7 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
         String categoria = app.getDescricaoCurta() != null ? app.getDescricaoCurta() : "Categoria não disponível";
         holder.binding.appCategoria.setText(categoria);
         
-        // Configurar rating (usar estatísticas se disponível)
-        if (app.getEstatisticas() != null) {
-            String rating = String.format("%.1f", app.getEstatisticas().getRating());
-            holder.binding.appRating.setText(rating);
-        } else {
-            holder.binding.appRating.setText("0.0");
-        }
+
         
         // Configurar autor (usar publisher se disponível)
         if (app.getPublisher() != null && app.getPublisher().getUsuarioId() != null) {

@@ -13,7 +13,6 @@ public class AppItem {
     private Publisher publisher;
     private Estatisticas estatisticas;
     private Map<String, Boolean> likes;
-    private Map<String, Avaliacao> avaliacoes;
     private Map<String, Comentario> comentarios;
 
     // Construtor padrão para Firebase
@@ -50,8 +49,7 @@ public class AppItem {
     public Map<String, Boolean> getLikes() { return likes; }
     public void setLikes(Map<String, Boolean> likes) { this.likes = likes; }
 
-    public Map<String, Avaliacao> getAvaliacoes() { return avaliacoes; }
-    public void setAvaliacoes(Map<String, Avaliacao> avaliacoes) { this.avaliacoes = avaliacoes; }
+
 
     public Map<String, Comentario> getComentarios() { return comentarios; }
     public void setComentarios(Map<String, Comentario> comentarios) { this.comentarios = comentarios; }
@@ -71,8 +69,6 @@ public class AppItem {
         private int comentarios;
         private int downloads;
         private int likes;
-        private double rating;
-        private int totalRatings;
 
         public Estatisticas() {}
 
@@ -84,27 +80,9 @@ public class AppItem {
 
         public int getLikes() { return likes; }
         public void setLikes(int likes) { this.likes = likes; }
-
-        public double getRating() { return rating; }
-        public void setRating(double rating) { this.rating = rating; }
-
-        public int getTotalRatings() { return totalRatings; }
-        public void setTotalRatings(int totalRatings) { this.totalRatings = totalRatings; }
     }
 
-    // Classe interna para Avaliacao
-    public static class Avaliacao {
-        private int rating;
-        private long timestamp;
 
-        public Avaliacao() {}
-
-        public int getRating() { return rating; }
-        public void setRating(int rating) { this.rating = rating; }
-
-        public long getTimestamp() { return timestamp; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    }
 
     // Classe interna para Comentario
     public static class Comentario {

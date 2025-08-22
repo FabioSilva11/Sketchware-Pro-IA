@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="?attr/colorSurface"
+        android:elevation="2dp"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+
+        <!-- Header: Foto + Nome + Ações -->
+        <LinearLayout
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="4dp">
+
+            <ImageView
+                android:id="@+id/user_profile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/sketch_app_icon"
+                android:scaleType="centerCrop"
+                android:background="?attr/colorSecondaryContainer"
+                                android:layout_marginEnd="8dp"
+                android:clipToOutline="true" />
+
+            <TextView
+                android:id="@+id/user_name"
+                style="?attr/textAppearanceTitleSmall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nome do Usuário"
+                android:textColor="?attr/colorOnSurface" />
+
+            <ImageView
+                android:id="@+id/more_options"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/more_than"
+                android:padding="4dp"/>
+        </LinearLayout>
+
+        <!-- Rating + Data -->
+        <LinearLayout
+            android:id="@+id/info_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <RatingBar
+                android:id="@+id/ratingbar1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:stepSize="1"
+                android:numStars="5"
+                android:layout_marginEnd="8dp"
+                style="?android:attr/ratingBarStyleSmall" />
+
+            <TextView
+                android:id="@+id/data_publish"
+                style="?attr/textAppearanceBodySmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12-04-2025"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <!-- Comentário -->
+        <TextView
+            android:id="@+id/comentario_description"
+            style="?attr/textAppearanceBodyMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Texto do comentário aqui..."
+            android:textColor="?attr/colorOnSurface" />
+
+
+</LinearLayout>

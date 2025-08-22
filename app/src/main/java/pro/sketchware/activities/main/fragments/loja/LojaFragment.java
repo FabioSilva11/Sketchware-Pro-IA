@@ -60,8 +60,20 @@ public class LojaFragment extends Fragment {
         lojaAdapter.setOnAppClickListener(new LojaAdapter.OnAppClickListener() {
             @Override
             public void onAppClick(AppItem app) {
-                // Mostrar detalhes do app (pode ser implementado depois)
-                Toast.makeText(requireContext(), "App: " + app.getNome(), Toast.LENGTH_SHORT).show();
+                // Navegar para a DetalhesActivity
+                Intent intent = new Intent(requireContext(), pro.sketchware.activities.main.activities.DetalhesActivity.class);
+                intent.putExtra("app_id", app.getAppId());
+                intent.putExtra("app_title", app.getNome());
+                intent.putExtra("app_description", app.getDescricaoLonga());
+                intent.putExtra("app_category", app.getDescricaoCurta());
+                intent.putExtra("app_icon_url", app.getIcone());
+                
+                // Adicionar downloads se disponível
+                if (app.getEstatisticas() != null) {
+                    intent.putExtra("app_downloads", app.getEstatisticas().getDownloads());
+                }
+                
+                startActivity(intent);
             }
 
             @Override
