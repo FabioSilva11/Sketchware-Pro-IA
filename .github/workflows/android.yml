@@ -68,10 +68,10 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build Release APK
+      - name: Build Debug APK
         env:
           SKETCHUB_API_KEY: ${{ secrets.SKETCHUB_API_KEY }}
-        run: gradle assembleRelease
+        run: gradle assembleDebug
 
       - name: Set short SHA
         id: set_sha
@@ -79,14 +79,14 @@ jobs:
 
       - name: Rename APK with commit hash
         run: |
-          mv app/build/outputs/apk/release/app-release.apk \
-             app/build/outputs/apk/release/app-release-${{ steps.set_sha.outputs.short_sha }}.apk
+          mv app/build/outputs/apk/debug/app-debug.apk \
+             app/build/outputs/apk/debug/app-debug-${{ steps.set_sha.outputs.short_sha }}.apk
 
-      - name: Upload Release APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-release-${{ steps.set_sha.outputs.short_sha }}
-          path: app/build/outputs/apk/release/app-release-${{ steps.set_sha.outputs.short_sha }}.apk
+          name: apk-debug-${{ steps.set_sha.outputs.short_sha }}
+          path: app/build/outputs/apk/debug/app-debug-${{ steps.set_sha.outputs.short_sha }}.apk
 
   aggregateAndSend:
     name: Send APKs to Telegram
@@ -98,7 +98,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: apk-release-${{ needs.build.outputs.short_sha }}
+          name: apk-debug-${{ needs.build.outputs.short_sha }}
           path: ./downloaded-artifact
 
       - name: Set up Python 3
@@ -129,7 +129,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
-          APK_PATH: ./downloaded-artifact/app-release-${{ needs.build.outputs.short_sha }}.apk
+          APK_PATH: ./downloaded-artifact/app-debug-${{ needs.build.outputs.short_sha }}.apk
         run: |
           python ./.github/workflows/deploy_artifacts.py
         continue-on-error: true
