@@ -81,6 +81,8 @@ android {
 }
 
 dependencies {
+    // Material Rating Bar para sistema de avaliações
+    implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"], exclude: "proguard-base-7.2.2.jar")
 
     implementation "androidx.appcompat:appcompat:1.7.1"

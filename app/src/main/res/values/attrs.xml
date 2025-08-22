@@ -78,4 +78,11 @@
     <attr name="colorVioletContainer" format="color" />
     <attr name="colorOnVioletContainer" format="color" />
     <attr name="harmonizeViolet" format="boolean" />
+
+    <!-- MaterialRatingBar attributes -->
+    <attr name="mrb_drawableEmpty" format="reference" />
+    <attr name="mrb_drawableHalfFilled" format="reference" />
+    <attr name="mrb_drawableFilled" format="reference" />
+    <attr name="mrb_progressTint" format="color" />
+    <attr name="mrb_secondaryProgressTint" format="color" />
 </resources>

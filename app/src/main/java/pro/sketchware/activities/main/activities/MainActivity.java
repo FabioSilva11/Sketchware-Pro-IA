@@ -163,6 +163,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         super.onCreate(savedInstanceState);
         enableEdgeToEdgeNoContrast();
 
+        // Verificar autenticação Firebase
+        checkFirebaseAuth();
+
         tryLoadingCustomizedAppStrings();
         binding = MainBinding.inflate(getLayoutInflater());
 
@@ -206,6 +209,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             public void onDrawerStateChanged(int newState) {
             }
         });
+
+        // Configurar listener do profile_icon
+        setupProfileIconListener();
 
         boolean hasStorageAccess = isStoragePermissionGranted();
         if (!hasStorageAccess) {
@@ -491,6 +497,45 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // Métodos para autenticação Firebase
+    private void checkFirebaseAuth() {
+        // Verificar se Firebase está inicializado
+        if (!isFirebaseInitialized(this)) {
+            return;
+        }
+        
+        // Verificar se usuário está logado
+        com.google.firebase.auth.FirebaseAuth mAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        com.google.firebase.auth.FirebaseUser currentUser = mAuth.getCurrentUser();
+        
+        // Se não está logado, não fazer nada aqui - o profile_icon será clicável para ir ao login
+        // Se estiver logado, o profile_icon será clicável para ir ao perfil
+    }
+    
+    private void setupProfileIconListener() {
+        binding.profileIcon.setOnClickListener(v -> {
+            // Verificar se Firebase está inicializado
+            if (!isFirebaseInitialized(this)) {
+                Toast.makeText(this, "Firebase não está disponível", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // Verificar se usuário está logado
+            com.google.firebase.auth.FirebaseAuth mAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
+            com.google.firebase.auth.FirebaseUser currentUser = mAuth.getCurrentUser();
+            
+            if (currentUser != null) {
+                // Usuário logado - ir para ProfileActivity
+                Intent intent = new Intent(this, pro.sketchware.activities.profile.ProfileActivity.class);
+                startActivity(intent);
+            } else {
+                // Usuário não logado - ir para LoginActivity
+                Intent intent = new Intent(this, pro.sketchware.activities.auth.LoginActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 }

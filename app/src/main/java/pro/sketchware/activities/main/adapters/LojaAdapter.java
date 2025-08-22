@@ -13,12 +13,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import pro.sketchware.activities.main.fragments.loja.AppItem;
+import pro.sketchware.activities.main.fragments.loja.UserInfoManager;
 import pro.sketchware.R;
 import pro.sketchware.databinding.ItensLojaBinding;
 
 public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder> {
     private final List<AppItem> apps;
     private OnAppClickListener listener;
+    private final UserInfoManager userInfoManager;
 
     public interface OnAppClickListener {
         void onAppClick(AppItem app);
@@ -27,6 +29,7 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
 
     public LojaAdapter(List<AppItem> apps) {
         this.apps = apps;
+        this.userInfoManager = UserInfoManager.getInstance();
     }
 
     public void setOnAppClickListener(OnAppClickListener listener) {
@@ -47,18 +50,11 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
         // Configurar nome do app
         holder.binding.appName.setText(app.getNome());
         
-        // Configurar categoria (usar descrição curta como categoria)
-        String categoria = app.getDescricaoCurta() != null ? app.getDescricaoCurta() : "Categoria não disponível";
-        holder.binding.appCategoria.setText(categoria);
+        // Configurar categoria usando o novo método
+        holder.binding.appCategoria.setText(app.getCategoryDisplay());
         
-
-        
-        // Configurar autor (usar publisher se disponível)
-        if (app.getPublisher() != null && app.getPublisher().getUsuarioId() != null) {
-            holder.binding.appAutor.setText(app.getPublisher().getUsuarioId());
-        } else {
-            holder.binding.appAutor.setText("Autor desconhecido");
-        }
+        // Configurar autor - tentar buscar nome real do usuário se disponível
+        setupDeveloperName(holder, app);
         
         // Configurar ícone se disponível
         if (app.getIcone() != null && app.getIcone().startsWith("data:image")) {
@@ -96,6 +92,35 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
                 listener.onDownloadClick(app);
             }
         });
+    }
+    
+    private void setupDeveloperName(LojaViewHolder holder, AppItem app) {
+        // Primeiro, mostrar o nome básico do desenvolvedor
+        holder.binding.appAutor.setText(app.getDeveloperName());
+        
+        // Se temos um publisher com userId, tentar buscar o nome real do usuário
+        if (app.getPublisher() != null && app.getPublisher().getUsuarioId() != null) {
+            String userId = app.getPublisher().getUsuarioId();
+            
+            // Verificar se não é um nome já formatado (contém espaços ou caracteres especiais)
+            if (!userId.contains(" ") && !userId.contains("Desenvolvedor")) {
+                userInfoManager.getUserName(userId, new UserInfoManager.UserInfoCallback() {
+                    @Override
+                    public void onUserInfoReceived(String userId, String userName) {
+                        // Atualizar o TextView na thread principal
+                        holder.binding.appAutor.post(() -> {
+                            holder.binding.appAutor.setText(userName);
+                        });
+                    }
+                    
+                    @Override
+                    public void onError(String userId, String error) {
+                        // Manter o nome atual em caso de erro
+                        // Não fazer nada, já está configurado
+                    }
+                });
+            }
+        }
     }
 
     @Override

@@ -3,7 +3,6 @@ package pro.sketchware.activities.main.adapters;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,6 +12,7 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import pro.sketchware.R;
+import pro.sketchware.databinding.ScreenshotCardItemBinding;
 
 public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.ScreenshotViewHolder> {
     
@@ -27,27 +27,22 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
     @NonNull
     @Override
     public ScreenshotViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ImageView imageView = new ImageView(context);
-        imageView.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setPadding(8, 0, 8, 0);
-        
-        return new ScreenshotViewHolder(imageView);
+        ScreenshotCardItemBinding binding = ScreenshotCardItemBinding.inflate(
+            LayoutInflater.from(parent.getContext()), parent, false
+        );
+        return new ScreenshotViewHolder(binding);
     }
     
     @Override
     public void onBindViewHolder(@NonNull ScreenshotViewHolder holder, int position) {
         String screenshotUrl = screenshots.get(position);
         
-        // Usar Glide para carregar a imagem
+        // Carregar imagem com Glide
         Glide.with(context)
                 .load(screenshotUrl)
                 .placeholder(R.drawable.sketch_app_icon)
                 .error(R.drawable.sketch_app_icon)
-                .into(holder.imageView);
+                .into(holder.binding.screenshotImage);
     }
     
     @Override
@@ -56,11 +51,11 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
     }
     
     static class ScreenshotViewHolder extends RecyclerView.ViewHolder {
-        final ImageView imageView;
+        final ScreenshotCardItemBinding binding;
         
-        ScreenshotViewHolder(ImageView imageView) {
-            super(imageView);
-            this.imageView = imageView;
+        ScreenshotViewHolder(ScreenshotCardItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pro.sketchware.R;
 import pro.sketchware.activities.main.activities.DetalhesActivity;
 
@@ -31,7 +32,8 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
                 this.comentarios.add(new ComentarioItem(
                         comentario.usuario_id,
                         comentario.comentario,
-                        comentario.timestamp
+                        comentario.timestamp,
+                        comentario.rating
                 ));
             }
         }
@@ -52,6 +54,14 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
         holder.usuarioId.setText(comentario.usuarioId);
         holder.comentario.setText(comentario.comentario);
         
+        // Configurar rating
+        if (comentario.rating > 0) {
+            holder.ratingBar.setRating((float) comentario.rating);
+            holder.ratingBar.setVisibility(View.VISIBLE);
+        } else {
+            holder.ratingBar.setVisibility(View.GONE);
+        }
+        
         // Formatar timestamp
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"));
         String dataFormatada = sdf.format(new Date(comentario.timestamp));
@@ -67,12 +77,14 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
         final TextView usuarioId;
         final TextView comentario;
         final TextView timestamp;
+        final MaterialRatingBar ratingBar;
         
         ComentarioViewHolder(View itemView) {
             super(itemView);
             usuarioId = itemView.findViewById(R.id.user_name);
             comentario = itemView.findViewById(R.id.comentario_description);
             timestamp = itemView.findViewById(R.id.data_publish);
+            ratingBar = itemView.findViewById(R.id.ratingbar1);
         }
     }
     
@@ -80,11 +92,13 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
         final String usuarioId;
         final String comentario;
         final long timestamp;
+        final double rating;
         
-        ComentarioItem(String usuarioId, String comentario, long timestamp) {
+        ComentarioItem(String usuarioId, String comentario, long timestamp, double rating) {
             this.usuarioId = usuarioId;
             this.comentario = comentario;
             this.timestamp = timestamp;
+            this.rating = rating;
         }
     }
 }

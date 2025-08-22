@@ -1,12 +1,14 @@
 package pro.sketchware.activities.main.fragments.loja;
 
 import java.util.Map;
+import pro.sketchware.activities.main.fragments.loja.CategoryManager;
 
 public class AppItem {
     private String appId;
     private String nome;
     private String descricaoCurta;
     private String descricaoLonga;
+    private String categoria; // Novo campo para categoria
     private String icone;
     private String urlDownload;
     private String dataPublicacao;
@@ -31,6 +33,9 @@ public class AppItem {
     public String getDescricaoLonga() { return descricaoLonga; }
     public void setDescricaoLonga(String descricaoLonga) { this.descricaoLonga = descricaoLonga; }
 
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+
     public String getIcone() { return icone; }
     public void setIcone(String icone) { this.icone = icone; }
 
@@ -49,10 +54,42 @@ public class AppItem {
     public Map<String, Boolean> getLikes() { return likes; }
     public void setLikes(Map<String, Boolean> likes) { this.likes = likes; }
 
-
-
     public Map<String, Comentario> getComentarios() { return comentarios; }
     public void setComentarios(Map<String, Comentario> comentarios) { this.comentarios = comentarios; }
+
+    // Método para obter o nome do desenvolvedor com fallback
+    public String getDeveloperName() {
+        if (publisher != null && publisher.getUsuarioId() != null && !publisher.getUsuarioId().trim().isEmpty()) {
+            return publisher.getUsuarioId();
+        }
+        return "Desenvolvedor Desconhecido";
+    }
+
+    // Método para obter a categoria com fallback
+    public String getCategoryDisplay() {
+        // Primeiro, tentar usar a categoria definida
+        if (categoria != null && !categoria.trim().isEmpty()) {
+            return CategoryManager.getCategoryDisplay(categoria);
+        }
+        
+        // Se não há categoria definida, tentar inferir da descrição
+        if (descricaoCurta != null && !descricaoCurta.trim().isEmpty()) {
+            String inferredCategory = CategoryManager.getCategoryFromDescription(descricaoCurta);
+            if (inferredCategory != null) {
+                return CategoryManager.getCategoryDisplay(inferredCategory);
+            }
+        }
+        
+        // Se não há descrição curta, tentar da descrição longa
+        if (descricaoLonga != null && !descricaoLonga.trim().isEmpty()) {
+            String inferredCategory = CategoryManager.getCategoryFromDescription(descricaoLonga);
+            if (inferredCategory != null) {
+                return CategoryManager.getCategoryDisplay(inferredCategory);
+            }
+        }
+        
+        return "Categoria não definida";
+    }
 
     // Classe interna para Publisher
     public static class Publisher {
@@ -81,8 +118,6 @@ public class AppItem {
         public int getLikes() { return likes; }
         public void setLikes(int likes) { this.likes = likes; }
     }
-
-
 
     // Classe interna para Comentario
     public static class Comentario {

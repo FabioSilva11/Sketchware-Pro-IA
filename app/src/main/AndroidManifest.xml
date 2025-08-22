@@ -121,6 +121,26 @@
             android:name="pro.sketchware.activities.main.activities.DetalhesActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.SketchwarePro.SmallToolbar" />
+            
+        <!-- Activities de Autenticação -->
+        <activity
+            android:name="pro.sketchware.activities.auth.LoginActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.SketchwarePro"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+            
+        <activity
+            android:name="pro.sketchware.activities.auth.RegisterActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.SketchwarePro"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+            
+        <!-- Activity de Perfil -->
+        <activity
+            android:name="pro.sketchware.activities.profile.ProfileActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.SketchwarePro.SmallToolbar" />
+            
         <activity
             android:name="com.besome.sketch.editor.manage.view.ManageViewActivity"
             android:configChanges="orientation|screenSize" />
@@ -300,15 +320,6 @@
             android:configChanges="orientation|screenSize" />
 
         <activity android:name="pro.sketchware.activities.resourceseditor.ResourcesEditorActivity" />
-
-        <activity
-            android:name="pro.sketchware.activities.auth.LoginActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SketchwarePro" />
-        <activity
-            android:name="pro.sketchware.activities.auth.RegisterActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SketchwarePro" />
 
         <activity
             android:name="com.besome.sketch.editor.manage.library.material3.Material3LibraryActivity"

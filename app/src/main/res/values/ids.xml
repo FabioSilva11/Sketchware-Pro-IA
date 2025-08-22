@@ -22,4 +22,13 @@
     <item name="item_xml_command_manager" type="id" />
     <item name="item_logcat_reader" type="id" />
     <item name="item_collection_manager" type="id" />
+
+    <!-- Auth-related IDs -->
+    <item name="name_input" type="id" />
+    <item name="email_input" type="id" />
+    <item name="password_input" type="id" />
+    <item name="confirm_password_input" type="id" />
+    <item name="register_button" type="id" />
+    <item name="login_text" type="id" />
+    <item name="progress_bar" type="id" />
 </resources>

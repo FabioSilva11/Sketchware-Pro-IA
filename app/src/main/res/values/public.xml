@@ -191,6 +191,7 @@
     <public name="manage_sound_import" id="0x7f0b00ee" type="layout" />
     <public name="manage_view_custom_list_item" id="0x7f0b00f2" type="layout" />
     <public name="property_popup_selector_color" id="0x7f0b0139" type="layout" />
+    <public name="activity_register" id="0x7f0b013a" type="layout" />
     <public name="manage_font_menu" id="0x7f0c000d" type="menu" />
     <public name="collection_duplicated_name" id="0x7f0e03c7" type="string" />
     <public name="collection_failed_to_copy" id="0x7f0e03c8" type="string" />

@@ -1,13 +1,14 @@
 package pro.sketchware.activities.main.activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -16,20 +17,26 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pro.sketchware.R;
 import pro.sketchware.activities.main.adapters.ComentariosAdapter;
 import pro.sketchware.activities.main.adapters.ScreenshotsAdapter;
@@ -44,6 +51,14 @@ public class DetalhesActivity extends AppCompatActivity {
     private MaterialTextView downloadCount;
     private MaterialButton buttonDownload;
     private MaterialTextView textoDescriptionLonga;
+    private RecyclerView recyclerViewScreenshots;
+    private RecyclerView recyclerViewComentarios;
+    
+    // Views da seção de avaliações
+    private MaterialTextView averageRating;
+    private MaterialRatingBar ratingStars;
+    private MaterialTextView totalReviews;
+    private LinearProgressIndicator progress5Stars, progress4Stars, progress3Stars, progress2Stars, progress1Stars;
     
     // Dados do app recebidos via Intent
     private String appId;
@@ -92,6 +107,7 @@ public class DetalhesActivity extends AppCompatActivity {
         public String comentario;
         public long timestamp;
         public String usuario_id;
+        public double rating; // Novo campo para rating
         
         public Comentario() {}
     }
@@ -140,6 +156,21 @@ public class DetalhesActivity extends AppCompatActivity {
         downloadCount = findViewById(R.id.dowload_cont);
         buttonDownload = findViewById(R.id.button_dowload);
         textoDescriptionLonga = findViewById(R.id.texto_description_longa);
+        recyclerViewScreenshots = findViewById(R.id.recyclerview_screenshots);
+        recyclerViewComentarios = findViewById(R.id.recyclerview_comentarios);
+        
+        // Inicializar views da seção de avaliações
+        View ratingSection = findViewById(R.id.rating_summary_section);
+        if (ratingSection != null) {
+            averageRating = ratingSection.findViewById(R.id.average_rating);
+            ratingStars = ratingSection.findViewById(R.id.rating_stars);
+            totalReviews = ratingSection.findViewById(R.id.total_reviews);
+            progress5Stars = ratingSection.findViewById(R.id.progress_5_stars);
+            progress4Stars = ratingSection.findViewById(R.id.progress_4_stars);
+            progress3Stars = ratingSection.findViewById(R.id.progress_3_stars);
+            progress2Stars = ratingSection.findViewById(R.id.progress_2_stars);
+            progress1Stars = ratingSection.findViewById(R.id.progress_1_stars);
+        }
     }
     
     private void receiveIntentData() {
@@ -156,6 +187,36 @@ public class DetalhesActivity extends AppCompatActivity {
     
     private void setupListeners() {
         buttonDownload.setOnClickListener(v -> handleDownloadClick());
+        
+        // Listener para adicionar avaliação - verificar se usuário não é o autor
+        View ratingSection = findViewById(R.id.rating_summary_section);
+        if (ratingSection != null) {
+            ratingSection.findViewById(R.id.btn_view_all_reviews).setOnClickListener(v -> {
+                // Verificar se usuário está logado
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (currentUser == null) {
+                    Toast.makeText(this, "Você precisa estar logado para enviar uma avaliação", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                
+                // Verificar se o usuário é o autor do app
+                databaseReference.child(appId).child("publisher").child("usuario_id").get().addOnSuccessListener(dataSnapshot -> {
+                    if (dataSnapshot.exists()) {
+                        String authorId = dataSnapshot.getValue(String.class);
+                        if (authorId != null && authorId.equals(currentUser.getUid())) {
+                            Toast.makeText(this, "Você não pode avaliar seu próprio app", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
+                    
+                    // Se não é o autor, mostrar o dialog
+                    showReviewDialog();
+                    
+                }).addOnFailureListener(e -> {
+                    Toast.makeText(this, "Erro ao verificar autor do app", Toast.LENGTH_SHORT).show();
+                });
+            });
+        }
     }
     
     private void loadAppDataFromFirebase() {
@@ -232,8 +293,14 @@ public class DetalhesActivity extends AppCompatActivity {
                 }
             }
             
-            // Configurar ViewStubs
-            setupViewStubs(appData);
+            // Configurar screenshots
+            setupScreenshots(appData.screenshots);
+            
+            // Configurar avaliações
+            setupRatings(appData.comentarios);
+            
+            // Configurar comentários
+            setupComentarios(appData.comentarios);
             
             // Esconder progress bar e mostrar conteúdo
             progressBar.setVisibility(View.GONE);
@@ -244,55 +311,147 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     }
     
-    private void setupViewStubs(AppData appData) {
-        // Configurar screenshots
-        if (appData.screenshots != null && !appData.screenshots.isEmpty()) {
-            ViewStub stubScreenshots = findViewById(R.id.stub_screenshots);
-            if (stubScreenshots != null) {
-                View screenshotsView = stubScreenshots.inflate();
-                setupScreenshots(screenshotsView, appData.screenshots);
-            }
+    private void setupScreenshots(List<String> screenshots) {
+        if (screenshots == null || screenshots.isEmpty()) {
+            recyclerViewScreenshots.setVisibility(View.GONE);
+            return;
         }
         
-
+        recyclerViewScreenshots.setVisibility(View.VISIBLE);
         
-        // Configurar comentários
-        if (appData.comentarios != null && !appData.comentarios.isEmpty()) {
-            ViewStub stubComentarios = findViewById(R.id.stub_comentarios);
-            if (stubComentarios != null) {
-                View comentariosView = stubComentarios.inflate();
-                setupComentarios(comentariosView, appData.comentarios);
+        // Configurar layout horizontal explicitamente
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerViewScreenshots.setLayoutManager(layoutManager);
+        
+        ScreenshotsAdapter adapter = new ScreenshotsAdapter(this, screenshots);
+        recyclerViewScreenshots.setAdapter(adapter);
+        
+        // Log para debug
+        System.out.println("Screenshots configurados: " + screenshots.size() + " itens, layout horizontal");
+    }
+    
+    private void setupRatings(Map<String, Comentario> comentarios) {
+        RatingManager.RatingStats stats = RatingManager.calculateRatingStats(comentarios);
+        
+        if (stats.totalReviews == 0) {
+            // Esconder seção de avaliações se não há avaliações
+            View ratingSection = findViewById(R.id.rating_summary_section);
+            if (ratingSection != null) {
+                ratingSection.setVisibility(View.GONE);
             }
+            return;
+        }
+        
+        // Mostrar seção de avaliações
+        View ratingSection = findViewById(R.id.rating_summary_section);
+        if (ratingSection != null) {
+            ratingSection.setVisibility(View.VISIBLE);
+        }
+        
+        // Configurar rating médio
+        if (averageRating != null) {
+            averageRating.setText(String.format("%.1f", stats.averageRating));
+        }
+        
+        if (ratingStars != null) {
+            ratingStars.setRating((float) stats.averageRating);
+        }
+        
+        if (totalReviews != null) {
+            totalReviews.setText(RatingManager.formatReviewCount(stats.totalReviews) + " avaliações");
+        }
+        
+        // Configurar barras de progresso
+        if (progress5Stars != null) {
+            progress5Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[4], stats.totalReviews));
+        }
+        if (progress4Stars != null) {
+            progress4Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[3], stats.totalReviews));
+        }
+        if (progress3Stars != null) {
+            progress3Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[2], stats.totalReviews));
+        }
+        if (progress2Stars != null) {
+            progress2Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[1], stats.totalReviews));
+        }
+        if (progress1Stars != null) {
+            progress1Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[0], stats.totalReviews));
         }
     }
     
-    private void setupScreenshots(View view, List<String> screenshots) {
-        if (screenshots == null || screenshots.isEmpty()) return;
-        
-        // Configurar RecyclerView de screenshots
-        androidx.recyclerview.widget.RecyclerView recyclerView = view.findViewById(R.id.recyclerview_screenshots);
-        if (recyclerView != null) {
-            recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(
-                    this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
-            ));
-            
-            ScreenshotsAdapter adapter = new ScreenshotsAdapter(this, screenshots);
-            recyclerView.setAdapter(adapter);
+    private void setupComentarios(Map<String, Comentario> comentarios) {
+        if (comentarios == null || comentarios.isEmpty()) {
+            recyclerViewComentarios.setVisibility(View.GONE);
+            return;
         }
-    }
-    
-
-    
-    private void setupComentarios(View view, Map<String, Comentario> comentarios) {
-        if (comentarios == null || comentarios.isEmpty()) return;
         
-        // Configurar RecyclerView de comentários
-        androidx.recyclerview.widget.RecyclerView recyclerView = view.findViewById(R.id.recyclerview_comentarios);
-        if (recyclerView != null) {
-            recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        recyclerViewComentarios.setVisibility(View.VISIBLE);
+        recyclerViewComentarios.setLayoutManager(new LinearLayoutManager(this));
             
             ComentariosAdapter adapter = new ComentariosAdapter(comentarios);
-            recyclerView.setAdapter(adapter);
+        recyclerViewComentarios.setAdapter(adapter);
+    }
+    
+    private void showReviewDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.add_review_dialog, null);
+        
+        MaterialRatingBar ratingBar = dialogView.findViewById(R.id.user_rating_bar);
+        TextInputEditText commentInput = dialogView.findViewById(R.id.review_comment);
+        MaterialButton cancelButton = dialogView.findViewById(R.id.btn_cancel);
+        MaterialButton submitButton = dialogView.findViewById(R.id.btn_submit);
+        
+        // Habilitar botão de envio apenas quando há rating
+        ratingBar.setOnRatingChangeListener((ratingBar1, rating) -> {
+            submitButton.setEnabled(rating > 0);
+        });
+        
+        AlertDialog dialog = builder.setView(dialogView).create();
+        
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        submitButton.setOnClickListener(v -> {
+            float rating = ratingBar.getRating();
+            String comment = commentInput.getText().toString().trim();
+            
+            if (rating > 0) {
+                submitReview(rating, comment);
+                dialog.dismiss();
+            }
+        });
+        
+        dialog.show();
+    }
+    
+    private void submitReview(float rating, String comment) {
+        if (appId == null) return;
+        
+        // Verificar se usuário está logado
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Você precisa estar logado para enviar uma avaliação", Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        // Criar novo comentário com rating
+        Comentario newComment = new Comentario();
+        newComment.rating = rating;
+        newComment.comentario = comment;
+        newComment.usuario_id = currentUser.getUid();
+        newComment.timestamp = System.currentTimeMillis();
+        
+        // Salvar no Firebase
+        String commentId = databaseReference.child(appId).child("comentarios").push().getKey();
+        if (commentId != null) {
+            databaseReference.child(appId).child("comentarios").child(commentId).setValue(newComment)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Avaliação enviada com sucesso!", Toast.LENGTH_SHORT).show();
+                        // Recarregar dados para atualizar as estatísticas
+                        loadAppDataFromFirebase();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Erro ao enviar avaliação: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         }
     }
     
@@ -351,3 +510,5 @@ public class DetalhesActivity extends AppCompatActivity {
         finish();
     }
 }
+
+
