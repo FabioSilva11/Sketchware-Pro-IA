@@ -2,7 +2,7 @@
   <img src="https://github.com/FabioSilva11/Sketchware-Pro-IA/blob/main/app/src/main/res/drawable-xhdpi/sketch_app_icon.png" style="width: 30%;" />
 </p>
 
-# Meu Mod do Sketchware com IA
+# Sketchware IA
 
 Este projeto é um **mod derivado do Sketchware Pro**.  
 Ele foi criado porque, na comunidade original, **os moderadores não aceitavam recursos de inteligência artificial no código nem a adição de novos blocos**.  
