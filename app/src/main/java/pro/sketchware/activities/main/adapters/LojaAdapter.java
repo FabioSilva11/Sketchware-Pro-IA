@@ -14,6 +14,7 @@ import java.util.List;
 
 import pro.sketchware.activities.main.fragments.loja.AppItem;
 import pro.sketchware.activities.main.fragments.loja.UserInfoManager;
+import pro.sketchware.activities.main.fragments.loja.DatabaseManager;
 import pro.sketchware.R;
 import pro.sketchware.databinding.ItensLojaBinding;
 
@@ -21,6 +22,7 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
     private final List<AppItem> apps;
     private OnAppClickListener listener;
     private final UserInfoManager userInfoManager;
+    private final DatabaseManager databaseManager;
 
     public interface OnAppClickListener {
         void onAppClick(AppItem app);
@@ -30,6 +32,7 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
     public LojaAdapter(List<AppItem> apps) {
         this.apps = apps;
         this.userInfoManager = UserInfoManager.getInstance();
+        this.databaseManager = DatabaseManager.getInstance();
     }
 
     public void setOnAppClickListener(OnAppClickListener listener) {
@@ -56,28 +59,8 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
         // Configurar autor - tentar buscar nome real do usuário se disponível
         setupDeveloperName(holder, app);
         
-        // Configurar ícone se disponível
-        if (app.getIcone() != null && app.getIcone().startsWith("data:image")) {
-            try {
-                // Extrair base64 da string data:image
-                String base64Data = app.getIcone().substring(app.getIcone().indexOf(",") + 1);
-                byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                
-                if (bitmap != null) {
-                    holder.binding.appIcon.setImageBitmap(bitmap);
-                } else {
-                    // Fallback para ícone padrão
-                    holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
-                }
-            } catch (Exception e) {
-                // Em caso de erro, usar ícone padrão
-                holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
-            }
-        } else {
-            // Usar ícone padrão se não houver ícone
-            holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
-        }
+        // Configurar ícone com suporte a URLs e base64
+        setupAppIcon(holder, app);
 
         // Configurar click no item
         holder.binding.linear1.setOnClickListener(v -> {
@@ -95,31 +78,68 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
     }
     
     private void setupDeveloperName(LojaViewHolder holder, AppItem app) {
-        // Primeiro, mostrar o nome básico do desenvolvedor
-        holder.binding.appAutor.setText(app.getDeveloperName());
+        // Usar o nome do desenvolvedor do novo formato primeiro
+        String developerName = app.getDeveloperName();
+        holder.binding.appAutor.setText(developerName);
         
-        // Se temos um publisher com userId, tentar buscar o nome real do usuário
-        if (app.getPublisher() != null && app.getPublisher().getUsuarioId() != null) {
-            String userId = app.getPublisher().getUsuarioId();
-            
-            // Verificar se não é um nome já formatado (contém espaços ou caracteres especiais)
-            if (!userId.contains(" ") && !userId.contains("Desenvolvedor")) {
-                userInfoManager.getUserName(userId, new UserInfoManager.UserInfoCallback() {
-                    @Override
-                    public void onUserInfoReceived(String userId, String userName) {
-                        // Atualizar o TextView na thread principal
-                        holder.binding.appAutor.post(() -> {
-                            holder.binding.appAutor.setText(userName);
-                        });
-                    }
-                    
-                    @Override
-                    public void onError(String userId, String error) {
-                        // Manter o nome atual em caso de erro
-                        // Não fazer nada, já está configurado
-                    }
-                });
+        // Se temos um ID de desenvolvedor, tentar buscar informações mais completas do cache
+        String developerId = app.getDeveloperId();
+        if (developerId != null && !developerId.trim().isEmpty()) {
+            // Tentar buscar do cache de usuários
+            pro.sketchware.activities.main.fragments.loja.Usuario usuario = databaseManager.getUsuarioFromCache(developerId);
+            if (usuario != null) {
+                holder.binding.appAutor.setText(usuario.getDisplayName());
+            } else {
+                // Fallback para UserInfoManager se não estiver no cache
+                if (!developerId.contains(" ") && !developerId.contains("Desenvolvedor")) {
+                    userInfoManager.getUserName(developerId, new UserInfoManager.UserInfoCallback() {
+                        @Override
+                        public void onUserInfoReceived(String userId, String userName) {
+                            holder.binding.appAutor.post(() -> {
+                                holder.binding.appAutor.setText(userName);
+                            });
+                        }
+                        
+                        @Override
+                        public void onError(String userId, String error) {
+                            // Manter o nome atual em caso de erro
+                        }
+                    });
+                }
             }
+        }
+    }
+
+    private void setupAppIcon(LojaViewHolder holder, AppItem app) {
+        String iconUrl = app.getIcone();
+        
+        if (iconUrl != null && !iconUrl.trim().isEmpty()) {
+            if (iconUrl.startsWith("data:image")) {
+                // Processar imagem base64
+                try {
+                    String base64Data = iconUrl.substring(iconUrl.indexOf(",") + 1);
+                    byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    
+                    if (bitmap != null) {
+                        holder.binding.appIcon.setImageBitmap(bitmap);
+                    } else {
+                        holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
+                    }
+                } catch (Exception e) {
+                    holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
+                }
+            } else if (iconUrl.startsWith("http")) {
+                // Para URLs HTTP/HTTPS, usar ícone padrão por enquanto
+                // TODO: Implementar carregamento de imagens via URL (Glide, Picasso, etc.)
+                holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
+            } else {
+                // Formato desconhecido, usar ícone padrão
+                holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
+            }
+        } else {
+            // Sem ícone definido, usar ícone padrão
+            holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
         }
     }
 

@@ -17,23 +17,50 @@ import java.util.Map;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pro.sketchware.R;
-import pro.sketchware.activities.main.activities.DetalhesActivity;
+import pro.sketchware.activities.main.fragments.loja.AppItem;
+import pro.sketchware.activities.main.fragments.loja.Comentario;
+import pro.sketchware.activities.main.fragments.loja.DatabaseManager;
+import pro.sketchware.activities.main.fragments.loja.Usuario;
 
 public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.ComentarioViewHolder> {
     
     private final List<ComentarioItem> comentarios;
+    private final DatabaseManager databaseManager;
     
-    public ComentariosAdapter(Map<String, DetalhesActivity.Comentario> comentariosMap) {
+    // Construtor para o formato Map (compatibilidade)
+    public ComentariosAdapter(Map<String, Comentario> comentariosMap) {
         this.comentarios = new ArrayList<>();
+        this.databaseManager = DatabaseManager.getInstance();
         
         if (comentariosMap != null) {
-            for (Map.Entry<String, DetalhesActivity.Comentario> entry : comentariosMap.entrySet()) {
-                DetalhesActivity.Comentario comentario = entry.getValue();
+            for (Map.Entry<String, Comentario> entry : comentariosMap.entrySet()) {
+                Comentario comentario = entry.getValue();
                 this.comentarios.add(new ComentarioItem(
-                        comentario.usuario_id,
-                        comentario.comentario,
-                        comentario.timestamp,
-                        comentario.rating
+                        comentario.getIdAutor(),
+                        comentario.getNomeAutor(),
+                        comentario.getIconeUsuario(),
+                        comentario.getComentario(),
+                        0, // timestamp não disponível no novo formato
+                        comentario.getEstrelas()
+                ));
+            }
+        }
+    }
+    
+    // Construtor para o novo formato (top-level comentarios)
+    public ComentariosAdapter(List<Comentario> comentariosList) {
+        this.comentarios = new ArrayList<>();
+        this.databaseManager = DatabaseManager.getInstance();
+        
+        if (comentariosList != null) {
+            for (Comentario comentario : comentariosList) {
+                this.comentarios.add(new ComentarioItem(
+                        comentario.getIdAutor(),
+                        comentario.getNomeAutor(),
+                        comentario.getIconeUsuario(),
+                        comentario.getComentario(),
+                        0, // timestamp não disponível no novo formato
+                        comentario.getEstrelas()
                 ));
             }
         }
@@ -51,7 +78,10 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
     public void onBindViewHolder(@NonNull ComentarioViewHolder holder, int position) {
         ComentarioItem comentario = comentarios.get(position);
         
-        holder.usuarioId.setText(comentario.usuarioId);
+        // Configurar nome do usuário
+        setupUserName(holder, comentario);
+        
+        // Configurar comentário
         holder.comentario.setText(comentario.comentario);
         
         // Configurar rating
@@ -62,10 +92,32 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
             holder.ratingBar.setVisibility(View.GONE);
         }
         
-        // Formatar timestamp
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"));
-        String dataFormatada = sdf.format(new Date(comentario.timestamp));
-        holder.timestamp.setText(dataFormatada);
+        // Formatar timestamp (se disponível)
+        if (comentario.timestamp > 0) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("pt", "BR"));
+            String dataFormatada = sdf.format(new Date(comentario.timestamp));
+            holder.timestamp.setText(dataFormatada);
+        } else {
+            holder.timestamp.setText("Data não disponível");
+        }
+    }
+    
+    private void setupUserName(ComentarioViewHolder holder, ComentarioItem comentario) {
+        // Usar nome do autor se disponível (novo formato)
+        if (comentario.nomeAutor != null && !comentario.nomeAutor.trim().isEmpty()) {
+            holder.usuarioId.setText(comentario.nomeAutor);
+        } else if (comentario.usuarioId != null && !comentario.usuarioId.trim().isEmpty()) {
+            // Tentar buscar nome do usuário no cache
+            Usuario usuario = databaseManager.getUsuarioFromCache(comentario.usuarioId);
+            if (usuario != null) {
+                holder.usuarioId.setText(usuario.getDisplayName());
+            } else {
+                // Usar ID do usuário como fallback
+                holder.usuarioId.setText(comentario.usuarioId);
+            }
+        } else {
+            holder.usuarioId.setText("Usuário Anônimo");
+        }
     }
     
     @Override
@@ -90,12 +142,16 @@ public class ComentariosAdapter extends RecyclerView.Adapter<ComentariosAdapter.
     
     private static class ComentarioItem {
         final String usuarioId;
+        final String nomeAutor;
+        final String iconeUsuario;
         final String comentario;
         final long timestamp;
         final double rating;
         
-        ComentarioItem(String usuarioId, String comentario, long timestamp, double rating) {
+        ComentarioItem(String usuarioId, String nomeAutor, String iconeUsuario, String comentario, long timestamp, double rating) {
             this.usuarioId = usuarioId;
+            this.nomeAutor = nomeAutor;
+            this.iconeUsuario = iconeUsuario;
             this.comentario = comentario;
             this.timestamp = timestamp;
             this.rating = rating;

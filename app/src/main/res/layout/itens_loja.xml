@@ -26,8 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/sketch_app_icon"
-                android:scaleType="centerCrop"
-                android:padding="4dp" />
+                android:scaleType="centerCrop" />
                 
         </com.google.android.material.card.MaterialCardView>
         

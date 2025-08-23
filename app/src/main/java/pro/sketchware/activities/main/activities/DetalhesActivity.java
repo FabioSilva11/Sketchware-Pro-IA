@@ -40,6 +40,7 @@ import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pro.sketchware.R;
 import pro.sketchware.activities.main.adapters.ComentariosAdapter;
 import pro.sketchware.activities.main.adapters.ScreenshotsAdapter;
+import pro.sketchware.activities.main.fragments.loja.Comentario;
 
 public class DetalhesActivity extends AppCompatActivity {
     
@@ -84,7 +85,7 @@ public class DetalhesActivity extends AppCompatActivity {
         public Estatisticas estatisticas;
         public Map<String, Boolean> likes;
         public Map<String, Comentario> comentarios;
-        public List<String> screenshots;
+        public Map<String, String> screenshots;
         
         public AppData() {}
     }
@@ -103,14 +104,7 @@ public class DetalhesActivity extends AppCompatActivity {
         public Estatisticas() {}
     }
     
-    public static class Comentario {
-        public String comentario;
-        public long timestamp;
-        public String usuario_id;
-        public double rating; // Novo campo para rating
-        
-        public Comentario() {}
-    }
+
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -188,7 +182,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private void setupListeners() {
         buttonDownload.setOnClickListener(v -> handleDownloadClick());
         
-        // Listener para adicionar avaliação - verificar se usuário não é o autor
+        // Listener para adicionar avaliação
         View ratingSection = findViewById(R.id.rating_summary_section);
         if (ratingSection != null) {
             ratingSection.findViewById(R.id.btn_view_all_reviews).setOnClickListener(v -> {
@@ -200,7 +194,7 @@ public class DetalhesActivity extends AppCompatActivity {
                 }
                 
                 // Verificar se o usuário é o autor do app
-                databaseReference.child(appId).child("publisher").child("usuario_id").get().addOnSuccessListener(dataSnapshot -> {
+                databaseReference.child(appId).child("autor").child("id").get().addOnSuccessListener(dataSnapshot -> {
                     if (dataSnapshot.exists()) {
                         String authorId = dataSnapshot.getValue(String.class);
                         if (authorId != null && authorId.equals(currentUser.getUid())) {
@@ -213,7 +207,19 @@ public class DetalhesActivity extends AppCompatActivity {
                     showReviewDialog();
                     
                 }).addOnFailureListener(e -> {
-                    Toast.makeText(this, "Erro ao verificar autor do app", Toast.LENGTH_SHORT).show();
+                    // Fallback para formato antigo
+                    databaseReference.child(appId).child("publisher").child("usuario_id").get().addOnSuccessListener(dataSnapshot -> {
+                        if (dataSnapshot.exists()) {
+                            String authorId = dataSnapshot.getValue(String.class);
+                            if (authorId != null && authorId.equals(currentUser.getUid())) {
+                                Toast.makeText(this, "Você não pode avaliar seu próprio app", Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                        }
+                        showReviewDialog();
+                    }).addOnFailureListener(e2 -> {
+                        Toast.makeText(this, "Erro ao verificar autor do app", Toast.LENGTH_SHORT).show();
+                    });
                 });
             });
         }
@@ -272,17 +278,23 @@ public class DetalhesActivity extends AppCompatActivity {
             }
             
             // Configurar ícone
-            if (appData.icone != null && appData.icone.startsWith("data:image")) {
-                try {
-                    String base64Data = appData.icone.substring(appData.icone.indexOf(",") + 1);
-                    byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                    
-                    if (bitmap != null) {
-                        appIcon.setImageBitmap(bitmap);
+            if (appData.icone != null && !appData.icone.trim().isEmpty()) {
+                if (appData.icone.startsWith("http")) {
+                    // Carregar de URL
+                    loadImageFromUrl(appData.icone, appIcon);
+                } else if (appData.icone.startsWith("data:image")) {
+                    // Fallback para Base64 (formato antigo)
+                    try {
+                        String base64Data = appData.icone.substring(appData.icone.indexOf(",") + 1);
+                        byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                        
+                        if (bitmap != null) {
+                            appIcon.setImageBitmap(bitmap);
+                        }
+                    } catch (Exception e) {
+                        // Em caso de erro, manter ícone padrão
                     }
-                } catch (Exception e) {
-                    // Em caso de erro, manter ícone padrão
                 }
             }
             
@@ -311,7 +323,7 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     }
     
-    private void setupScreenshots(List<String> screenshots) {
+    private void setupScreenshots(Map<String, String> screenshots) {
         if (screenshots == null || screenshots.isEmpty()) {
             recyclerViewScreenshots.setVisibility(View.GONE);
             return;
@@ -323,7 +335,17 @@ public class DetalhesActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerViewScreenshots.setLayoutManager(layoutManager);
         
-        ScreenshotsAdapter adapter = new ScreenshotsAdapter(this, screenshots);
+        ScreenshotsAdapter adapter = new ScreenshotsAdapter(screenshots, new ScreenshotsAdapter.OnScreenshotClickListener() {
+            @Override
+            public void onScreenshotClick(int position) {
+                // Implementar visualização em tela cheia se necessário
+            }
+
+            @Override
+            public void onScreenshotDelete(int position) {
+                // Não permitir exclusão na visualização
+            }
+        });
         recyclerViewScreenshots.setAdapter(adapter);
         
         // Log para debug
@@ -331,6 +353,81 @@ public class DetalhesActivity extends AppCompatActivity {
     }
     
     private void setupRatings(Map<String, Comentario> comentarios) {
+        // Carregar comentários do novo formato JSON
+        DatabaseReference comentariosRef = FirebaseDatabase.getInstance().getReference("comentarios");
+        comentariosRef.orderByChild("id_app").equalTo(appId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Comentario> newComments = new ArrayList<>();
+                
+                for (DataSnapshot commentSnapshot : dataSnapshot.getChildren()) {
+                    Comentario comment = 
+                        commentSnapshot.getValue(Comentario.class);
+                    if (comment != null) {
+                        newComments.add(comment);
+                    }
+                }
+                
+                if (newComments.isEmpty()) {
+                    View ratingSection = findViewById(R.id.rating_summary_section);
+                    if (ratingSection != null) {
+                        ratingSection.setVisibility(View.GONE);
+                    }
+                    return;
+                }
+                
+                // Mostrar seção de avaliações
+                View ratingSection = findViewById(R.id.rating_summary_section);
+                if (ratingSection != null) {
+                    ratingSection.setVisibility(View.VISIBLE);
+                }
+                
+                // Calcular estatísticas de rating
+                RatingManager.RatingStats stats = RatingManager.calculateRatingStatsFromList(newComments);
+                
+                // Configurar rating médio
+                if (averageRating != null) {
+                    averageRating.setText(String.format("%.1f", stats.averageRating));
+                }
+                
+                if (ratingStars != null) {
+                    ratingStars.setRating((float) stats.averageRating);
+                }
+                
+                if (totalReviews != null) {
+                    totalReviews.setText(RatingManager.formatReviewCount(stats.totalReviews) + " avaliações");
+                }
+                
+                // Configurar barras de progresso
+                if (progress5Stars != null) {
+                    progress5Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[4], stats.totalReviews));
+                }
+                if (progress4Stars != null) {
+                    progress4Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[3], stats.totalReviews));
+                }
+                if (progress3Stars != null) {
+                    progress3Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[2], stats.totalReviews));
+                }
+                if (progress2Stars != null) {
+                    progress2Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[1], stats.totalReviews));
+                }
+                if (progress1Stars != null) {
+                    progress1Stars.setProgress(RatingManager.calculateProgressPercentage(stats.starDistribution[0], stats.totalReviews));
+                }
+                
+                // Configurar lista de comentários
+                setupComentarios(newComments);
+            }
+            
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Fallback para formato antigo
+                setupRatingsFallback(comentarios);
+            }
+        });
+    }
+    
+    private void setupRatingsFallback(Map<String, Comentario> comentarios) {
         RatingManager.RatingStats stats = RatingManager.calculateRatingStats(comentarios);
         
         if (stats.totalReviews == 0) {
@@ -379,6 +476,19 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     }
     
+    private void setupComentarios(List<Comentario> comentarios) {
+        if (comentarios == null || comentarios.isEmpty()) {
+            recyclerViewComentarios.setVisibility(View.GONE);
+            return;
+        }
+        
+        recyclerViewComentarios.setVisibility(View.VISIBLE);
+        recyclerViewComentarios.setLayoutManager(new LinearLayoutManager(this));
+            
+        ComentariosAdapter adapter = new ComentariosAdapter(comentarios);
+        recyclerViewComentarios.setAdapter(adapter);
+    }
+    
     private void setupComentarios(Map<String, Comentario> comentarios) {
         if (comentarios == null || comentarios.isEmpty()) {
             recyclerViewComentarios.setVisibility(View.GONE);
@@ -388,7 +498,7 @@ public class DetalhesActivity extends AppCompatActivity {
         recyclerViewComentarios.setVisibility(View.VISIBLE);
         recyclerViewComentarios.setLayoutManager(new LinearLayoutManager(this));
             
-            ComentariosAdapter adapter = new ComentariosAdapter(comentarios);
+        ComentariosAdapter adapter = new ComentariosAdapter(comentarios);
         recyclerViewComentarios.setAdapter(adapter);
     }
     
@@ -433,17 +543,22 @@ public class DetalhesActivity extends AppCompatActivity {
             return;
         }
         
-        // Criar novo comentário com rating
-        Comentario newComment = new Comentario();
-        newComment.rating = rating;
-        newComment.comentario = comment;
-        newComment.usuario_id = currentUser.getUid();
-        newComment.timestamp = System.currentTimeMillis();
+        // Criar novo comentário no novo formato JSON
+        DatabaseReference comentariosRef = FirebaseDatabase.getInstance().getReference("comentarios");
+        String commentId = comentariosRef.push().getKey();
         
-        // Salvar no Firebase
-        String commentId = databaseReference.child(appId).child("comentarios").push().getKey();
         if (commentId != null) {
-            databaseReference.child(appId).child("comentarios").child(commentId).setValue(newComment)
+            // Criar comentário no novo formato
+                    Comentario newComment = new Comentario();
+            newComment.setIdComentario(commentId);
+            newComment.setIdApp(appId);
+            newComment.setIdAutor(currentUser.getUid());
+            newComment.setNomeAutor(currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "Usuário");
+            newComment.setEstrelas((int) rating);
+            newComment.setComentario(comment);
+            
+            // Salvar no Firebase
+            comentariosRef.child(commentId).setValue(newComment)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Avaliação enviada com sucesso!", Toast.LENGTH_SHORT).show();
                         // Recarregar dados para atualizar as estatísticas
@@ -463,22 +578,68 @@ public class DetalhesActivity extends AppCompatActivity {
     
     private void handleDownloadClick() {
         if (appId != null) {
-            // Buscar URL de download no Firebase
-            databaseReference.child(appId).child("url_download").get().addOnSuccessListener(dataSnapshot -> {
+            // Buscar URL de download no Firebase - novo formato
+            databaseReference.child(appId).child("location_download").get().addOnSuccessListener(dataSnapshot -> {
                 if (dataSnapshot.exists()) {
                     String downloadUrl = dataSnapshot.getValue(String.class);
                     if (downloadUrl != null && !downloadUrl.isEmpty()) {
                         try {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-                            startActivity(intent);
+                            // Verificar se é um arquivo .swb
+                            if (downloadUrl.toLowerCase().endsWith(".swb")) {
+                                // Para arquivos .swb, iniciar download
+                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                                startActivity(intent);
+                            } else {
+                                // Para outros tipos, abrir normalmente
+                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                                startActivity(intent);
+                            }
                         } catch (Exception e) {
                             Toast.makeText(DetalhesActivity.this, "Erro ao abrir link de download", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(DetalhesActivity.this, "Link de download não disponível", Toast.LENGTH_SHORT).show();
+                        // Fallback para formato antigo
+                        databaseReference.child(appId).child("url_download").get().addOnSuccessListener(dataSnapshot2 -> {
+                            if (dataSnapshot2.exists()) {
+                                String downloadUrl2 = dataSnapshot2.getValue(String.class);
+                                if (downloadUrl2 != null && !downloadUrl2.isEmpty()) {
+                                    try {
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl2));
+                                        startActivity(intent);
+                                    } catch (Exception e) {
+                                        Toast.makeText(DetalhesActivity.this, "Erro ao abrir link de download", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    Toast.makeText(DetalhesActivity.this, "Link de download não disponível", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                Toast.makeText(DetalhesActivity.this, "Link de download não encontrado", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(e -> {
+                            Toast.makeText(DetalhesActivity.this, "Erro ao buscar link de download", Toast.LENGTH_SHORT).show();
+                        });
                     }
                 } else {
-                    Toast.makeText(DetalhesActivity.this, "Link de download não encontrado", Toast.LENGTH_SHORT).show();
+                    // Fallback para formato antigo
+                    databaseReference.child(appId).child("url_download").get().addOnSuccessListener(dataSnapshot2 -> {
+                        if (dataSnapshot2.exists()) {
+                            String downloadUrl2 = dataSnapshot2.getValue(String.class);
+                            if (downloadUrl2 != null && !downloadUrl2.isEmpty()) {
+                                try {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl2));
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    Toast.makeText(DetalhesActivity.this, "Erro ao abrir link de download", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                Toast.makeText(DetalhesActivity.this, "Link de download não disponível", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(DetalhesActivity.this, "Link de download não encontrado", Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(DetalhesActivity.this, "Erro ao buscar link de download", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }).addOnFailureListener(e -> {
                 Toast.makeText(DetalhesActivity.this, "Erro ao buscar link de download", Toast.LENGTH_SHORT).show();
@@ -488,6 +649,21 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     }
     
+    private void loadImageFromUrl(String imageUrl, ImageView imageView) {
+        // Implementação simples para carregar imagem da URL
+        // Em produção, use Glide ou Picasso
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL(imageUrl);
+                Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                runOnUiThread(() -> imageView.setImageBitmap(bitmap));
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> imageView.setImageResource(R.drawable.sketch_app_icon));
+            }
+        }).start();
+    }
+
     private String formatDownloadCount(int downloads) {
         if (downloads >= 1000000) {
             return String.format("%.1fM", downloads / 1000000.0);

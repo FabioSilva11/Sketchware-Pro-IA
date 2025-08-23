@@ -13,12 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +24,7 @@ public class LojaFragment extends Fragment {
     private FragmentLojaBinding binding;
     private LojaAdapter lojaAdapter;
     private final List<AppItem> apps = new ArrayList<>();
-    private DatabaseReference databaseReference;
+    private DatabaseManager databaseManager;
 
     public static LojaFragment newInstance() {
         return new LojaFragment();
@@ -47,8 +41,8 @@ public class LojaFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializar Firebase
-        databaseReference = FirebaseDatabase.getInstance().getReference("apps");
+        // Inicializar DatabaseManager
+        databaseManager = DatabaseManager.getInstance();
 
         // Configurar RecyclerView
         lojaAdapter = new LojaAdapter(apps);
@@ -68,10 +62,13 @@ public class LojaFragment extends Fragment {
                 intent.putExtra("app_category", app.getDescricaoCurta());
                 intent.putExtra("app_icon_url", app.getIcone());
                 
-                // Adicionar downloads se disponível
-                if (app.getEstatisticas() != null) {
-                    intent.putExtra("app_downloads", app.getEstatisticas().getDownloads());
-                }
+                // Adicionar downloads e avaliações usando os novos campos
+                intent.putExtra("app_downloads", app.getDownloads());
+                intent.putExtra("app_rating", app.getAvaliacao_media());
+                intent.putExtra("app_reviews_count", app.getNumero_avaliacoes());
+                intent.putExtra("app_version", app.getVersao());
+                intent.putExtra("app_screenshots", app.getScreenshots() != null ? 
+                    app.getScreenshots().values().toArray(new String[0]) : new String[0]);
                 
                 startActivity(intent);
             }
@@ -99,35 +96,22 @@ public class LojaFragment extends Fragment {
     private void loadAppsFromFirebase() {
         showLoadingState();
         
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        // Usar o DatabaseManager para carregar dados completos
+        databaseManager.loadCompleteData(new DatabaseManager.AppsLoadCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                apps.clear();
-                
-                for (DataSnapshot appSnapshot : dataSnapshot.getChildren()) {
-                    try {
-                        AppItem app = appSnapshot.getValue(AppItem.class);
-                        if (app != null) {
-                            // Definir o appId baseado na chave do Firebase
-                            app.setAppId(appSnapshot.getKey());
-                            apps.add(app);
-                        }
-                    } catch (Exception e) {
-                        // Log do erro para debug
-                        System.err.println("Erro ao carregar app: " + e.getMessage());
-                    }
-                }
-                
+            public void onAppsLoaded(List<AppItem> loadedApps) {
                 // Atualizar UI na thread principal
                 requireActivity().runOnUiThread(() -> {
+                    apps.clear();
+                    apps.addAll(loadedApps);
                     updateUIState();
                 });
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onError(String error) {
                 requireActivity().runOnUiThread(() -> {
-                    Toast.makeText(requireContext(), "Erro ao carregar apps: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Erro ao carregar apps: " + error, Toast.LENGTH_SHORT).show();
                     showEmptyState();
                 });
             }
