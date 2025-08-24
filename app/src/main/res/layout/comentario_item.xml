@@ -62,6 +62,7 @@
                 android:numStars="5"
                 android:rating="4.0"
                 android:stepSize="0.5"
+                android:minHeight="20dp"
                 app:mrb_drawableFilled="@drawable/ic_star_filled"
                 app:mrb_drawableHalfFilled="@drawable/ic_star_half"
                 app:mrb_drawableEmpty="@drawable/ic_star_empty"

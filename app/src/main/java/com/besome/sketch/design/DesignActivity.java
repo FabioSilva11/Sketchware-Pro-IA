@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -72,6 +73,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -414,6 +416,7 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 showSaveBeforeQuittingDialog();
             }
         }
+        super.onBackPressed();
     }
 
     public void hideViewPropertyView() {
@@ -631,24 +634,32 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
     }
 
     private void launchAiGenerateLayout() {
-        // Check credentials first
-        String api = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance()
-                .getString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, "");
-        if (api == null || api.isEmpty()) {
+        // Check if API is configured
+        if (!isGroqApiConfigured()) {
             showMissingGroqDialog();
             return;
         }
         try {
             var currentFile = Helper.getText(fileName);
+            
+            // Criar layout customizado para o dialog
+            View dialogView = getLayoutInflater().inflate(R.layout.dialog_ai_layout_generation, null);
+            
             var dialog = new MaterialAlertDialogBuilder(this)
                     .setTitle("AI Generate Layout")
-                    .setMessage("Describe the layout you want. It will replace the current layout content.")
-                    .setView(getLayoutInflater().inflate(R.layout.dialog_input_text, null))
+                    .setMessage("Describe the layout you want to generate or modify.")
+                    .setView(dialogView)
                     .setPositiveButton(R.string.common_word_generate, (d, w) -> {
-                        var view = ((AlertDialog) d).findViewById(R.id.input_text);
-                        if (view instanceof TextInputEditText edit) {
+                        var promptView = dialogView.findViewById(R.id.input_text);
+                        var preserveCurrentCheckbox = dialogView.findViewById(R.id.checkbox_preserve_current);
+                        var styleConsistencyCheckbox = dialogView.findViewById(R.id.checkbox_style_consistency);
+                        
+                        if (promptView instanceof TextInputEditText edit) {
                             String prompt = String.valueOf(edit.getText());
-                            generateAndApplyLayoutAsync(currentFile, prompt);
+                            boolean preserveCurrent = preserveCurrentCheckbox instanceof CheckBox && ((CheckBox) preserveCurrentCheckbox).isChecked();
+                            boolean styleConsistency = styleConsistencyCheckbox instanceof CheckBox && ((CheckBox) styleConsistencyCheckbox).isChecked();
+                            
+                            generateAndApplyLayoutAsync(currentFile, prompt, preserveCurrent, styleConsistency);
                         }
                     })
                     .setNegativeButton(R.string.common_word_cancel, null)
@@ -660,15 +671,24 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
         }
     }
 
+    /**
+     * Checks if the Groq API is configured and active
+     */
+    private boolean isGroqApiConfigured() {
+        String apiKey = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance()
+                .getString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, "");
+        return apiKey != null && !apiKey.trim().isEmpty();
+    }
+
     private void showMissingGroqDialog() {
         var dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("AI (Groq) not configured")
-                .setMessage("Configure your API key and model in App settings → AI (Groq). You can get a free API key on Groq Console.")
-                .setPositiveButton("Open Groq settings", (v, w) -> {
+                .setMessage("To use the AI layout generation feature, you need to configure your Groq API key.\n\nYou can get a free API key from the Groq console.")
+                .setPositiveButton("Configure AI", (v, w) -> {
                     startActivity(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
                 })
-                .setNeutralButton("Open Groq console", (v, w) -> {
-                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/dashboard/"));
+                .setNeutralButton("Get free API key", (v, w) -> {
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/keys"));
                     startActivity(i);
                 })
                 .setNegativeButton(R.string.common_word_cancel, null)
@@ -676,12 +696,32 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
         dialog.show();
     }
 
-    private void generateAndApplyLayoutAsync(String filename, String prompt) {
+    private void generateAndApplyLayoutAsync(String filename, String prompt, boolean preserveCurrent, boolean styleConsistency) {
         k(); // show loading
         new Thread(() -> {
             try {
                 var generator = new pro.sketchware.ai.AiCodeGenerator();
-                String xml = generator.generateLayoutXml(prompt);
+                
+                // Preparar contexto da tela atual se preservar for selecionado
+                String currentLayoutXml = null;
+                Map<String, String> stylePreferences = null;
+                
+                if (preserveCurrent || styleConsistency) {
+                    try {
+                        // Obter o layout atual como XML
+                        currentLayoutXml = getCurrentLayoutAsXml(filename);
+                        
+                        if (styleConsistency) {
+                            // Extrair preferências de estilo do layout atual
+                            stylePreferences = extractStylePreferences(currentLayoutXml);
+                        }
+                    } catch (Exception e) {
+                        // Se não conseguir obter o layout atual, continuar sem contexto
+                        e.printStackTrace();
+                    }
+                }
+                
+                String xml = generator.generateLayoutXml(prompt, currentLayoutXml, stylePreferences);
                 if (xml == null || xml.isEmpty()) {
                     runOnUiThread(() -> {
                         h(); // hide loading
@@ -689,42 +729,173 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                     });
                     return;
                 }
-                // Parse XML into ViewBeans and apply
-                var parser = new pro.sketchware.tools.ViewBeanParser(xml);
-                parser.setSkipRoot(true);
-                var parsedLayout = parser.parse();
-                var root = parser.getRootAttributes();
+                
+                // Encapsular o layout gerado dentro do LinearLayout especificado
+                String encapsulatedXml = encapsulateLayoutInLinearLayout(xml);
+                
+            // Parse XML into ViewBeans and apply
+                var parser = new pro.sketchware.tools.ViewBeanParser(encapsulatedXml);
+            parser.setSkipRoot(true);
+            var parsedLayout = parser.parse();
+            var root = parser.getRootAttributes();
 
-                var rootLayoutManager = new pro.sketchware.managers.inject.InjectRootLayoutManager(sc_id);
-                rootLayoutManager.set(filename, pro.sketchware.managers.inject.InjectRootLayoutManager.toRoot(root));
+            var rootLayoutManager = new pro.sketchware.managers.inject.InjectRootLayoutManager(sc_id);
+            rootLayoutManager.set(filename, pro.sketchware.managers.inject.InjectRootLayoutManager.toRoot(root));
 
-                var bean = new com.besome.sketch.beans.HistoryViewBean();
-                bean.actionOverride(parsedLayout, a.a.a.jC.a(sc_id).d(filename));
-                var cc = a.a.a.cC.c(sc_id);
-                if (!cc.c.containsKey(filename)) {
-                    cc.e(filename);
-                }
-                cc.a(filename);
-                cc.a(filename, bean);
-                a.a.a.jC.a(sc_id).c.put(filename, parsedLayout);
+            var bean = new com.besome.sketch.beans.HistoryViewBean();
+            bean.actionOverride(parsedLayout, a.a.a.jC.a(sc_id).d(filename));
+            var cc = a.a.a.cC.c(sc_id);
+            if (!cc.c.containsKey(filename)) {
+                cc.e(filename);
+            }
+            cc.a(filename);
+            cc.a(filename, bean);
+            a.a.a.jC.a(sc_id).c.put(filename, parsedLayout);
 
                 runOnUiThread(() -> {
                     h(); // hide loading
-                    if (viewTabAdapter != null) viewTabAdapter.i();
-                    SketchwareUtil.toast("Layout updated by AI");
+            if (viewTabAdapter != null) viewTabAdapter.i();
+                    String message = preserveCurrent ? "Layout modified by AI (preserving existing elements)" : "Layout updated by AI";
+            SketchwareUtil.toast(message);
                 });
-            } catch (Exception e) {
+        } catch (Exception e) {
                 runOnUiThread(() -> {
                     h(); // hide loading
                     String msg = String.valueOf(e.getMessage());
-                    if (msg != null && msg.contains("Missing Groq API key")) {
+                    if (msg != null && (msg.contains("Missing Groq API key") || msg.contains("Groq API error"))) {
                         showMissingGroqDialog();
                     } else {
-                        SketchwareUtil.toastError(e.toString());
+                        SketchwareUtil.toastError("Generation error: " + e.getMessage());
                     }
                 });
             }
         }).start();
+    }
+    
+    /**
+     * Obtém o layout atual como XML para preservar o contexto
+     */
+    private String getCurrentLayoutAsXml(String filename) {
+        try {
+            // Obter o layout atual do projeto
+            var projectDataManager = a.a.a.jC.a(sc_id);
+            var currentViews = projectDataManager.d(filename);
+            
+            if (currentViews != null && !currentViews.isEmpty()) {
+                // Converter ViewBeans para XML
+                return convertViewBeansToXml(currentViews, filename);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Converte ViewBeans para XML para preservar o contexto
+     */
+    private String convertViewBeansToXml(List<com.besome.sketch.beans.ViewBean> viewBeans, String filename) {
+        try {
+            // Obter o layout root
+            var rootLayoutManager = new pro.sketchware.managers.inject.InjectRootLayoutManager(sc_id);
+            var rootLayout = rootLayoutManager.getLayoutByFileName(filename);
+            
+            StringBuilder xml = new StringBuilder();
+            xml.append("<").append(rootLayout.getClassName());
+            
+            // Adicionar atributos do root
+            for (Map.Entry<String, String> attr : rootLayout.getAttributes().entrySet()) {
+                xml.append(" ").append(attr.getKey()).append("=\"").append(attr.getValue()).append("\"");
+            }
+            xml.append(">\n");
+            
+            // Adicionar views
+            for (com.besome.sketch.beans.ViewBean viewBean : viewBeans) {
+                xml.append("    <").append(viewBean.getViewTypeName(viewBean.type));
+                
+                // Adicionar atributos básicos
+                if (viewBean.id != null && !viewBean.id.isEmpty()) {
+                    xml.append(" android:id=\"@+id/").append(viewBean.id).append("\"");
+                }
+                xml.append(" android:layout_width=\"").append(getLayoutDimension(viewBean.layout.width)).append("\"");
+                xml.append(" android:layout_height=\"").append(getLayoutDimension(viewBean.layout.height)).append("\"");
+                
+                // Adicionar outros atributos relevantes
+                if (viewBean.layout.backgroundResource != null && !viewBean.layout.backgroundResource.isEmpty()) {
+                    xml.append(" android:background=\"").append(viewBean.layout.backgroundResource).append("\"");
+                }
+                if (viewBean.text != null && viewBean.text.text != null && !viewBean.text.text.isEmpty()) {
+                    xml.append(" android:text=\"").append(viewBean.text.text).append("\"");
+                }
+                
+                xml.append(" />\n");
+            }
+            
+            xml.append("</").append(rootLayout.getClassName()).append(">");
+            return xml.toString();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Converte dimensões do Sketchware para XML
+     */
+    private String getLayoutDimension(int dimension) {
+        switch (dimension) {
+            case com.besome.sketch.beans.LayoutBean.LAYOUT_MATCH_PARENT:
+                return "match_parent";
+            case com.besome.sketch.beans.LayoutBean.LAYOUT_WRAP_CONTENT:
+                return "wrap_content";
+            default:
+                return "wrap_content";
+        }
+    }
+    
+    /**
+     * Extrai preferências de estilo do layout atual
+     */
+    private Map<String, String> extractStylePreferences(String currentLayoutXml) {
+        Map<String, String> preferences = new HashMap<>();
+        
+        try {
+            if (currentLayoutXml != null && !currentLayoutXml.trim().isEmpty()) {
+                // Analisar o XML para extrair padrões de estilo
+                if (currentLayoutXml.contains("android:padding=")) {
+                    preferences.put("padding", "consistent");
+                }
+                if (currentLayoutXml.contains("android:margin=")) {
+                    preferences.put("margin", "consistent");
+                }
+                if (currentLayoutXml.contains("android:textSize=")) {
+                    preferences.put("textSize", "consistent");
+                }
+                if (currentLayoutXml.contains("android:textColor=")) {
+                    preferences.put("textColor", "consistent");
+                }
+                if (currentLayoutXml.contains("android:background=")) {
+                    preferences.put("background", "consistent");
+                }
+                
+                // Detectar se usa Material Design
+                if (currentLayoutXml.contains("com.google.android.material")) {
+                    preferences.put("materialDesign", "enabled");
+                }
+                
+                // Detectar orientação padrão
+                if (currentLayoutXml.contains("android:orientation=\"vertical\"")) {
+                    preferences.put("orientation", "vertical");
+                } else if (currentLayoutXml.contains("android:orientation=\"horizontal\"")) {
+                    preferences.put("orientation", "horizontal");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return preferences;
     }
 
     @Override
@@ -1630,4 +1801,41 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
             }
         }
     }
+    
+    /**
+     * Encapsula o layout gerado pela IA dentro de um LinearLayout com as propriedades especificadas
+     */
+    private String encapsulateLayoutInLinearLayout(String xml) {
+        if (xml == null || xml.trim().isEmpty()) {
+            return xml;
+        }
+        
+        try {
+            // Remover a declaração XML se existir
+            String cleanXml = xml.trim();
+            if (cleanXml.startsWith("<?xml")) {
+                int endIndex = cleanXml.indexOf("?>") + 2;
+                cleanXml = cleanXml.substring(endIndex).trim();
+            }
+            
+            // Em vez de tentar extrair o conteúdo, vamos encapsular o XML completo
+            // Isso é mais seguro e evita problemas de parsing
+            return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                   "<LinearLayout\n" +
+                   "\txmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                   "\txmlns:app=\"http://schemas.android.com/apk/res-auto\"\n" +
+                   "\txmlns:tools=\"http://schemas.android.com/tools\"\n" +
+                   "\tandroid:layout_width=\"match_parent\"\n" +
+                   "\tandroid:layout_height=\"match_parent\"\n" +
+                   "\tandroid:orientation=\"vertical\">\n" +
+                   "\t" + cleanXml + "\n" +
+                   "</LinearLayout>";
+        } catch (Exception e) {
+            // Em caso de erro, retornar o XML original
+            e.printStackTrace();
+            return xml;
+        }
+    }
+    
+
 }

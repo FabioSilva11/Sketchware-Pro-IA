@@ -12,68 +12,173 @@
         android:background="?attr/colorSurface"
         app:titleTextColor="?attr/colorOnSurface"/>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/layout_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Functionality explanation -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="How does AI work?"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="The AI feature allows you to generate Android layouts automatically using the Groq API. You describe the desired layout and the AI creates the corresponding XML with widgets compatible with Sketchware Pro."
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Describe the layout you want to create\n• AI generates XML compatible with Sketchware Pro\n• Layout is automatically applied to the project\n• Supports all palette widgets"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Enable switch -->
+            <LinearLayout
+                android:id="@+id/layout_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Enable AI (Groq)"/>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/lib_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <!-- API Key -->
+            <TextView
+                android:id="@+id/tv_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="API Key"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <EditText
+                android:id="@+id/ed_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:hint="Paste your Groq API key here"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Get API link -->
+            <TextView
+                android:id="@+id/tv_get_api_link"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔑 Get free API key"
+                android:textSize="13sp"
+                android:textColor="?attr/colorPrimary"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Model -->
+            <TextView
+                android:id="@+id/tv_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Model"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <Spinner
+                android:id="@+id/spinner_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Layout Language -->
+            <TextView
+                android:id="@+id/tv_layout_language"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Layout Generation Language"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
 
             <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:text="Enable AI (Groq)"/>
+                android:text="Choose the language for AI layout generation prompts"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="8dp"/>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/lib_switch"
+            <Spinner
+                android:id="@+id/spinner_language"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Test button -->
+            <Button
+                android:id="@+id/btn_test"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="Test Connection"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <!-- Save button -->
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save"/>
+
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="API key"/>
-
-        <EditText
-            android:id="@+id/ed_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"/>
-
-        <TextView
-            android:id="@+id/tv_model"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Model"/>
-
-        <EditText
-            android:id="@+id/ed_model"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="llama-3.3-70b-versatile"/>
-
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Save"/>
-
-    </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
 

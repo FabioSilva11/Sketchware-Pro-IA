@@ -8,12 +8,6 @@
     android:gravity="center">
 
     <!-- Logo/Ícone -->
-    <ImageView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="32dp"
-        android:src="@drawable/ic_profile"
-        android:contentDescription="Logo" />
 
     <!-- Título -->
     <com.google.android.material.textview.MaterialTextView

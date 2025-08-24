@@ -85,7 +85,7 @@ public final class LayoutPaletteContext {
     public static Map<String, List<String>> getAttributesByType() {
         Map<String, List<String>> m = new LinkedHashMap<>();
 
-        // Common for most views
+        // Common for most views (based on Sketchware Pro properties)
         m.put("_common", Arrays.asList(
                 "android:id",
                 "android:layout_width (match_parent|wrap_content|dp)",
@@ -121,20 +121,17 @@ public final class LayoutPaletteContext {
         m.put("ScrollView", Arrays.asList("android:fillViewport (true|false)"));
         m.put("HorizontalScrollView", Arrays.asList("android:fillViewport (true|false)"));
         m.put("CardView", Arrays.asList(
-                "app:cardBackgroundColor",
-                "app:cardCornerRadius (dp)",
-                "app:cardElevation (dp)",
-                "app:contentPadding, contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom"
+                "android:background (for card background)",
+                "android:elevation (for card elevation)",
+                "android:padding (for content padding)"
         ));
         m.put("TextInputLayout", Arrays.asList(
-                "app:hintEnabled (true|false)",
-                "app:hintTextColor",
-                "app:boxBackgroundMode",
-                "app:boxCornerRadiusTopStart, ... (dp)"
+                "android:hint (for input hint)",
+                "android:textColorHint (for hint color)"
         ));
-        m.put("SwipeRefreshLayout", Arrays.asList("app:enabled (true|false)"));
+        m.put("SwipeRefreshLayout", Arrays.asList("android:enabled (true|false)"));
 
-        // Widgets
+        // Widgets - Propriedades específicas baseadas no ViewBean
         m.put("TextView", Arrays.asList(
                 "android:text",
                 "android:textSize (sp)",
@@ -173,18 +170,18 @@ public final class LayoutPaletteContext {
                 "android:dividerHeight (dp)",
                 "android:choiceMode (none|single|multiple)"
         ));
-        m.put("Spinner", Arrays.asList("android:prompt", "app:spinnerMode (dialog|dropdown)"));
+        m.put("Spinner", Arrays.asList("android:prompt"));
         m.put("CalendarView", Arrays.asList("android:firstDayOfWeek (1-7)"));
         m.put("WebView", Arrays.asList("android:overScrollMode"));
-        m.put("AdView", Arrays.asList("app:adSize", "app:adUnitId"));
+        m.put("AdView", Arrays.asList("android:layout_width", "android:layout_height"));
         m.put("MapView", Arrays.asList("android:apiKey (if needed via resources)"));
 
         // Extras
-        m.put("RecyclerView", Arrays.asList("app:layoutManager", "android:scrollbars"));
-        m.put("ViewPager", Arrays.asList("app:offscreenPageLimit"));
-        m.put("TabLayout", Arrays.asList("app:tabMode", "app:tabGravity"));
-        m.put("BottomNavigationView", Arrays.asList("app:menu (@menu/...)"));
-        m.put("CollapsingToolbarLayout", Arrays.asList("app:title", "app:contentScrim"));
+        m.put("RecyclerView", Arrays.asList("android:scrollbars"));
+        m.put("ViewPager", Arrays.asList("android:layout_width", "android:layout_height"));
+        m.put("TabLayout", Arrays.asList("android:layout_width", "android:layout_height"));
+        m.put("BottomNavigationView", Arrays.asList("android:layout_width", "android:layout_height"));
+        m.put("CollapsingToolbarLayout", Arrays.asList("android:layout_width", "android:layout_height"));
 
         return m;
     }

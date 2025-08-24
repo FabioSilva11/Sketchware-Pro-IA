@@ -17,8 +17,9 @@
 
     <item
         android:id="@+id/design_option_menu_ai_generate_layout"
+        android:icon="@drawable/ic_mtrl_code"
         android:orderInCategory="120"
         android:title="IA"
-        app:showAsAction="always|withText" />
+        app:showAsAction="always" />
 
 </menu>

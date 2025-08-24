@@ -9,12 +9,6 @@
         android:title="Publicar Projeto"
         app:showAsAction="never" />
 
-    <!-- Separador -->
-    <item
-        android:id="@+id/action_separator"
-        android:title=""
-        app:showAsAction="never" />
-
     <!-- Configurações -->
     <item
         android:id="@+id/action_settings"

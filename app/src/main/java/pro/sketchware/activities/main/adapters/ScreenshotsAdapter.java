@@ -75,11 +75,6 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
             }
         });
 
-        holder.deleteButton.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onScreenshotDelete(position);
-            }
-        });
     }
 
     private void loadImageFromUrl(String imageUrl, ImageView imageView) {
@@ -104,12 +99,10 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
 
     static class ScreenshotViewHolder extends RecyclerView.ViewHolder {
         final ImageView imageView;
-        final ImageView deleteButton;
 
         ScreenshotViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.screenshot_image);
-            deleteButton = itemView.findViewById(R.id.delete_button);
         }
     }
 }

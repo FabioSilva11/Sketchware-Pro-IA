@@ -52,10 +52,8 @@
 
                 <ImageView
                     android:id="@+id/profile_icon"
-                    android:layout_width="37dp"
-                    android:layout_height="37dp"
-                    android:layout_marginStart="12dp"
-                    android:padding="4dp"
+                    android:layout_width="27dp"
+                    android:layout_height="27dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_profile"
                     tools:ignore="ContentDescription" />
@@ -69,8 +67,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="8dp"
-                android:background="@android:color/transparent"
-                app:tabBackground="@drawable/tab_background"
                 app:tabIndicatorColor="?attr/colorPrimary"
                 app:tabSelectedTextColor="?attr/colorPrimary"
                 app:tabTextColor="?attr/colorOnSurfaceVariant"
