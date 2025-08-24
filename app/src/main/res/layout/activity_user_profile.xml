@@ -6,21 +6,13 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:title="Meu Perfil"
-            app:titleTextColor="?attr/colorOnPrimary" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        android:fitsSystemWindows="true"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:title="Meus Apps" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -118,13 +110,12 @@
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
-                                android:textColor="?attr/colorPrimary"
-                                android:textStyle="bold" />
+                                android:textColor="?attr/colorPrimary" />
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Aplicativos"
+                                android:text="Apps"
                                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -148,8 +139,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="0"
                                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
-                                android:textColor="?attr/colorPrimary"
-                                android:textStyle="bold" />
+                                android:textColor="?attr/colorPrimary" />
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
@@ -178,8 +168,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="0.0"
                                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
-                                android:textColor="?attr/colorPrimary"
-                                android:textStyle="bold" />
+                                android:textColor="?attr/colorPrimary" />
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
@@ -201,41 +190,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_profile"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="Editar Perfil"
-                    android:textAllCaps="false"
                     app:icon="@drawable/ic_edit"
-                    app:iconGravity="textStart"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_publish_app"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="Publicar App"
-                    android:textAllCaps="false"
                     app:icon="@drawable/ic_add"
-                    app:iconGravity="textStart" />
+                    style="@style/Widget.Material3.Button" />
 
             </LinearLayout>
 
-            <!-- Tabs para diferentes seções -->
+            <!-- TabLayout para navegação -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
 
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tab_layout"

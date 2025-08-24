@@ -20,7 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.appbar.MaterialToolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -124,11 +125,10 @@ public class PublishAppActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Publicar Aplicativo");
         }
     }
 
@@ -260,8 +260,8 @@ public class PublishAppActivity extends AppCompatActivity {
                     showProgress(false);
                     if (!results.isEmpty()) {
                         selectedIconUrl = results.get(0).getFileUrl();
-                        // Carregar e exibir a imagem
-                        loadImageFromUrl(selectedIconUrl, ivAppIcon);
+                        // Carregar e exibir a imagem com cache busting
+                        loadImageFromUrlWithCacheBust(selectedIconUrl, ivAppIcon);
                         Toast.makeText(PublishAppActivity.this, "Ícone enviado com sucesso!", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -285,9 +285,14 @@ public class PublishAppActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     showProgress(false);
                     if (!results.isEmpty()) {
+                        String screenshotUrl = results.get(0).getFileUrl();
                         String key = "s" + (screenshots.size() + 1);
-                        screenshots.put(key, results.get(0).getFileUrl());
+                        screenshots.put(key, screenshotUrl);
+                        
+                        // Forçar atualização do adapter
+                        screenshotsAdapter.clearImageCache();
                         screenshotsAdapter.notifyDataSetChanged();
+                        
                         Toast.makeText(PublishAppActivity.this, "Screenshot enviada com sucesso!", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -380,6 +385,30 @@ public class PublishAppActivity extends AppCompatActivity {
                 runOnUiThread(() -> imageView.setImageResource(R.drawable.sketch_app_icon));
             }
         }).start();
+    }
+
+    private void loadImageFromUrlWithCacheBust(String imageUrl, ImageView imageView) {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            // Adicionar timestamp para cache busting
+            String urlWithCacheBust = imageUrl;
+            if (!imageUrl.contains("?")) {
+                urlWithCacheBust = imageUrl + "?t=" + System.currentTimeMillis();
+            } else {
+                urlWithCacheBust = imageUrl + "&t=" + System.currentTimeMillis();
+            }
+            
+            // Usar Picasso para carregar imagens via URL com cache busting
+            Picasso.get()
+                .load(urlWithCacheBust)
+                .placeholder(R.drawable.sketch_app_icon)
+                .error(R.drawable.sketch_app_icon)
+                .fit()
+                .centerCrop()
+                .noFade() // Desabilitar fade para atualização imediata
+                .into(imageView);
+        } else {
+            imageView.setImageResource(R.drawable.sketch_app_icon);
+        }
     }
 
     private void saveDraft() {

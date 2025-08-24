@@ -97,13 +97,22 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
                     imageView.setImageResource(R.drawable.sketch_app_icon);
                 }
             } else if (imageUrl.startsWith("http")) {
-                // Usar Picasso para carregar imagens via URL
+                // Adicionar timestamp para cache busting
+                String urlWithCacheBust = imageUrl;
+                if (!imageUrl.contains("?")) {
+                    urlWithCacheBust = imageUrl + "?t=" + System.currentTimeMillis();
+                } else {
+                    urlWithCacheBust = imageUrl + "&t=" + System.currentTimeMillis();
+                }
+                
+                // Usar Picasso para carregar imagens via URL com cache busting
                 Picasso.get()
-                    .load(imageUrl)
+                    .load(urlWithCacheBust)
                     .placeholder(R.drawable.sketch_app_icon)
                     .error(R.drawable.sketch_app_icon)
                     .fit()
                     .centerCrop()
+                    .noFade() // Desabilitar fade para atualização imediata
                     .into(imageView);
             } else {
                 imageView.setImageResource(R.drawable.sketch_app_icon);
@@ -116,6 +125,33 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
     @Override
     public int getItemCount() {
         return screenshots.size();
+    }
+
+    // Método para forçar atualização de uma imagem específica
+    public void updateScreenshot(int position, String newUrl) {
+        if (position >= 0 && position < screenshots.size()) {
+            screenshots.set(position, newUrl);
+            notifyItemChanged(position);
+        }
+    }
+
+    // Método para adicionar nova screenshot
+    public void addScreenshot(String screenshotUrl) {
+        screenshots.add(screenshotUrl);
+        notifyItemInserted(screenshots.size() - 1);
+    }
+
+    // Método para remover screenshot
+    public void removeScreenshot(int position) {
+        if (position >= 0 && position < screenshots.size()) {
+            screenshots.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    // Método para limpar cache do Picasso
+    public void clearImageCache() {
+        Picasso.get().invalidate(""); // Invalida todo o cache
     }
 
     static class ScreenshotViewHolder extends RecyclerView.ViewHolder {
