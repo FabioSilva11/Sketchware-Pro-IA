@@ -59,13 +59,12 @@ public class PublishAppActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 1004;
 
     // Views
-    private TextInputEditText etAppName, etShortDescription, etLongDescription, etVersion, etDownloadUrl;
+    private TextInputEditText etAppName, etShortDescription, etLongDescription, etVersion;
     private AutoCompleteTextView spinnerCategory, spinnerDownloadType;
     private ImageView ivAppIcon;
     private RecyclerView rvScreenshots;
     private MaterialButton btnSelectIcon, btnAddScreenshot, btnUploadApk, btnSaveDraft, btnPublish;
     private MaterialTextView tvApkStatus;
-    private CircularProgressIndicator progressBar;
 
     // Data
     private String selectedIconUrl;
@@ -111,7 +110,6 @@ public class PublishAppActivity extends AppCompatActivity {
         etShortDescription = findViewById(R.id.et_short_description);
         etLongDescription = findViewById(R.id.et_long_description);
         etVersion = findViewById(R.id.et_version);
-        etDownloadUrl = findViewById(R.id.et_download_url);
         spinnerCategory = findViewById(R.id.spinner_category);
         spinnerDownloadType = findViewById(R.id.spinner_download_type);
         ivAppIcon = findViewById(R.id.iv_app_icon);
@@ -122,7 +120,7 @@ public class PublishAppActivity extends AppCompatActivity {
         btnSaveDraft = findViewById(R.id.btn_save_draft);
         btnPublish = findViewById(R.id.btn_publish);
         tvApkStatus = findViewById(R.id.tv_apk_status);
-        progressBar = findViewById(R.id.progress_bar);
+
     }
 
     private void setupToolbar() {
@@ -415,9 +413,9 @@ public class PublishAppActivity extends AppCompatActivity {
             spinnerCategory.setError("Categoria é obrigatória");
             return false;
         }
-        // Verificar se há URL de download ou arquivo .swb enviado
-        if (etDownloadUrl.getText().toString().trim().isEmpty() && selectedApkUrl == null) {
-            etDownloadUrl.setError("URL de download ou arquivo .swb é obrigatório");
+        // Verificar se há arquivo .swb enviado via API
+        if (selectedApkUrl == null) {
+            Toast.makeText(this, "É obrigatório fazer upload de um arquivo .swb", Toast.LENGTH_SHORT).show();
             return false;
         }
         if (selectedIconUrl == null || selectedIconUrl.trim().isEmpty()) {
@@ -443,8 +441,8 @@ public class PublishAppActivity extends AppCompatActivity {
         app.setVersao(etVersion.getText().toString().trim());
         app.setDataPublicacao(currentDate);
         
-        // Usar URL do arquivo .swb se disponível, senão usar URL manual
-        String downloadUrl = selectedApkUrl != null ? selectedApkUrl : etDownloadUrl.getText().toString().trim();
+        // Usar apenas URL do arquivo .swb enviado via API
+        String downloadUrl = selectedApkUrl;
         app.setLocationDownload(downloadUrl);
         app.setScreenshots(screenshots);
         app.setDownloads(0);
@@ -483,7 +481,7 @@ public class PublishAppActivity extends AppCompatActivity {
     }
 
     private void showProgress(boolean show) {
-        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        // progressBar foi removido, apenas controlar estado dos botões
         btnSaveDraft.setEnabled(!show);
         btnPublish.setEnabled(!show);
     }

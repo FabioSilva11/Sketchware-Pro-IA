@@ -15,8 +15,7 @@
             android:id="@+id/screenshot_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:background="@drawable/sketch_app_icon" />
+            android:scaleType="centerCrop" />
 
 
     </FrameLayout>

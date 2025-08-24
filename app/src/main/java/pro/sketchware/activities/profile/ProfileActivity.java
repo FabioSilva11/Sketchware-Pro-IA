@@ -117,8 +117,9 @@ public class ProfileActivity extends AppCompatActivity {
             onBackPressed();
             return true;
         } else if (id == R.id.action_publish_project) {
-            // TODO: Implementar publicação de projeto
-            Toast.makeText(this, "Funcionalidade em desenvolvimento", Toast.LENGTH_SHORT).show();
+            // Navegar para PublishAppActivity
+            Intent intent = new Intent(this, pro.sketchware.activities.main.activities.PublishAppActivity.class);
+            startActivity(intent);
             return true;
         } else if (id == R.id.action_logout) {
             logout();

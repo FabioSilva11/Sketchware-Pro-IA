@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 import pro.sketchware.activities.main.fragments.loja.AppItem;
@@ -130,9 +132,14 @@ public class LojaAdapter extends RecyclerView.Adapter<LojaAdapter.LojaViewHolder
                     holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
                 }
             } else if (iconUrl.startsWith("http")) {
-                // Para URLs HTTP/HTTPS, usar ícone padrão por enquanto
-                // TODO: Implementar carregamento de imagens via URL (Glide, Picasso, etc.)
-                holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);
+                // Usar Picasso para carregar imagens via URL
+                Picasso.get()
+                    .load(iconUrl)
+                    .placeholder(R.drawable.sketch_app_icon)
+                    .error(R.drawable.sketch_app_icon)
+                    .fit()
+                    .centerCrop()
+                    .into(holder.binding.appIcon);
             } else {
                 // Formato desconhecido, usar ícone padrão
                 holder.binding.appIcon.setImageResource(R.drawable.sketch_app_icon);

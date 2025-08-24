@@ -1,14 +1,25 @@
 package pro.sketchware.activities.main.activities;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.button.MaterialButton;
@@ -24,15 +35,23 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import pro.sketchware.R;
 import pro.sketchware.activities.main.adapters.UserProfilePagerAdapter;
 import pro.sketchware.activities.main.fragments.loja.AppItem;
+import pro.sketchware.activities.main.fragments.loja.Usuario;
+import pro.sketchware.activities.main.utils.FileUploadAPI;
 
 public class UserProfileActivity extends AppCompatActivity {
+
+    private static final int REQUEST_IMAGE_PICK = 1001;
+    private static final int PERMISSION_REQUEST_CODE = 1002;
 
     // Views
     private ImageView ivProfilePhoto;
@@ -47,11 +66,15 @@ public class UserProfileActivity extends AppCompatActivity {
     // Data
     private List<AppItem> userApps = new ArrayList<>();
     private List<AppItem> userDrafts = new ArrayList<>();
+    private Usuario currentUsuario;
 
     // Firebase
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference;
     private FirebaseUser currentUser;
+
+    // File Upload API
+    private FileUploadAPI fileUploader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +85,9 @@ public class UserProfileActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference();
         currentUser = firebaseAuth.getCurrentUser();
+
+        // Initialize File Upload API
+        fileUploader = new FileUploadAPI("https://rootapi.site/api_upload.php");
 
         if (currentUser == null) {
             Toast.makeText(this, "Você precisa estar logado", Toast.LENGTH_LONG).show();
@@ -134,9 +160,109 @@ public class UserProfileActivity extends AppCompatActivity {
         });
 
         fabEditPhoto.setOnClickListener(v -> {
-            // Implementar seleção de foto
-            Toast.makeText(this, "Funcionalidade em desenvolvimento", Toast.LENGTH_SHORT).show();
+            if (checkPermission()) {
+                selectImage();
+            } else {
+                requestPermission();
+            }
         });
+    }
+
+    private boolean checkPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
+               == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this, 
+            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 
+            PERMISSION_REQUEST_CODE);
+    }
+
+    private void selectImage() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_IMAGE_PICK);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            Uri fileUri = data.getData();
+            if (fileUri != null && requestCode == REQUEST_IMAGE_PICK) {
+                uploadProfilePhoto(fileUri);
+            }
+        }
+    }
+
+    private void uploadProfilePhoto(Uri fileUri) {
+        showProgress(true);
+        
+        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+            @Override
+            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+                if (!results.isEmpty()) {
+                    String photoUrl = results.get(0).getFileUrl();
+                    updateProfilePhotoInDatabase(photoUrl);
+                } else {
+                    showProgress(false);
+                    Toast.makeText(UserProfileActivity.this, "Erro no upload da foto", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                showProgress(false);
+                Toast.makeText(UserProfileActivity.this, "Erro no upload: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateProfilePhotoInDatabase(String photoUrl) {
+        databaseReference.child("usuarios").child(currentUser.getUid()).child("foto_perfil").setValue(photoUrl)
+            .addOnSuccessListener(aVoid -> {
+                showProgress(false);
+                loadProfilePhoto(photoUrl);
+                Toast.makeText(this, "Foto de perfil atualizada com sucesso!", Toast.LENGTH_SHORT).show();
+            })
+            .addOnFailureListener(e -> {
+                showProgress(false);
+                Toast.makeText(this, "Erro ao atualizar foto: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+    }
+
+    private void loadProfilePhoto(String photoUrl) {
+        if (photoUrl != null && !photoUrl.trim().isEmpty()) {
+            if (photoUrl.startsWith("data:image")) {
+                // Processar imagem base64
+                try {
+                    String base64Data = photoUrl.substring(photoUrl.indexOf(",") + 1);
+                    byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    
+                    if (bitmap != null) {
+                        ivProfilePhoto.setImageBitmap(bitmap);
+                    } else {
+                        ivProfilePhoto.setImageResource(R.drawable.sketch_app_icon);
+                    }
+                } catch (Exception e) {
+                    ivProfilePhoto.setImageResource(R.drawable.sketch_app_icon);
+                }
+            } else if (photoUrl.startsWith("http")) {
+                // Usar Picasso para carregar imagem via URL
+                Picasso.get()
+                    .load(photoUrl)
+                    .placeholder(R.drawable.sketch_app_icon)
+                    .error(R.drawable.sketch_app_icon)
+                    .fit()
+                    .centerCrop()
+                    .into(ivProfilePhoto);
+            } else {
+                ivProfilePhoto.setImageResource(R.drawable.sketch_app_icon);
+            }
+        } else {
+            ivProfilePhoto.setImageResource(R.drawable.sketch_app_icon);
+        }
     }
 
     private void loadUserData() {
@@ -151,9 +277,20 @@ public class UserProfileActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         // Usuário já existe no banco, carregar dados completos
-                        String nomeCompleto = dataSnapshot.child("nome_completo").getValue(String.class);
-                        if (nomeCompleto != null && !nomeCompleto.isEmpty()) {
-                            tvUserName.setText(nomeCompleto);
+                        currentUsuario = dataSnapshot.getValue(Usuario.class);
+                        if (currentUsuario != null) {
+                            currentUsuario.setId(currentUser.getUid());
+                            
+                            String nomeCompleto = currentUsuario.getNome_completo();
+                            if (nomeCompleto != null && !nomeCompleto.isEmpty()) {
+                                tvUserName.setText(nomeCompleto);
+                            }
+                            
+                            // Carregar foto de perfil
+                            String fotoPerfil = currentUsuario.getFoto_perfil();
+                            if (fotoPerfil != null && !fotoPerfil.isEmpty()) {
+                                loadProfilePhoto(fotoPerfil);
+                            }
                         }
                     } else {
                         // Criar usuário no banco
@@ -170,10 +307,20 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void createUserInDatabase() {
         // Criar usuário no banco de dados
-        databaseReference.child("usuarios").child(currentUser.getUid()).child("nome_completo").setValue(currentUser.getDisplayName());
-        databaseReference.child("usuarios").child(currentUser.getUid()).child("email").setValue(currentUser.getEmail());
-        databaseReference.child("usuarios").child(currentUser.getUid()).child("status").setValue("ativo");
-        databaseReference.child("usuarios").child(currentUser.getUid()).child("data_cadastro").setValue(java.time.LocalDateTime.now().toString());
+        currentUsuario = new Usuario(
+            currentUser.getUid(),
+            currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "Usuário",
+            currentUser.getEmail()
+        );
+        currentUsuario.setData_cadastro(java.time.LocalDateTime.now().toString());
+        
+        databaseReference.child("usuarios").child(currentUser.getUid()).setValue(currentUsuario)
+            .addOnSuccessListener(aVoid -> {
+                Toast.makeText(this, "Perfil criado com sucesso!", Toast.LENGTH_SHORT).show();
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(this, "Erro ao criar perfil: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void loadUserApps() {
@@ -203,6 +350,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 }
                 
                 updateStatistics();
+                updateViewPagerData();
                 showProgress(false);
             }
 
@@ -212,6 +360,13 @@ public class UserProfileActivity extends AppCompatActivity {
                 Toast.makeText(UserProfileActivity.this, "Erro ao carregar aplicativos", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void updateViewPagerData() {
+        if (viewPager.getAdapter() instanceof UserProfilePagerAdapter) {
+            UserProfilePagerAdapter adapter = (UserProfilePagerAdapter) viewPager.getAdapter();
+            adapter.updateData(userApps, userDrafts);
+        }
     }
 
     private void updateStatistics() {
@@ -253,6 +408,9 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void showProgress(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        btnEditProfile.setEnabled(!show);
+        btnPublishApp.setEnabled(!show);
+        fabEditPhoto.setEnabled(!show);
     }
 
     public List<AppItem> getUserApps() {
@@ -274,5 +432,17 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onResume();
         // Recarregar dados quando voltar da tela de publicação
         loadUserApps();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                selectImage();
+            } else {
+                Toast.makeText(this, "Permissão necessária para selecionar foto", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

@@ -6,112 +6,122 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Header -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Configurações"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Informações da Conta -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_account_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="16dp"
         app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Configurações da Conta"
+                android:text="Status da Conta"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginBottom="16dp" />
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_account_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Conta ativa"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Botões de Configuração -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="4dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_profile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_height="56dp"
                 android:text="Editar Perfil"
-                app:icon="@drawable/ic_edit"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                android:textAllCaps="false"
+                android:textAlignment="textStart"
+                app:icon="@drawable/ic_profile"
+                app:iconGravity="textStart"
+                style="@style/Widget.Material3.Button.TextButton" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_change_password"
+                android:id="@+id/btn_privacy_settings"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Alterar Senha"
+                android:layout_height="56dp"
+                android:text="Configurações de Privacidade"
+                android:textAllCaps="false"
+                android:textAlignment="textStart"
                 app:icon="@drawable/ic_lock"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                app:iconGravity="textStart"
+                style="@style/Widget.Material3.Button.TextButton" />
 
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sessão"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginBottom="16dp" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorOutline" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_logout"
+                android:id="@+id/btn_notification_settings"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Sair da Conta"
-                app:icon="@drawable/ic_logout"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                android:layout_height="56dp"
+                android:text="Configurações de Notificação"
+                android:textAllCaps="false"
+                android:textAlignment="textStart"
+                app:icon="@drawable/ic_info"
+                app:iconGravity="textStart"
+                style="@style/Widget.Material3.Button.TextButton" />
 
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
+    <!-- Botão de Logout -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_logout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Zona de Perigo"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:textColor="?attr/colorError"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_delete_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Excluir Conta"
-                app:icon="@drawable/ic_delete"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:textColor="?attr/colorError"
-                app:strokeColor="?attr/colorError" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
+        android:layout_height="56dp"
+        android:text="Sair da Conta"
+        android:textAllCaps="false"
+        android:textColor="?attr/colorError"
+        app:icon="@drawable/ic_logout"
+        app:iconGravity="textStart"
+        app:iconTint="?attr/colorError"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
 
 </LinearLayout>

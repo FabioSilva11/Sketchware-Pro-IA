@@ -11,25 +11,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textview.MaterialTextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import pro.sketchware.R;
 import pro.sketchware.activities.main.activities.DetalhesActivity;
-import pro.sketchware.activities.main.activities.UserProfileActivity;
 import pro.sketchware.activities.main.adapters.LojaAdapter;
 import pro.sketchware.activities.main.fragments.loja.AppItem;
 
 public class UserAppsFragment extends Fragment {
 
-    private RecyclerView recyclerView;
+    private androidx.recyclerview.widget.RecyclerView recyclerView;
     private MaterialTextView tvEmptyState;
     private LojaAdapter adapter;
-    private List<AppItem> apps = new ArrayList<>();
+    private List<AppItem> apps;
+
+    public static UserAppsFragment newInstance(List<AppItem> apps) {
+        UserAppsFragment fragment = new UserAppsFragment();
+        fragment.apps = apps;
+        return fragment;
+    }
 
     @Nullable
     @Override
@@ -40,7 +43,7 @@ public class UserAppsFragment extends Fragment {
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
         
         setupRecyclerView();
-        loadUserApps();
+        updateUI();
         
         return view;
     }
@@ -71,20 +74,10 @@ public class UserAppsFragment extends Fragment {
         });
     }
 
-    private void loadUserApps() {
-        if (getActivity() instanceof UserProfileActivity) {
-            UserProfileActivity activity = (UserProfileActivity) getActivity();
-            apps.clear();
-            apps.addAll(activity.getUserApps());
-            updateUI();
-        }
-    }
-
     private void updateUI() {
-        if (apps.isEmpty()) {
+        if (apps == null || apps.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyState.setVisibility(View.VISIBLE);
-            tvEmptyState.setText("Você ainda não publicou nenhum aplicativo.\nClique em 'Publicar App' para começar!");
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             tvEmptyState.setVisibility(View.GONE);
@@ -92,9 +85,10 @@ public class UserAppsFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadUserApps();
+    public void updateApps(List<AppItem> newApps) {
+        this.apps = newApps;
+        if (adapter != null) {
+            updateUI();
+        }
     }
 }

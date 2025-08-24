@@ -264,22 +264,7 @@
                         android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- URL de Download -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="URL de Download"
-                        app:boxStrokeColor="?attr/colorPrimary"
-                        app:hintTextColor="?attr/colorPrimary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/et_download_url"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textUri" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
+                    <!-- Campo de URL removido - usando apenas upload via API -->
 
                     <!-- Upload de APK -->
                     <LinearLayout

@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,18 +80,37 @@ public class ScreenshotsAdapter extends RecyclerView.Adapter<ScreenshotsAdapter.
     }
 
     private void loadImageFromUrl(String imageUrl, ImageView imageView) {
-        // Implementação simples para carregar imagem da URL
-        // Em produção, use Glide ou Picasso
-        new Thread(() -> {
-            try {
-                java.net.URL url = new java.net.URL(imageUrl);
-                Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                imageView.post(() -> imageView.setImageBitmap(bitmap));
-            } catch (Exception e) {
-                e.printStackTrace();
-                imageView.post(() -> imageView.setImageResource(R.drawable.sketch_app_icon));
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            if (imageUrl.startsWith("data:image")) {
+                // Processar imagem base64
+                try {
+                    String base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1);
+                    byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    
+                    if (bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                    } else {
+                        imageView.setImageResource(R.drawable.sketch_app_icon);
+                    }
+                } catch (Exception e) {
+                    imageView.setImageResource(R.drawable.sketch_app_icon);
+                }
+            } else if (imageUrl.startsWith("http")) {
+                // Usar Picasso para carregar imagens via URL
+                Picasso.get()
+                    .load(imageUrl)
+                    .placeholder(R.drawable.sketch_app_icon)
+                    .error(R.drawable.sketch_app_icon)
+                    .fit()
+                    .centerCrop()
+                    .into(imageView);
+            } else {
+                imageView.setImageResource(R.drawable.sketch_app_icon);
             }
-        }).start();
+        } else {
+            imageView.setImageResource(R.drawable.sketch_app_icon);
+        }
     }
 
     @Override
