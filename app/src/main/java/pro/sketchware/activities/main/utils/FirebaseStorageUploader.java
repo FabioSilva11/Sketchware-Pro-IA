@@ -112,7 +112,7 @@ public class FirebaseStorageUploader {
             
             if (taskSnapshot.getTask().isSuccessful()) {
                 // Obter a URL de download
-                String downloadUrl = Tasks.await(fileRef.getDownloadUrl());
+                Uri downloadUrl = Tasks.await(fileRef.getDownloadUrl());
                 return new UploadResult(uniqueFileName, downloadUrl.toString());
             } else {
                 Log.e(TAG, "Upload falhou para: " + fileUri);
@@ -148,7 +148,7 @@ public class FirebaseStorageUploader {
             
             if (taskSnapshot.getTask().isSuccessful()) {
                 // Obter a URL de download
-                String downloadUrl = Tasks.await(fileRef.getDownloadUrl());
+                Uri downloadUrl = Tasks.await(fileRef.getDownloadUrl());
                 return new UploadResult(uniqueFileName, downloadUrl.toString());
             } else {
                 Log.e(TAG, "Upload falhou para: " + file.getAbsolutePath());
