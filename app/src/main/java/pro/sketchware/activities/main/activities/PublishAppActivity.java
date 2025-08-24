@@ -50,7 +50,7 @@ import java.util.UUID;
 import pro.sketchware.R;
 import pro.sketchware.activities.main.adapters.ScreenshotsAdapter;
 import pro.sketchware.activities.main.fragments.loja.AppItem;
-import pro.sketchware.activities.main.utils.FileUploadAPI;
+import pro.sketchware.activities.main.utils.FirebaseStorageUploader;
 
 public class PublishAppActivity extends AppCompatActivity {
 
@@ -72,7 +72,7 @@ public class PublishAppActivity extends AppCompatActivity {
     private String selectedApkUrl;
     private Map<String, String> screenshots = new HashMap<>();
     private ScreenshotsAdapter screenshotsAdapter;
-    private FileUploadAPI fileUploader;
+    private FirebaseStorageUploader fileUploader;
 
     // Firebase
     private FirebaseAuth firebaseAuth;
@@ -89,8 +89,8 @@ public class PublishAppActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         currentUser = firebaseAuth.getCurrentUser();
         
-        // Initialize File Upload API
-        fileUploader = new FileUploadAPI("https://rootapi.site/api_upload.php");
+        // Initialize Firebase Storage Uploader
+        fileUploader = new FirebaseStorageUploader();
 
         if (currentUser == null) {
             Toast.makeText(this, "Você precisa estar logado para publicar um app", Toast.LENGTH_LONG).show();
@@ -253,9 +253,9 @@ public class PublishAppActivity extends AppCompatActivity {
 
     private void uploadIcon(Uri fileUri) {
         showProgress(true);
-        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+        fileUploader.uploadFile(fileUri, this, "app_icons", new FirebaseStorageUploader.FileUploadCallback() {
             @Override
-            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+            public void onSuccess(List<FirebaseStorageUploader.UploadResult> results) {
                 runOnUiThread(() -> {
                     showProgress(false);
                     if (!results.isEmpty()) {
@@ -279,9 +279,9 @@ public class PublishAppActivity extends AppCompatActivity {
 
     private void uploadScreenshot(Uri fileUri) {
         showProgress(true);
-        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+        fileUploader.uploadFile(fileUri, this, "app_screenshots", new FirebaseStorageUploader.FileUploadCallback() {
             @Override
-            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+            public void onSuccess(List<FirebaseStorageUploader.UploadResult> results) {
                 runOnUiThread(() -> {
                     showProgress(false);
                     if (!results.isEmpty()) {
@@ -319,9 +319,9 @@ public class PublishAppActivity extends AppCompatActivity {
         showProgress(true);
         tvApkStatus.setText("Enviando arquivo .swb...");
         
-        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+        fileUploader.uploadFile(fileUri, this, "app_files", new FirebaseStorageUploader.FileUploadCallback() {
             @Override
-            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+            public void onSuccess(List<FirebaseStorageUploader.UploadResult> results) {
                 runOnUiThread(() -> {
                     showProgress(false);
                     if (!results.isEmpty()) {

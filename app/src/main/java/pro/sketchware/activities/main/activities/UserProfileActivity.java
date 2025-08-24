@@ -46,7 +46,7 @@ import pro.sketchware.R;
 import pro.sketchware.activities.main.adapters.UserProfilePagerAdapter;
 import pro.sketchware.activities.main.fragments.loja.AppItem;
 import pro.sketchware.activities.main.fragments.loja.Usuario;
-import pro.sketchware.activities.main.utils.FileUploadAPI;
+import pro.sketchware.activities.main.utils.FirebaseStorageUploader;
 
 public class UserProfileActivity extends AppCompatActivity {
 
@@ -73,8 +73,8 @@ public class UserProfileActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private FirebaseUser currentUser;
 
-    // File Upload API
-    private FileUploadAPI fileUploader;
+    // Firebase Storage Uploader
+    private FirebaseStorageUploader fileUploader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,8 +86,8 @@ public class UserProfileActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         currentUser = firebaseAuth.getCurrentUser();
 
-        // Initialize File Upload API
-        fileUploader = new FileUploadAPI("https://rootapi.site/api_upload.php");
+        // Initialize Firebase Storage Uploader
+        fileUploader = new FirebaseStorageUploader();
 
         if (currentUser == null) {
             Toast.makeText(this, "Você precisa estar logado", Toast.LENGTH_LONG).show();
@@ -197,9 +197,9 @@ public class UserProfileActivity extends AppCompatActivity {
     private void uploadProfilePhoto(Uri fileUri) {
         showProgress(true);
         
-        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+        fileUploader.uploadFile(fileUri, this, "profile_photos", new FirebaseStorageUploader.FileUploadCallback() {
             @Override
-            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+            public void onSuccess(List<FirebaseStorageUploader.UploadResult> results) {
                 if (!results.isEmpty()) {
                     String photoUrl = results.get(0).getFileUrl();
                     updateProfilePhotoInDatabase(photoUrl);

@@ -43,7 +43,7 @@ import pro.sketchware.R;
 import pro.sketchware.activities.main.activities.PublishAppActivity;
 import pro.sketchware.activities.main.activities.UserProfileActivity;
 import pro.sketchware.activities.main.fragments.loja.AppItem;
-import pro.sketchware.activities.main.utils.FileUploadAPI;
+import pro.sketchware.activities.main.utils.FirebaseStorageUploader;
 
 public class ProfileActivity extends AppCompatActivity {
     
@@ -64,8 +64,8 @@ public class ProfileActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
     private FirebaseUser currentUser;
     
-    // File Upload API
-    private FileUploadAPI fileUploader;
+    // Firebase Storage Uploader
+    private FirebaseStorageUploader fileUploader;
     
     // Data
     private List<AppItem> userApps = new ArrayList<>();
@@ -80,8 +80,8 @@ public class ProfileActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         currentUser = mAuth.getCurrentUser();
         
-        // Inicializar File Upload API
-        fileUploader = new FileUploadAPI("https://rootapi.site/api_upload.php");
+        // Inicializar Firebase Storage Uploader
+        fileUploader = new FirebaseStorageUploader();
         
         // Verificar se usuário está logado
         if (currentUser == null) {
@@ -317,9 +317,9 @@ public class ProfileActivity extends AppCompatActivity {
     
     private void uploadProfilePhoto(Uri fileUri) {
         showProgress(true);
-        fileUploader.uploadFile(fileUri, this, new FileUploadAPI.FileUploadCallback() {
+        fileUploader.uploadFile(fileUri, this, "profile_photos", new FirebaseStorageUploader.FileUploadCallback() {
             @Override
-            public void onSuccess(List<FileUploadAPI.UploadResult> results) {
+            public void onSuccess(List<FirebaseStorageUploader.UploadResult> results) {
                 runOnUiThread(() -> {
                     showProgress(false);
                     if (!results.isEmpty()) {
