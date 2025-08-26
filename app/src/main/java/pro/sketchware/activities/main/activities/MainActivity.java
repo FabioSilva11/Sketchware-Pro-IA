@@ -527,13 +527,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             com.google.firebase.auth.FirebaseUser currentUser = mAuth.getCurrentUser();
             
             if (currentUser != null) {
-                // Usuário logado - ir para ProfileActivity
-                Intent intent = new Intent(this, pro.sketchware.activities.profile.ProfileActivity.class);
-                startActivity(intent);
+                Toast.makeText(this, "Perfil indisponível", Toast.LENGTH_SHORT).show();
             } else {
-                // Usuário não logado - ir para LoginActivity
-                Intent intent = new Intent(this, pro.sketchware.activities.auth.LoginActivity.class);
-                startActivity(intent);
+                Toast.makeText(this, "Login/Cadastro indisponível", Toast.LENGTH_SHORT).show();
             }
         });
     }

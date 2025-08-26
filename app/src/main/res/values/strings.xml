@@ -2317,9 +2317,6 @@ Please try again later"</string>
     <string name="auth_create_new_account">CRIAR NOVA CONTA</string>
     <string name="auth_already_have_account">JÁ TENHO UMA CONTA</string>
 
-    <!-- Loja -->
-    <string name="loja_title">Loja</string>
-    <string name="loja_empty_title">Nada por aqui</string>
-    <string name="loja_empty_subtitle">Em breve você encontrará conteúdos nesta seção</string>
+
 
 </resources>
