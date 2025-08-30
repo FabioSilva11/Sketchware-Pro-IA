@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import pro.sketchware.R;
+import pro.sketchware.activities.auth.AuthChoiceActivity;
+import pro.sketchware.activities.auth.AuthManager;
 import pro.sketchware.activities.main.activities.MainActivity;
 
 public class SplashActivity extends Activity {
@@ -40,7 +42,19 @@ public class SplashActivity extends Activity {
         subtitle.startAnimation(fadeIn);
 
         new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            // Check if user is already logged in
+            AuthManager authManager = AuthManager.getInstance();
+            
+            Intent intent;
+            if (authManager.isUserLoggedIn()) {
+                // User is already logged in, go to MainActivity
+                intent = new Intent(SplashActivity.this, MainActivity.class);
+            } else {
+                // User is not logged in, go to AuthChoiceActivity
+                intent = new Intent(SplashActivity.this, AuthChoiceActivity.class);
+            }
+            
+            startActivity(intent);
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
         }, SPLASH_DELAY);

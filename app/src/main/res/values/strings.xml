@@ -1,5 +1,52 @@
 <resources>
     <string name="app_name">Sketchware IA</string>
+    
+    <!-- Auth Strings -->
+    <string name="auth_choice_title">Entre no incrível mundo Dev!</string>
+    <string name="auth_login_title">Entrar</string>
+    <string name="auth_register_title">Criar Conta</string>
+    <string name="auth_skip_text">Pular</string>
+    <string name="auth_forgot_password">Esqueci a senha</string>
+    <string name="auth_no_account">Não tem uma conta? Cadastre-se</string>
+    <string name="auth_has_account">Já tem uma conta? Faça login</string>
+    <string name="auth_name_hint">Nome completo</string>
+    <string name="auth_email_hint">Email</string>
+    <string name="auth_password_hint">Senha</string>
+    <string name="auth_confirm_password_hint">Confirmar senha</string>
+    <string name="auth_name_required">Nome é obrigatório</string>
+    <string name="auth_email_required">Email é obrigatório</string>
+    <string name="auth_password_required">Senha é obrigatória</string>
+    <string name="auth_confirm_password_required">Confirmação de senha é obrigatória</string>
+    <string name="auth_passwords_dont_match">Senhas não coincidem</string>
+    <string name="auth_password_too_short">Senha deve ter pelo menos 6 caracteres</string>
+    <string name="auth_login_success">Login realizado com sucesso!</string>
+    <string name="auth_register_success">Cadastro realizado com sucesso!</string>
+    <string name="auth_login_failed">Falha na autenticação</string>
+    <string name="auth_register_failed">Falha no cadastro</string>
+    <string name="auth_save_data_failed">Falha ao salvar dados do usuário</string>
+    <string name="auth_forgot_password_coming_soon">Funcionalidade em desenvolvimento</string>
+    
+    <!-- Campos do Formulário -->
+    <string name="auth_phone_hint">Telefone</string>
+    <string name="auth_pin_hint">PIN de acesso</string>
+    <string name="auth_cpf_hint">CPF</string>
+    <string name="auth_cnpj_hint">CNPJ</string>
+    <string name="auth_curp_hint">CURP</string>
+    <string name="auth_rfc_hint">RFC</string>
+    <string name="auth_birthday_hint">Data de Nascimento</string>
+    <string name="auth_gender_hint">Gênero</string>
+    <string name="auth_cep_hint">CEP do Local de Trabalho</string>
+    <string name="auth_home_cep_hint">CEP da Residência</string>
+    <string name="auth_company_size_hint">Tamanho da Empresa</string>
+    <string name="auth_razao_social_hint">Razão Social</string>
+    <string name="auth_founded_at_hint">Data de Fundação</string>
+    
+    <!-- Seções do Formulário -->
+    <string name="auth_section_personal">Informações Pessoais</string>
+    <string name="auth_section_documents">Documentos</string>
+    <string name="auth_section_demographic">Dados Demográficos</string>
+    <string name="auth_section_location">Localização</string>
+    <string name="auth_section_business">Informações Empresariais</string>
     <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
     
     <!-- Template strings -->
@@ -2293,29 +2340,7 @@ Please try again later"</string>
     <string name="attr_already_exist">This attribute already exists</string>
 
 
-    <!-- auth strings moved from strings_auth.xml -->
-    <string name="auth_login_title">Login</string>
-    <string name="auth_register_title">Cadastro</string>
-    <string name="auth_email">E-mail</string>
-    <string name="auth_password">Senha</string>
-    <string name="auth_confirm_password">Confirmar senha</string>
-    <string name="auth_sign_in">Entrar</string>
-    <string name="auth_sign_up">Cadastrar</string>
-    <string name="auth_no_account_register">Não tem conta? Cadastre-se</string>
-    <string name="auth_have_account_login">Já tem conta? Entrar</string>
-    <string name="auth_invalid_email">E-mail inválido</string>
-    <string name="auth_required_field">Campo obrigatório</string>
-    <string name="auth_password_min">Mínimo de 6 caracteres</string>
-    <string name="auth_password_mismatch">As senhas não coincidem</string>
-    <string name="auth_login_success">Login realizado</string>
-    <string name="auth_register_success">Cadastro realizado</string>
-    <string name="auth_or">ou</string>
-    <string name="auth_login_header_title">Bem-vindo de volta!</string>
-    <string name="auth_login_header_subtitle">Faça login para continuar</string>
-    <string name="auth_register_header_title">Criar Conta</string>
-    <string name="auth_register_header_subtitle">Preencha os dados para se cadastrar</string>
-    <string name="auth_create_new_account">CRIAR NOVA CONTA</string>
-    <string name="auth_already_have_account">JÁ TENHO UMA CONTA</string>
+
 
 
 

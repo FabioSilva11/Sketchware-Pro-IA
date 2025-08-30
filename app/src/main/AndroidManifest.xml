@@ -96,6 +96,28 @@
             </intent-filter>
         </activity>
 
+        <!-- Auth Activities -->
+        <activity
+            android:name="pro.sketchware.activities.auth.AuthChoiceActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+        
+        <activity
+            android:name="pro.sketchware.activities.auth.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro"
+            android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+            android:name="pro.sketchware.activities.auth.RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro"
+            android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+            android:name="pro.sketchware.activities.auth.CategorySelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
 
             
         <activity

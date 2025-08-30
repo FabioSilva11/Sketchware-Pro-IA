@@ -11,7 +11,7 @@
     <com.google.android.material.textview.MaterialTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Entrar"
+        android:text="@string/auth_login_title"
         android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
         android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="32dp" />
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Email"
+        android:hint="@string/auth_email_hint"
         app:boxStrokeColor="?attr/colorPrimary"
         app:hintTextColor="?attr/colorPrimary">
 
@@ -39,7 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:hint="Senha"
+        android:hint="@string/auth_password_hint"
         app:boxStrokeColor="?attr/colorPrimary"
         app:hintTextColor="?attr/colorPrimary"
         app:passwordToggleEnabled="true">
@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginBottom="24dp"
-        android:text="Esqueci a senha"
+        android:text="@string/auth_forgot_password"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:textColor="?attr/colorPrimary"
         android:background="?attr/selectableItemBackground"
@@ -72,7 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Entrar"
+        android:text="@string/auth_login_title"
         android:padding="12dp" />
 
     <!-- Register Button -->
@@ -81,7 +81,7 @@
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Não tem uma conta? Cadastre-se"
+        android:text="@string/auth_no_account"
         android:padding="12dp" />
 
     <!-- Progress Bar -->
