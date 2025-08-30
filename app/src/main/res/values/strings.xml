@@ -2,51 +2,60 @@
     <string name="app_name">Sketchware IA</string>
     
     <!-- Auth Strings -->
-    <string name="auth_choice_title">Entre no incrível mundo Dev!</string>
-    <string name="auth_login_title">Entrar</string>
-    <string name="auth_register_title">Criar Conta</string>
-    <string name="auth_skip_text">Pular</string>
-    <string name="auth_forgot_password">Esqueci a senha</string>
-    <string name="auth_no_account">Não tem uma conta? Cadastre-se</string>
-    <string name="auth_has_account">Já tem uma conta? Faça login</string>
-    <string name="auth_name_hint">Nome completo</string>
+    <string name="auth_choice_title">Enter the amazing Dev world!</string>
+    <string name="auth_login_title">Sign In</string>
+    <string name="auth_register_title">Create Account</string>
+    <string name="auth_skip_text">Skip</string>
+    <string name="auth_forgot_password">Forgot password</string>
+    <string name="auth_no_account">Don\'t have an account? Sign up</string>
+    <string name="auth_has_account">Already have an account? Sign in</string>
+    <string name="auth_name_hint">Full name</string>
     <string name="auth_email_hint">Email</string>
-    <string name="auth_password_hint">Senha</string>
-    <string name="auth_confirm_password_hint">Confirmar senha</string>
-    <string name="auth_name_required">Nome é obrigatório</string>
-    <string name="auth_email_required">Email é obrigatório</string>
-    <string name="auth_password_required">Senha é obrigatória</string>
-    <string name="auth_confirm_password_required">Confirmação de senha é obrigatória</string>
-    <string name="auth_passwords_dont_match">Senhas não coincidem</string>
-    <string name="auth_password_too_short">Senha deve ter pelo menos 6 caracteres</string>
-    <string name="auth_login_success">Login realizado com sucesso!</string>
-    <string name="auth_register_success">Cadastro realizado com sucesso!</string>
-    <string name="auth_login_failed">Falha na autenticação</string>
-    <string name="auth_register_failed">Falha no cadastro</string>
-    <string name="auth_save_data_failed">Falha ao salvar dados do usuário</string>
-    <string name="auth_forgot_password_coming_soon">Funcionalidade em desenvolvimento</string>
+    <string name="auth_password_hint">Password</string>
+    <string name="auth_confirm_password_hint">Confirm password</string>
+    <string name="auth_name_required">Name is required</string>
+    <string name="auth_email_required">Email is required</string>
+    <string name="auth_password_required">Password is required</string>
+    <string name="auth_confirm_password_required">Password confirmation is required</string>
+    <string name="auth_passwords_dont_match">Passwords don\'t match</string>
+    <string name="auth_password_too_short">Password must be at least 6 characters</string>
+    <string name="auth_phone_required">Phone number is required</string>
+    <string name="auth_pin_required">PIN is required</string>
+    <string name="auth_pin_invalid">PIN must be 6 digits</string>
+    <string name="auth_birthday_required">Date of birth is required</string>
+    <string name="auth_gender_required">Please select a gender</string>
+    <string name="auth_home_cep_required">Home ZIP code is required</string>
+    <string name="auth_login_success">Login successful!</string>
+    <string name="auth_register_success">Registration successful!</string>
+    <string name="auth_login_failed">Authentication failed</string>
+    <string name="auth_register_failed">Registration failed</string>
+    <string name="auth_save_data_failed">Failed to save user data</string>
+    <string name="auth_forgot_password_coming_soon">Feature in development</string>
     
-    <!-- Campos do Formulário -->
-    <string name="auth_phone_hint">Telefone</string>
-    <string name="auth_pin_hint">PIN de acesso</string>
-    <string name="auth_cpf_hint">CPF</string>
-    <string name="auth_cnpj_hint">CNPJ</string>
-    <string name="auth_curp_hint">CURP</string>
-    <string name="auth_rfc_hint">RFC</string>
-    <string name="auth_birthday_hint">Data de Nascimento</string>
-    <string name="auth_gender_hint">Gênero</string>
-    <string name="auth_cep_hint">CEP do Local de Trabalho</string>
-    <string name="auth_home_cep_hint">CEP da Residência</string>
-    <string name="auth_company_size_hint">Tamanho da Empresa</string>
-    <string name="auth_razao_social_hint">Razão Social</string>
-    <string name="auth_founded_at_hint">Data de Fundação</string>
+    <!-- Form Fields -->
+    <string name="auth_phone_hint">Phone number</string>
+    <string name="auth_pin_hint">Access PIN</string>
+
+    <string name="auth_birthday_hint">Date of Birth</string>
+    <string name="auth_gender_hint">Gender</string>
+    <string name="auth_cep_hint">ZIP Code</string>
+    <string name="auth_home_cep_hint">Home ZIP Code</string>
+    <string name="auth_company_size_hint">Company Size</string>
+    <string name="auth_razao_social_hint">Company Name</string>
+    <string name="auth_founded_at_hint">Foundation Date</string>
     
-    <!-- Seções do Formulário -->
-    <string name="auth_section_personal">Informações Pessoais</string>
-    <string name="auth_section_documents">Documentos</string>
-    <string name="auth_section_demographic">Dados Demográficos</string>
-    <string name="auth_section_location">Localização</string>
-    <string name="auth_section_business">Informações Empresariais</string>
+    <!-- Gender Options -->
+    <string name="auth_gender_male">Male</string>
+    <string name="auth_gender_female">Female</string>
+    <string name="auth_gender_non_binary">Non-binary</string>
+    <string name="auth_gender_prefer_not_to_say">Prefer not to say</string>
+    
+    <!-- Form Sections -->
+    <string name="auth_section_personal">Personal Information</string>
+
+    <string name="auth_section_demographic">Demographic Data</string>
+    <string name="auth_section_location">Location</string>
+    <string name="auth_section_business">Business Information</string>
     <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
     
     <!-- Template strings -->

@@ -2,10 +2,12 @@ package pro.sketchware.activities.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,9 +33,9 @@ public class RegisterActivity extends AppCompatActivity {
     private static final int CATEGORY_SELECTION_REQUEST = 1001;
     
     private TextInputEditText nameInput, emailInput, passwordInput, confirmPasswordInput;
-    private TextInputEditText phoneInput, pinInput, cpfInput, cnpjInput, curpInput, rfcInput;
-    private TextInputEditText birthdayInput, cepInput, homeCepInput, razaoSocialInput, foundedAtInput;
-    private AutoCompleteTextView genderInput, companySizeInput;
+    private TextInputEditText phoneInput, pinInput;
+    private TextInputEditText birthdayInput, homeCepInput;
+    private RadioGroup genderRadioGroup;
     private MaterialButton registerButton;
     private MaterialTextView loginText;
     private ProgressBar progressBar;
@@ -59,17 +61,9 @@ public class RegisterActivity extends AppCompatActivity {
         confirmPasswordInput = findViewById(R.id.confirm_password_input);
         phoneInput = findViewById(R.id.phone_input);
         pinInput = findViewById(R.id.pin_input);
-        cpfInput = findViewById(R.id.cpf_input);
-        cnpjInput = findViewById(R.id.cnpj_input);
-        curpInput = findViewById(R.id.curp_input);
-        rfcInput = findViewById(R.id.rfc_input);
         birthdayInput = findViewById(R.id.birthday_input);
-        cepInput = findViewById(R.id.cep_input);
         homeCepInput = findViewById(R.id.home_cep_input);
-        razaoSocialInput = findViewById(R.id.razao_social_input);
-        foundedAtInput = findViewById(R.id.founded_at_input);
-        genderInput = findViewById(R.id.gender_input);
-        companySizeInput = findViewById(R.id.company_size_input);
+        genderRadioGroup = findViewById(R.id.gender_radio_group);
         registerButton = findViewById(R.id.register_button);
         loginText = findViewById(R.id.login_text);
         progressBar = findViewById(R.id.progress_bar);
@@ -81,9 +75,115 @@ public class RegisterActivity extends AppCompatActivity {
             finish();
         });
 
-        // Setup spinners
-        setupGenderSpinner();
-        setupCompanySizeSpinner();
+        // Setup automatic formatters
+        setupPhoneFormatter();
+        setupDateFormatter();
+        setupZipCodeFormatter();
+    }
+
+    private void setupPhoneFormatter() {
+        phoneInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String phone = s.toString().replaceAll("[^\\d]", "");
+                if (phone.length() > 11) {
+                    phone = phone.substring(0, 11);
+                }
+                
+                String formatted = "";
+                if (phone.length() > 0) {
+                    formatted = "(" + phone.substring(0, Math.min(2, phone.length()));
+                    if (phone.length() > 2) {
+                        formatted += ") " + phone.substring(2, Math.min(7, phone.length()));
+                        if (phone.length() > 7) {
+                            formatted += "-" + phone.substring(7);
+                        }
+                    }
+                }
+                
+                if (!formatted.equals(s.toString())) {
+                    phoneInput.removeTextChangedListener(this);
+                    phoneInput.setText(formatted);
+                    phoneInput.setSelection(formatted.length());
+                    phoneInput.addTextChangedListener(this);
+                }
+            }
+        });
+    }
+
+    private void setupDateFormatter() {
+        birthdayInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String date = s.toString().replaceAll("[^\\d]", "");
+                if (date.length() > 8) {
+                    date = date.substring(0, 8);
+                }
+                
+                String formatted = "";
+                if (date.length() > 0) {
+                    formatted = date.substring(0, Math.min(2, date.length()));
+                    if (date.length() > 2) {
+                        formatted += "/" + date.substring(2, Math.min(4, date.length()));
+                        if (date.length() > 4) {
+                            formatted += "/" + date.substring(4);
+                        }
+                    }
+                }
+                
+                if (!formatted.equals(s.toString())) {
+                    birthdayInput.removeTextChangedListener(this);
+                    birthdayInput.setText(formatted);
+                    birthdayInput.setSelection(formatted.length());
+                    birthdayInput.addTextChangedListener(this);
+                }
+            }
+        });
+    }
+
+    private void setupZipCodeFormatter() {
+        homeCepInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String zip = s.toString().replaceAll("[^\\d]", "");
+                if (zip.length() > 8) {
+                    zip = zip.substring(0, 8);
+                }
+                
+                String formatted = "";
+                if (zip.length() > 0) {
+                    formatted = zip.substring(0, Math.min(5, zip.length()));
+                    if (zip.length() > 5) {
+                        formatted += "-" + zip.substring(5);
+                    }
+                }
+                
+                if (!formatted.equals(s.toString())) {
+                    homeCepInput.removeTextChangedListener(this);
+                    homeCepInput.setText(formatted);
+                    homeCepInput.setSelection(formatted.length());
+                    homeCepInput.addTextChangedListener(this);
+                }
+            }
+        });
     }
 
     private void performRegister() {
@@ -93,21 +193,20 @@ public class RegisterActivity extends AppCompatActivity {
         String confirmPassword = confirmPasswordInput.getText().toString().trim();
         String phone = phoneInput.getText().toString().trim();
         String pin = pinInput.getText().toString().trim();
-        String cpf = cpfInput.getText().toString().trim();
-        String cnpj = cnpjInput.getText().toString().trim();
-        String curp = curpInput.getText().toString().trim();
-        String rfc = rfcInput.getText().toString().trim();
         String birthday = birthdayInput.getText().toString().trim();
-        String gender = genderInput.getText().toString().trim();
-        String cep = cepInput.getText().toString().trim();
         String homeCep = homeCepInput.getText().toString().trim();
-        String companySize = companySizeInput.getText().toString().trim();
-        String razaoSocial = razaoSocialInput.getText().toString().trim();
-        String foundedAt = foundedAtInput.getText().toString().trim();
+        
+        // Get selected gender from radio group
+        String gender = getSelectedGender();
 
-        // Validate required inputs
+        // Validate all required inputs
         if (name.isEmpty()) {
             nameInput.setError(getString(R.string.auth_name_required));
+            return;
+        }
+
+        if (phone.isEmpty()) {
+            phoneInput.setError(getString(R.string.auth_phone_required));
             return;
         }
 
@@ -136,6 +235,31 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        if (pin.isEmpty()) {
+            pinInput.setError(getString(R.string.auth_pin_required));
+            return;
+        }
+
+        if (pin.length() != 6) {
+            pinInput.setError(getString(R.string.auth_pin_invalid));
+            return;
+        }
+
+        if (birthday.isEmpty()) {
+            birthdayInput.setError(getString(R.string.auth_birthday_required));
+            return;
+        }
+
+        if (gender.isEmpty()) {
+            Toast.makeText(this, getString(R.string.auth_gender_required), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (homeCep.isEmpty()) {
+            homeCepInput.setError(getString(R.string.auth_home_cep_required));
+            return;
+        }
+
         // Store form data temporarily and go to category selection
         Intent intent = new Intent(RegisterActivity.this, CategorySelectionActivity.class);
         intent.putExtra("name", name);
@@ -143,19 +267,25 @@ public class RegisterActivity extends AppCompatActivity {
         intent.putExtra("password", password);
         intent.putExtra("phone", phone);
         intent.putExtra("pin", pin);
-        intent.putExtra("cpf", cpf);
-        intent.putExtra("cnpj", cnpj);
-        intent.putExtra("curp", curp);
-        intent.putExtra("rfc", rfc);
         intent.putExtra("birthday", birthday);
         intent.putExtra("gender", gender);
-        intent.putExtra("cep", cep);
         intent.putExtra("home_cep", homeCep);
-        intent.putExtra("company_size", companySize);
-        intent.putExtra("razao_social", razaoSocial);
-        intent.putExtra("founded_at", foundedAt);
         
         startActivityForResult(intent, CATEGORY_SELECTION_REQUEST);
+    }
+
+    private String getSelectedGender() {
+        int selectedId = genderRadioGroup.getCheckedRadioButtonId();
+        if (selectedId == R.id.gender_male) {
+            return getString(R.string.auth_gender_male);
+        } else if (selectedId == R.id.gender_female) {
+            return getString(R.string.auth_gender_female);
+        } else if (selectedId == R.id.gender_non_binary) {
+            return getString(R.string.auth_gender_non_binary);
+        } else if (selectedId == R.id.gender_prefer_not_to_say) {
+            return getString(R.string.auth_gender_prefer_not_to_say);
+        }
+        return "";
     }
 
     @Override
@@ -176,17 +306,9 @@ public class RegisterActivity extends AppCompatActivity {
             String password = data.getStringExtra("password");
             String phone = data.getStringExtra("phone");
             String pin = data.getStringExtra("pin");
-            String cpf = data.getStringExtra("cpf");
-            String cnpj = data.getStringExtra("cnpj");
-            String curp = data.getStringExtra("curp");
-            String rfc = data.getStringExtra("rfc");
             String birthday = data.getStringExtra("birthday");
             String gender = data.getStringExtra("gender");
-            String cep = data.getStringExtra("cep");
             String homeCep = data.getStringExtra("home_cep");
-            String companySize = data.getStringExtra("company_size");
-            String razaoSocial = data.getStringExtra("razao_social");
-            String foundedAt = data.getStringExtra("founded_at");
             
             // Show progress
             setLoading(true);
@@ -198,8 +320,8 @@ public class RegisterActivity extends AppCompatActivity {
                             // Sign up success, save user data to Firebase Database
                             FirebaseUser user = authManager.getCurrentUser();
                             if (user != null) {
-                                saveUserData(user.getUid(), name, email, phone, pin, cpf, cnpj, curp, rfc, 
-                                           birthday, gender, cep, homeCep, companySize, razaoSocial, foundedAt, finalSelectedCategories);
+                                saveUserData(user.getUid(), name, email, phone, pin, 
+                                           birthday, gender, homeCep, finalSelectedCategories);
                             }
                         } else {
                             // If sign up fails, display a message to the user.
@@ -213,29 +335,18 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void saveUserData(String userId, String name, String email, String phone, String pin, 
-                            String cpf, String cnpj, String curp, String rfc, String birthday, 
-                            String gender, String cep, String homeCep, String companySize, 
-                            String razaoSocial, String foundedAt, List<String> selectedCategories) {
+                            String birthday, String gender, String homeCep, List<String> selectedCategories) {
         // Create user data map with all required fields
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name);
         userData.put("email", email);
         userData.put("phone_number", phone);
-        userData.put("cpf", cpf);
-        userData.put("cnpj", cnpj);
-        userData.put("curp", curp);
-        userData.put("rfc", rfc);
         userData.put("birthday", birthday);
         userData.put("pin", pin);
         userData.put("gender", gender);
-        userData.put("cep", cep);
         userData.put("home_cep", homeCep);
-        userData.put("compane_size", companySize);
-        userData.put("razao_social", razaoSocial);
-        userData.put("founded_at", foundedAt);
         userData.put("sub_category_ids", selectedCategories.toArray(new String[0]));
         userData.put("token", "");
-        userData.put("pin", pin);
         userData.put("utm_campaign", "");
         userData.put("utm_medium", "");
         userData.put("utm_term", "");
@@ -271,20 +382,5 @@ public class RegisterActivity extends AppCompatActivity {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         registerButton.setEnabled(!isLoading);
         loginText.setEnabled(!isLoading);
-    }
-
-    private void setupGenderSpinner() {
-        String[] genderOptions = {"Masculino", "Feminino", "Não-binário", "Prefiro não informar"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-            android.R.layout.simple_dropdown_item_1line, genderOptions);
-        genderInput.setAdapter(adapter);
-    }
-
-    private void setupCompanySizeSpinner() {
-        String[] companySizeOptions = {"1-10 funcionários", "11-50 funcionários", "51-200 funcionários", 
-                                     "201-1000 funcionários", "1000+ funcionários", "Não aplicável"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-            android.R.layout.simple_dropdown_item_1line, companySizeOptions);
-        companySizeInput.setAdapter(adapter);
     }
 }

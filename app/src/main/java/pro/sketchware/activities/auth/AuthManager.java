@@ -48,8 +48,7 @@ public class AuthManager {
     
     public void saveUserData(String userId, String name, String email, String phone, String pin, 
                            String cpf, String cnpj, String curp, String rfc, String birthday, 
-                           String gender, String cep, String homeCep, String companySize, 
-                           String razaoSocial, String foundedAt) {
+                           String gender, String homeCep) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name);
         userData.put("email", email);
@@ -60,11 +59,7 @@ public class AuthManager {
         userData.put("rfc", rfc);
         userData.put("birthday", birthday);
         userData.put("gender", gender);
-        userData.put("cep", cep);
         userData.put("home_cep", homeCep);
-        userData.put("compane_size", companySize);
-        userData.put("razao_social", razaoSocial);
-        userData.put("founded_at", foundedAt);
         userData.put("sub_category_ids", new String[]{});
         userData.put("token", "");
         userData.put("pin", pin);

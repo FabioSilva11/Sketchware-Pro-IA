@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Título -->
+        <!-- Title -->
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -21,7 +21,7 @@
             android:layout_marginBottom="24dp"
             android:layout_gravity="center" />
 
-        <!-- Seção: Informações Pessoais -->
+        <!-- Section: Personal Information -->
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,14 +30,15 @@
             android:textColor="?attr/colorPrimary"
             android:layout_marginBottom="16dp" />
 
-        <!-- Nome Input -->
+        <!-- Name Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="@string/auth_name_hint"
             app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            app:hintTextColor="?attr/colorPrimary"
+            app:helperText="* Required">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/name_input"
@@ -48,14 +49,15 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Telefone Input -->
+        <!-- Phone Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="@string/auth_phone_hint"
             app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            app:hintTextColor="?attr/colorPrimary"
+            app:helperText="* Required">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/phone_input"
@@ -73,7 +75,8 @@
             android:layout_marginBottom="16dp"
             android:hint="@string/auth_email_hint"
             app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            app:hintTextColor="?attr/colorPrimary"
+            app:helperText="* Required">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/email_input"
@@ -92,7 +95,8 @@
             android:hint="@string/auth_password_hint"
             app:boxStrokeColor="?attr/colorPrimary"
             app:hintTextColor="?attr/colorPrimary"
-            app:passwordToggleEnabled="true">
+            app:passwordToggleEnabled="true"
+            app:helperText="* Required">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/password_input"
@@ -111,7 +115,8 @@
             android:hint="@string/auth_confirm_password_hint"
             app:boxStrokeColor="?attr/colorPrimary"
             app:hintTextColor="?attr/colorPrimary"
-            app:passwordToggleEnabled="true">
+            app:passwordToggleEnabled="true"
+            app:helperText="* Required">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/confirm_password_input"
@@ -129,7 +134,8 @@
             android:layout_marginBottom="24dp"
             android:hint="@string/auth_pin_hint"
             app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            app:hintTextColor="?attr/colorPrimary"
+            app:helperText="* Required (6 digits)">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/pin_input"
@@ -141,92 +147,9 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Seção: Documentos -->
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auth_section_documents"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="?attr/colorPrimary"
-            android:layout_marginBottom="16dp" />
 
-        <!-- CPF Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_cpf_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/cpf_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:maxLength="14"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- CNPJ Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_cnpj_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/cnpj_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:maxLength="18"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- CURP Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_curp_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/curp_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapCharacters"
-                android:maxLength="18"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- RFC Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="@string/auth_rfc_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/rfc_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapCharacters"
-                android:maxLength="13"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Seção: Dados Demográficos -->
+        <!-- Section: Demographic Data -->
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -235,7 +158,7 @@
             android:textColor="?attr/colorPrimary"
             android:layout_marginBottom="16dp" />
 
-        <!-- Data de Nascimento Input -->
+        <!-- Date of Birth Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -253,25 +176,52 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Gênero Spinner -->
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- Gender Radio Group -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/auth_gender_hint"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/gender_radio_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:hint="@string/auth_gender_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
+            android:orientation="vertical">
 
-            <AutoCompleteTextView
-                android:id="@+id/gender_input"
-                android:layout_width="match_parent"
+            <RadioButton
+                android:id="@+id/gender_male"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:focusable="false" />
+                android:text="@string/auth_gender_male"
+                android:layout_marginBottom="8dp" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <RadioButton
+                android:id="@+id/gender_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/auth_gender_female"
+                android:layout_marginBottom="8dp" />
 
-        <!-- Seção: Localização -->
+            <RadioButton
+                android:id="@+id/gender_non_binary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/auth_gender_non_binary"
+                android:layout_marginBottom="8dp" />
+
+            <RadioButton
+                android:id="@+id/gender_prefer_not_to_say"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/auth_gender_prefer_not_to_say" />
+
+        </RadioGroup>
+
+        <!-- Section: Location -->
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -280,26 +230,7 @@
             android:textColor="?attr/colorPrimary"
             android:layout_marginBottom="16dp" />
 
-        <!-- CEP Trabalho Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_cep_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/cep_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:maxLength="9"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- CEP Residência Input -->
+        <!-- Home ZIP Code Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -314,69 +245,6 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:maxLength="9"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Seção: Informações Empresariais -->
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auth_section_business"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="?attr/colorPrimary"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Tamanho da Empresa Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_company_size_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <AutoCompleteTextView
-                android:id="@+id/company_size_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                android:focusable="false" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Razão Social Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/auth_razao_social_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/razao_social_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Data de Fundação Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="@string/auth_founded_at_hint"
-            app:boxStrokeColor="?attr/colorPrimary"
-            app:hintTextColor="?attr/colorPrimary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/founded_at_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="date"
                 android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
@@ -28,6 +29,7 @@ import pro.sketchware.activities.main.activities.MainActivity;
 
 public class CategorySelectionActivity extends AppCompatActivity {
 
+    private MaterialToolbar toolbar;
     private RecyclerView categoriesRecycler;
     private TextView selectedCountText;
     private MaterialButton continueButton, skipButton;
@@ -39,22 +41,29 @@ public class CategorySelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_selection);
 
-        // Hide action bar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
-
         initializeViews();
+        setupToolbar();
         setupRecyclerView();
         setupButtons();
         updateSelectedCount();
     }
 
     private void initializeViews() {
+        toolbar = findViewById(R.id.toolbar);
         categoriesRecycler = findViewById(R.id.categories_recycler);
         selectedCountText = findViewById(R.id.selected_count);
         continueButton = findViewById(R.id.btn_continue);
         skipButton = findViewById(R.id.btn_skip_categories);
+    }
+
+    private void setupToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
     private void setupRecyclerView() {
@@ -73,7 +82,7 @@ public class CategorySelectionActivity extends AppCompatActivity {
                 setResult(RESULT_OK, resultIntent);
                 finish();
             } else {
-                Toast.makeText(this, "Selecione pelo menos uma categoria", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please select at least one category", Toast.LENGTH_SHORT).show();
             }
         });
 

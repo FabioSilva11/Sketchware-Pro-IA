@@ -28,7 +28,17 @@
     <item name="email_input" type="id" />
     <item name="password_input" type="id" />
     <item name="confirm_password_input" type="id" />
+    <item name="phone_input" type="id" />
+    <item name="pin_input" type="id" />
+    <item name="birthday_input" type="id" />
+    <item name="home_cep_input" type="id" />
+    <item name="gender_radio_group" type="id" />
+    <item name="gender_male" type="id" />
+    <item name="gender_female" type="id" />
+    <item name="gender_non_binary" type="id" />
+    <item name="gender_prefer_not_to_say" type="id" />
     <item name="register_button" type="id" />
     <item name="login_text" type="id" />
     <item name="progress_bar" type="id" />
+    <item name="toolbar" type="id" />
 </resources>

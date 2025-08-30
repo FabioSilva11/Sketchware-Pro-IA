@@ -6,31 +6,23 @@
     android:orientation="vertical"
     android:background="?attr/colorSurface">
 
-    <!-- Header -->
-    <LinearLayout
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp">
+        android:background="?attr/colorSurface"
+        android:elevation="0dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selecione suas Especialidades"
-            android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-            android:textColor="?attr/colorOnPrimary"
-            android:layout_marginBottom="8dp" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            app:title="Select Specialties"
+            app:titleTextColor="?attr/colorOnSurface"
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Escolha as áreas em que você trabalha ou tem interesse"
-            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textColor="?attr/colorOnPrimary" />
-
-    </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Progress Indicator -->
     <LinearLayout
@@ -38,12 +30,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:background="?attr/colorSurface">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Categorias selecionadas: "
+            android:text="Selected: "
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -80,7 +73,7 @@
             android:id="@+id/btn_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Continuar"
+            android:text="Continue"
             android:padding="12dp"
             android:enabled="false" />
 
@@ -89,7 +82,7 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pular esta etapa"
+            android:text="Skip this step"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="8dp" />
 
