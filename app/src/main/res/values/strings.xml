@@ -3,9 +3,18 @@
     
     <!-- Auth Strings -->
     <string name="auth_choice_title">Enter the amazing Dev world!</string>
+    <string name="auth_choice_subtitle">Create, develop and connect with other developers</string>
     <string name="auth_login_title">Sign In</string>
     <string name="auth_register_title">Create Account</string>
     <string name="auth_skip_text">Skip</string>
+    <string name="auth_login_subtitle">Enter your credentials to access your account</string>
+    <string name="auth_register_subtitle">Create your account to access exclusive features</string>
+    <string name="auth_benefits_title">Account Benefits</string>
+    <string name="auth_benefits_description">Creating an account will give you access to exclusive features and future improvements:</string>
+    <string name="auth_benefit_freelance">Freelance system and collaborative projects</string>
+    <string name="auth_benefit_realtime">Real-time database for synchronization</string>
+    <string name="auth_benefit_sync">Project synchronization between devices</string>
+    <string name="auth_privacy_notice">By creating an account, you agree to our Terms of Use and Privacy Policy</string>
     <string name="auth_forgot_password">Forgot password</string>
     <string name="auth_no_account">Don\'t have an account? Sign up</string>
     <string name="auth_has_account">Already have an account? Sign in</string>
@@ -60,7 +69,7 @@
     
     <!-- Template strings -->
     <string name="template_by_sketchware">by Sketchware</string>
-    <string name="template_enter_dev_world">Entre para o mundo dev</string>
+    <string name="template_enter_dev_world">Enter the dev world</string>
     <string name="template_upload_icon_description">Upload template</string>
     <string name="common_word_generate">Generate</string>
     <string name="besome_blog_url">http://medium.com/sketchware</string>

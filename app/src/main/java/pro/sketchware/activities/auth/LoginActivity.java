@@ -73,30 +73,41 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        // Check if Firebase is available
+        if (!authManager.isFirebaseAvailable()) {
+            Toast.makeText(this, "Firebase is not configured. Login temporarily unavailable.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         // Show progress
         setLoading(true);
 
         // Perform Firebase authentication
-        authManager.getAuth().signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    setLoading(false);
-                    if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
-                        FirebaseUser user = authManager.getCurrentUser();
-                        if (user != null) {
-                            // Navigate to MainActivity
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
+        try {
+            authManager.getAuth().signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> {
+                        setLoading(false);
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = authManager.getCurrentUser();
+                            if (user != null) {
+                                // Navigate to MainActivity
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            String errorMessage = task.getException() != null ? 
+                                task.getException().getMessage() : getString(R.string.auth_login_failed);
+                            Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                         }
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        String errorMessage = task.getException() != null ? 
-                            task.getException().getMessage() : getString(R.string.auth_login_failed);
-                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
+                    });
+        } catch (IllegalStateException e) {
+            setLoading(false);
+            Toast.makeText(this, "Firebase is not configured. Login temporarily unavailable.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setLoading(boolean isLoading) {

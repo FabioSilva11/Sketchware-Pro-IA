@@ -79,6 +79,17 @@ public class CategorySelectionActivity extends AppCompatActivity {
                 Intent resultIntent = new Intent();
                 resultIntent.putStringArrayListExtra("selected_categories", 
                     new ArrayList<>(selectedSubCategoryIds));
+                
+                // Pass back all the original form data
+                resultIntent.putExtra("name", getIntent().getStringExtra("name"));
+                resultIntent.putExtra("email", getIntent().getStringExtra("email"));
+                resultIntent.putExtra("password", getIntent().getStringExtra("password"));
+                resultIntent.putExtra("phone", getIntent().getStringExtra("phone"));
+                resultIntent.putExtra("pin", getIntent().getStringExtra("pin"));
+                resultIntent.putExtra("birthday", getIntent().getStringExtra("birthday"));
+                resultIntent.putExtra("gender", getIntent().getStringExtra("gender"));
+                resultIntent.putExtra("home_cep", getIntent().getStringExtra("home_cep"));
+                
                 setResult(RESULT_OK, resultIntent);
                 finish();
             } else {

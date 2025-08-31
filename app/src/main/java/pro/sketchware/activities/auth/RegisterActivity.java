@@ -310,27 +310,87 @@ public class RegisterActivity extends AppCompatActivity {
             String gender = data.getStringExtra("gender");
             String homeCep = data.getStringExtra("home_cep");
             
+            // Validate that email and password are not null or empty
+            if (email == null || email.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_email_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (password == null || password.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_password_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            // Validate other required fields
+            if (name == null || name.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_name_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (phone == null || phone.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_phone_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (pin == null || pin.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_pin_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (birthday == null || birthday.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_birthday_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (gender == null || gender.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_gender_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            if (homeCep == null || homeCep.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.auth_home_cep_required), Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            // Check if Firebase is properly initialized
+            try {
+                if (!authManager.isFirebaseAvailable()) {
+                    Toast.makeText(this, "Firebase is not configured. Registration temporarily unavailable.", Toast.LENGTH_LONG).show();
+                    setLoading(false);
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error checking Firebase configuration.", Toast.LENGTH_LONG).show();
+                setLoading(false);
+                return;
+            }
+            
             // Show progress
             setLoading(true);
             
             // Create user with Firebase Auth
-            authManager.getAuth().createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            // Sign up success, save user data to Firebase Database
-                            FirebaseUser user = authManager.getCurrentUser();
-                            if (user != null) {
-                                saveUserData(user.getUid(), name, email, phone, pin, 
-                                           birthday, gender, homeCep, finalSelectedCategories);
+            try {
+                authManager.getAuth().createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this, task -> {
+                            if (task.isSuccessful()) {
+                                // Sign up success, save user data to Firebase Database
+                                FirebaseUser user = authManager.getCurrentUser();
+                                if (user != null) {
+                                    saveUserData(user.getUid(), name, email, phone, pin, 
+                                               birthday, gender, homeCep, finalSelectedCategories);
+                                }
+                            } else {
+                                // If sign up fails, display a message to the user.
+                                setLoading(false);
+                                String errorMessage = task.getException() != null ? 
+                                    task.getException().getMessage() : getString(R.string.auth_register_failed);
+                                Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                             }
-                        } else {
-                            // If sign up fails, display a message to the user.
-                            setLoading(false);
-                            String errorMessage = task.getException() != null ? 
-                                task.getException().getMessage() : getString(R.string.auth_register_failed);
-                            Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                        }
-                    });
+                        });
+            } catch (IllegalStateException e) {
+                setLoading(false);
+                Toast.makeText(this, "Firebase is not configured. Registration temporarily unavailable.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -357,25 +417,30 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("updated_at", System.currentTimeMillis());
 
         // Save to Firebase Database
-        authManager.getDatabase().child("users").child(userId).setValue(userData)
-                .addOnCompleteListener(task -> {
-                    setLoading(false);
-                    if (task.isSuccessful()) {
-                        // Registration and data save successful
-                        Toast.makeText(RegisterActivity.this, getString(R.string.auth_register_success), Toast.LENGTH_SHORT).show();
-                        
-                        // Navigate to MainActivity
-                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        // Data save failed
-                        String errorMessage = task.getException() != null ? 
-                            task.getException().getMessage() : getString(R.string.auth_save_data_failed);
-                        Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
+        try {
+            authManager.getDatabase().child("users").child(userId).setValue(userData)
+                    .addOnCompleteListener(task -> {
+                        setLoading(false);
+                        if (task.isSuccessful()) {
+                            // Registration and data save successful
+                            Toast.makeText(RegisterActivity.this, getString(R.string.auth_register_success), Toast.LENGTH_SHORT).show();
+                            
+                            // Navigate to MainActivity
+                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            // Data save failed
+                            String errorMessage = task.getException() != null ? 
+                                task.getException().getMessage() : getString(R.string.auth_save_data_failed);
+                            Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            setLoading(false);
+            Toast.makeText(this, "Firebase is not configured. Registration temporarily unavailable.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setLoading(boolean isLoading) {

@@ -1,5 +1,6 @@
 package pro.sketchware.activities.auth;
 
+import android.content.Context;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -13,10 +14,17 @@ public class AuthManager {
     private static AuthManager instance;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private boolean isFirebaseAvailable = false;
     
     private AuthManager() {
-        mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        try {
+            mAuth = FirebaseAuth.getInstance();
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+            isFirebaseAvailable = true;
+        } catch (Exception e) {
+            // Firebase is not properly configured
+            isFirebaseAvailable = false;
+        }
     }
     
     public static AuthManager getInstance() {
@@ -26,15 +34,28 @@ public class AuthManager {
         return instance;
     }
     
+    public boolean isFirebaseAvailable() {
+        return isFirebaseAvailable;
+    }
+    
     public FirebaseAuth getAuth() {
+        if (!isFirebaseAvailable) {
+            throw new IllegalStateException("Firebase is not properly configured");
+        }
         return mAuth;
     }
     
     public DatabaseReference getDatabase() {
+        if (!isFirebaseAvailable) {
+            throw new IllegalStateException("Firebase is not properly configured");
+        }
         return mDatabase;
     }
     
     public FirebaseUser getCurrentUser() {
+        if (!isFirebaseAvailable) {
+            return null;
+        }
         return mAuth.getCurrentUser();
     }
     
@@ -43,7 +64,9 @@ public class AuthManager {
     }
     
     public void signOut() {
-        mAuth.signOut();
+        if (isFirebaseAvailable) {
+            mAuth.signOut();
+        }
     }
     
     public void saveUserData(String userId, String name, String email, String phone, String pin, 

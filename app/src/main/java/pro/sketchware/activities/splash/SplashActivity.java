@@ -46,11 +46,11 @@ public class SplashActivity extends Activity {
             AuthManager authManager = AuthManager.getInstance();
             
             Intent intent;
-            if (authManager.isUserLoggedIn()) {
+            if (authManager.isFirebaseAvailable() && authManager.isUserLoggedIn()) {
                 // User is already logged in, go to MainActivity
                 intent = new Intent(SplashActivity.this, MainActivity.class);
             } else {
-                // User is not logged in, go to AuthChoiceActivity
+                // User is not logged in or Firebase is not available, go to AuthChoiceActivity
                 intent = new Intent(SplashActivity.this, AuthChoiceActivity.class);
             }
             

@@ -8,7 +8,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
@@ -48,7 +48,7 @@ import a.a.a.xB;
 import mod.hey.studios.project.backup.BackupFactory;
 import mod.hey.studios.project.backup.BackupRestoreManager;
 import mod.hey.studios.util.Helper;
-import mod.hilal.saif.activities.tools.ConfigActivity;
+
 import mod.jbk.util.LogUtil;
 import mod.tyron.backup.SingleCopyTask;
 import pro.sketchware.R;
@@ -57,7 +57,7 @@ import pro.sketchware.activities.main.adapters.MainPagerAdapter;
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
 // Removed Store feature
 import pro.sketchware.databinding.MainBinding;
-import pro.sketchware.lib.base.BottomSheetDialogView;
+
 import pro.sketchware.utility.DataResetter;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
@@ -258,27 +258,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     }
                 }).copyFile(data);
             }
-        } else if (!ConfigActivity.isSettingEnabled(ConfigActivity.SETTING_CRITICAL_UPDATE_REMINDER)) {
-            BottomSheetDialogView bottomSheetDialog = getBottomSheetDialogView();
-            bottomSheetDialog.getPositiveButton().setEnabled(false);
-
-            CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    bottomSheetDialog.setPositiveButtonText(millisUntilFinished / 1000 + "");
-                }
-
-                @Override
-                public void onFinish() {
-                    bottomSheetDialog.setPositiveButtonText("View changes");
-                    bottomSheetDialog.getPositiveButton().setEnabled(true);
-                }
-            };
-            countDownTimer.start();
-
-            if (!isFinishing()) bottomSheetDialog.show();
         }
-
 
         if (savedInstanceState != null) {
             currentNavItemId = savedInstanceState.getInt("selected_tab_id");
@@ -346,25 +326,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
     // Removed old navigation methods
 
-    @NonNull
-    private BottomSheetDialogView getBottomSheetDialogView() {
-        BottomSheetDialogView bottomSheetDialog = new BottomSheetDialogView(this);
-        bottomSheetDialog.setTitle("Major changes in v7.0.0");
-        bottomSheetDialog.setDescription("""
-                There have been major changes since v6.3.0 fix1, \
-                and it's very important to know them all if you want your projects to still work.
-                
-                You can view all changes whenever you want at the About Sketchware Pro screen.""");
 
-        bottomSheetDialog.setPositiveButton("View changes", (dialog, which) -> {
-            ConfigActivity.setSetting(ConfigActivity.SETTING_CRITICAL_UPDATE_REMINDER, true);
-            Intent launcher = new Intent(this, AboutActivity.class);
-            launcher.putExtra("select", "changelog");
-            startActivity(launcher);
-        });
-        bottomSheetDialog.setCancelable(false);
-        return bottomSheetDialog;
-    }
 
     @Override
     public void onDestroy() {
