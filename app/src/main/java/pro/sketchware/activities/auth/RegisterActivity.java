@@ -37,7 +37,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText birthdayInput, homeCepInput;
     private RadioGroup genderRadioGroup;
     private MaterialButton registerButton;
-    private MaterialTextView loginText;
+    private MaterialButton loginText;
     private ProgressBar progressBar;
     private AuthManager authManager;
 
