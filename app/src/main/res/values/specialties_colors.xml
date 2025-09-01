@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores específicas para a tela de especialidades -->
+    <color name="specialty_text_primary">#000000</color>
+    <color name="specialty_text_secondary">#333333</color>
+    <color name="specialty_background">#FFFFFF</color>
+    <color name="specialty_surface">#F8F9FA</color>
+    <color name="specialty_chip_background">#E3F2FD</color>
+    <color name="specialty_chip_selected">#2196F3</color>
+    <color name="specialty_chip_text">#000000</color>
+    <color name="specialty_chip_stroke">#1976D2</color>
+    <color name="specialty_icon_color">#008DCD</color>
+    <color name="specialty_checkbox_color">#008DCD</color>
+    <color name="specialty_button_primary">#008DCD</color>
+    <color name="specialty_button_text">#FFFFFF</color>
+    <color name="specialty_button_secondary">#F5F5F5</color>
+    <color name="specialty_button_secondary_text">#000000</color>
+</resources>

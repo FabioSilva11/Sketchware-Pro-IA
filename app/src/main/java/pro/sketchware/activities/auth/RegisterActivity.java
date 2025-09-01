@@ -406,13 +406,7 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("gender", gender);
         userData.put("home_cep", homeCep);
         userData.put("sub_category_ids", selectedCategories);
-        userData.put("token", "");
-        userData.put("utm_campaign", "");
-        userData.put("utm_medium", "");
-        userData.put("utm_term", "");
-        userData.put("utm_content", "");
-        userData.put("utm_source", "");
-        userData.put("utm_gclid", "");
+        userData.put("coin", "0");
         userData.put("created_at", System.currentTimeMillis());
         userData.put("updated_at", System.currentTimeMillis());
 

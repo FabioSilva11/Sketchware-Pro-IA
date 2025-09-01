@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?attr/selectableItemBackground">
+    android:background="@color/specialty_surface">
 
     <!-- Category Header -->
     <LinearLayout
@@ -21,6 +21,7 @@
             android:layout_height="32dp"
             android:textSize="24sp"
             android:gravity="center"
+            android:textColor="@color/specialty_icon_color"
             android:layout_marginEnd="12dp" />
 
         <LinearLayout
@@ -33,16 +34,13 @@
                 android:id="@+id/category_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
+                android:textAppearance="@style/SpecialtyCategoryTitleStyle" />
 
             <TextView
                 android:id="@+id/category_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textAppearance="@style/SpecialtyCategoryDescriptionStyle"
                 android:layout_marginTop="2dp" />
 
         </LinearLayout>
@@ -51,7 +49,7 @@
             android:id="@+id/category_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:buttonTint="?attr/colorPrimary" />
+            android:buttonTint="@color/specialty_checkbox_color" />
 
     </LinearLayout>
 

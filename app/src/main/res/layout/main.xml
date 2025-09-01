@@ -26,6 +26,7 @@
                 app:layout_scrollFlags="scroll|enterAlways|snap" />
 
             <LinearLayout
+                android:id="@+id/axion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -49,14 +50,6 @@
                         android:text="Search for projects..."
                         android:textColor="?attr/colorOnSurfaceVariant" />
                 </com.google.android.material.appbar.MaterialToolbar>
-
-                <ImageView
-                    android:id="@+id/profile_icon"
-                    android:layout_width="27dp"
-                    android:layout_height="27dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_profile"
-                    tools:ignore="ContentDescription" />
             </LinearLayout>
 
 

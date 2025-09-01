@@ -141,6 +141,12 @@
             </intent-filter>
         </activity>
         
+        <!-- Profile Activity -->
+        <activity
+            android:name="pro.sketchware.activities.profile.ProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+        
 
             
         

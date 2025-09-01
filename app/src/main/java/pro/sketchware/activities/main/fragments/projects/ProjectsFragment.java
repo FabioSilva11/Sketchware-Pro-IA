@@ -44,7 +44,10 @@ import dev.chrisbanes.insetter.Insetter;
 import mod.hey.studios.project.ProjectTracker;
 import mod.hey.studios.project.backup.BackupRestoreManager;
 import pro.sketchware.R;
+import pro.sketchware.activities.auth.AuthManager;
+import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.activities.MainActivity;
+import pro.sketchware.activities.profile.ProfileActivity;
 import pro.sketchware.databinding.MyprojectsBinding;
 import pro.sketchware.databinding.SortProjectDialogBinding;
 import pro.sketchware.utility.UI;
@@ -71,6 +74,7 @@ public class ProjectsFragment extends DA {
     private DB preference;
     private SearchView projectsSearchView;
     private MenuProvider menuProvider;
+    private AuthManager authManager;
 
     @Override
     public void b(int requestCode) {
@@ -130,6 +134,7 @@ public class ProjectsFragment extends DA {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         preference = new DB(requireContext(), "project");
+        authManager = AuthManager.getInstance();
 
         // Mostrar estado de carregamento inicialmente
         showLoadingState();
@@ -184,6 +189,10 @@ public class ProjectsFragment extends DA {
 
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.profile) {
+                    handleProfileMenuClick();
+                    return true;
+                }
                 return false;
             }
         };
@@ -328,6 +337,28 @@ public class ProjectsFragment extends DA {
         });
         dialog.setNegativeButton("Cancel", null);
         dialog.show();
+    }
+
+    /**
+     * Verifica se o usuário está logado antes de abrir a ProfileActivity
+     * Se não estiver logado, redireciona para a LoginActivity
+     */
+    private void handleProfileMenuClick() {
+        if (isUserLoggedIn()) {
+            // Usuário logado - abrir ProfileActivity
+            startActivity(new Intent(requireContext(), ProfileActivity.class));
+        } else {
+            // Usuário não logado - redirecionar para LoginActivity
+            startActivity(new Intent(requireContext(), LoginActivity.class));
+        }
+    }
+
+    /**
+     * Verifica se o usuário está logado usando o AuthManager
+     * @return true se o usuário estiver logado, false caso contrário
+     */
+    private boolean isUserLoggedIn() {
+        return authManager != null && authManager.isFirebaseAvailable() && authManager.isUserLoggedIn();
     }
 
     private static class ProjectDiffCallback extends DiffUtil.Callback {

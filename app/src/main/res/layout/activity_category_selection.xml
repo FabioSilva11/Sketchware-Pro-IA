@@ -4,23 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@color/backgroundColor">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/specialty_background"
         android:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorSurface"
-            app:title="Select Specialties"
-            app:titleTextColor="?attr/colorOnSurface"
-            app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
+            android:background="@color/specialty_background"
+                            app:title="Select Specialties"
+        app:titleTextColor="@color/specialty_text_primary"
+        app:titleTextAppearance="@style/SpecialtyTitleStyle" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -31,23 +31,21 @@
         android:orientation="horizontal"
         android:padding="16dp"
         android:gravity="center_vertical"
-        android:background="?attr/colorSurface">
+        android:background="@color/specialty_surface">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Selected: "
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="@color/specialty_text_primary" />
 
         <TextView
             android:id="@+id/selected_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold" />
+            android:textAppearance="@style/SpecialtyCounterStyle" />
 
     </LinearLayout>
 
@@ -66,7 +64,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="?attr/colorSurface"
+        android:background="@color/specialty_surface"
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
@@ -75,15 +73,15 @@
             android:layout_height="wrap_content"
             android:text="Continue"
             android:padding="12dp"
+            style="@style/SpecialtyPrimaryButtonStyle"
             android:enabled="false" />
 
-        <com.google.android.material.button.MaterialButton
+                <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_skip_categories"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/SpecialtySecondaryButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Skip this step"
-            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="8dp" />
 
     </LinearLayout>

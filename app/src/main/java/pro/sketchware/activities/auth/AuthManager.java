@@ -86,12 +86,6 @@ public class AuthManager {
         userData.put("sub_category_ids", new String[]{});
         userData.put("token", "");
         userData.put("pin", pin);
-        userData.put("utm_campaign", "");
-        userData.put("utm_medium", "");
-        userData.put("utm_term", "");
-        userData.put("utm_content", "");
-        userData.put("utm_source", "");
-        userData.put("utm_gclid", "");
         userData.put("created_at", System.currentTimeMillis());
         userData.put("updated_at", System.currentTimeMillis());
         

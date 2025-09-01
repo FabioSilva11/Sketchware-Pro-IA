@@ -10,4 +10,10 @@
         app:showAsAction="always|collapseActionView"
         tools:ignore="AlwaysShowAction" />
 
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/outline_person_24"
+        android:title="@string/profile_menu_title"
+        app:showAsAction="always" />
+
 </menu>

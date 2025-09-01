@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -53,10 +54,13 @@ import mod.jbk.util.LogUtil;
 import mod.tyron.backup.SingleCopyTask;
 import pro.sketchware.R;
 import pro.sketchware.activities.about.AboutActivity;
+import pro.sketchware.activities.auth.AuthManager;
+import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.adapters.MainPagerAdapter;
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
 // Removed Store feature
 import pro.sketchware.databinding.MainBinding;
+import pro.sketchware.activities.profile.ProfileActivity;
 
 import pro.sketchware.utility.DataResetter;
 import pro.sketchware.utility.FileUtil;
@@ -72,6 +76,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     private Snackbar storageAccessDenied;
     private MainBinding binding;
     private MainPagerAdapter pagerAdapter;
+    private AuthManager authManager;
     private final OnBackPressedCallback closeDrawer = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -163,6 +168,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         super.onCreate(savedInstanceState);
         enableEdgeToEdgeNoContrast();
 
+        // Inicializar AuthManager
+        authManager = AuthManager.getInstance();
+
         // Verificar autenticação Firebase
         checkFirebaseAuth();
 
@@ -210,8 +218,6 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             }
         });
 
-        // Configurar listener do profile_icon
-        setupProfileIconListener();
 
         boolean hasStorageAccess = isStoragePermissionGranted();
         if (!hasStorageAccess) {
@@ -266,7 +272,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
         // Configurar o sistema de abas
         setupTabs();
-        
+
         // Navegar para a aba correta
         if (currentNavItemId == R.id.item_projects) {
             binding.viewPager.setCurrentItem(0);
@@ -278,11 +284,11 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     private void setupTabs() {
         // Inicializar o fragmento de projetos
         projectsFragment = new ProjectsFragment();
-        
+
         // Configurar o ViewPager2
         pagerAdapter = new MainPagerAdapter(this);
         binding.viewPager.setAdapter(pagerAdapter);
-        
+
         // Configurar o TabLayout com o ViewPager2
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
             switch (position) {
@@ -294,7 +300,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     break;
             }
         }).attach();
-        
+
         // Listener para mudanças de aba
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -463,37 +469,28 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
     // Métodos para autenticação Firebase
     private void checkFirebaseAuth() {
-        // Verificar se Firebase está inicializado
-        if (!isFirebaseInitialized(this)) {
+        // Verificar se Firebase está disponível
+        if (!authManager.isFirebaseAvailable()) {
+            Log.d("MainActivity", "Firebase não está disponível");
             return;
         }
-        
+
         // Verificar se usuário está logado
-        com.google.firebase.auth.FirebaseAuth mAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
-        com.google.firebase.auth.FirebaseUser currentUser = mAuth.getCurrentUser();
-        
-        // Se não está logado, não fazer nada aqui - o profile_icon será clicável para ir ao login
-        // Se estiver logado, o profile_icon será clicável para ir ao perfil
+        if (authManager.isUserLoggedIn()) {
+            Log.d("MainActivity", "Usuário logado: " + authManager.getCurrentUser().getEmail());
+        } else {
+            Log.d("MainActivity", "Usuário não está logado");
+        }
     }
-    
-    private void setupProfileIconListener() {
-        binding.profileIcon.setOnClickListener(v -> {
-            // Verificar se Firebase está inicializado
-            if (!isFirebaseInitialized(this)) {
-                Toast.makeText(this, "Firebase não está disponível", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            
-            // Verificar se usuário está logado
-            com.google.firebase.auth.FirebaseAuth mAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
-            com.google.firebase.auth.FirebaseUser currentUser = mAuth.getCurrentUser();
-            
-            if (currentUser != null) {
-                Toast.makeText(this, "Perfil indisponível", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Login/Cadastro indisponível", Toast.LENGTH_SHORT).show();
-            }
-        });
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // O menu é gerenciado pelo ProjectsFragment através do MenuProvider
+        // Não precisamos inflar o menu aqui para evitar duplicação
+        return true;
     }
+
+
+
 
 }
