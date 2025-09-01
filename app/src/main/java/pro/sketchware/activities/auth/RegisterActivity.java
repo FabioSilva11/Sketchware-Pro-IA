@@ -405,7 +405,7 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("pin", pin);
         userData.put("gender", gender);
         userData.put("home_cep", homeCep);
-        userData.put("sub_category_ids", selectedCategories.toArray(new String[0]));
+        userData.put("sub_category_ids", selectedCategories);
         userData.put("token", "");
         userData.put("utm_campaign", "");
         userData.put("utm_medium", "");
