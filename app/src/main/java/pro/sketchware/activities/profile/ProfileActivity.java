@@ -33,6 +33,7 @@ import pro.sketchware.activities.auth.AuthManager;
 import pro.sketchware.activities.auth.CategoryManager;
 import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.activities.MainActivity;
+import pro.sketchware.adapters.SkillChipAdapter;
 
 public class ProfileActivity extends BaseAppCompatActivity {
     
@@ -403,13 +404,13 @@ public class ProfileActivity extends BaseAppCompatActivity {
             }
         }
         
-        ArrayAdapter<String> adapter;
+        SkillChipAdapter adapter;
         if (!categoryNames.isEmpty()) {
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categoryNames);
+            adapter = new SkillChipAdapter(this, categoryNames);
         } else {
             List<String> noCategories = new ArrayList<>();
             noCategories.add("No categories selected");
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, noCategories);
+            adapter = new SkillChipAdapter(this, noCategories);
         }
         categoriesGridView.setAdapter(adapter);
     }

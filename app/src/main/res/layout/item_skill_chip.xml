@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.chip.Chip
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/skill_chip"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:textAppearance="@style/SpecialtyChipStyle"
+    android:textColor="#000000"
+    app:chipMinHeight="40dp"
+    android:checkable="false"
+    android:checked="false"
+    app:chipBackgroundColor="@android:color/white"
+    app:chipStrokeColor="#008DCD"
+    app:chipStrokeWidth="1dp"
+    app:chipCornerRadius="8dp"
+    app:chipStartPadding="12dp"
+    app:chipEndPadding="12dp"
+    app:chipIconEnabled="false"/>

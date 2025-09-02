@@ -17,13 +17,17 @@
             android:id="@+id/linear7"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@android:color/white">
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_margin="3dp"
                 app:cardUseCompatPadding="true"
-                app:cardElevation="2dp">
+                app:cardElevation="2dp"
+                app:cardCornerRadius="5dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,15 +89,16 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/icon_phone_round"
-                            android:scaleType="fitCenter" />
+                            android:scaleType="fitCenter"
+                            android:tint="#008DCD" />
                         <TextView
                             android:id="@+id/phone_nunber"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="8dp"
                             android:text="TextView"
-                            android:textSize="12sp"
-                            android:textColor="#90A4AE" />
+                            android:textSize="14sp"
+                            android:textColor="#181830" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear4"
@@ -107,15 +112,16 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/icon_alternate_email_round"
-                            android:scaleType="fitCenter" />
+                            android:scaleType="fitCenter"
+                            android:tint="#008DCD" />
                         <TextView
                             android:id="@+id/email_user"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="8dp"
                             android:text="TextView"
-                            android:textSize="12sp"
-                            android:textColor="#90A4AE" />
+                            android:textSize="14sp"
+                            android:textColor="#181830" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear5"
@@ -129,15 +135,16 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_person"
-                            android:scaleType="fitCenter" />
+                            android:scaleType="fitCenter"
+                            android:tint="#008DCD" />
                         <TextView
                             android:id="@+id/gender_user"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="8dp"
                             android:text="TextView"
-                            android:textSize="12sp"
-                            android:textColor="#90A4AE" />
+                            android:textSize="14sp"
+                            android:textColor="#181830" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear8"
@@ -151,15 +158,16 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_location"
-                            android:scaleType="fitCenter" />
+                            android:scaleType="fitCenter"
+                            android:tint="#008DCD" />
                         <TextView
                             android:id="@+id/cep_user"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="8dp"
                             android:text="TextView"
-                            android:textSize="12sp"
-                            android:textColor="#90A4AE" />
+                            android:textSize="14sp"
+                            android:textColor="#181830" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -169,9 +177,11 @@
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:text="Skills"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#000000" />
+            android:textColor="#181830"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp" />
             <GridView
             android:id="@+id/gridview_categorias"
             android:layout_width="match_parent"
