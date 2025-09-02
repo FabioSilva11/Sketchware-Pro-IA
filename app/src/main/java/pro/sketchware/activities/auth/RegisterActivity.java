@@ -1,7 +1,10 @@
 package pro.sketchware.activities.auth;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -10,7 +13,10 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,6 +37,7 @@ import pro.sketchware.activities.main.activities.MainActivity;
 public class RegisterActivity extends AppCompatActivity {
 
     private static final int CATEGORY_SELECTION_REQUEST = 1001;
+    private static final int PHONE_PERMISSION_REQUEST = 1002;
     
     private TextInputEditText nameInput, emailInput, passwordInput, confirmPasswordInput;
     private TextInputEditText phoneInput, pinInput;
@@ -40,6 +47,7 @@ public class RegisterActivity extends AppCompatActivity {
     private MaterialButton loginText;
     private ProgressBar progressBar;
     private AuthManager authManager;
+    private boolean phoneDetected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +87,9 @@ public class RegisterActivity extends AppCompatActivity {
         setupPhoneFormatter();
         setupDateFormatter();
         setupZipCodeFormatter();
+        
+        // Try to detect phone number automatically
+        detectPhoneNumber();
     }
 
     private void setupPhoneFormatter() {
@@ -91,6 +102,12 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                // Only format if user is typing (not when auto-detecting)
+                if (phoneDetected) {
+                    phoneDetected = false;
+                    return;
+                }
+                
                 String phone = s.toString().replaceAll("[^\\d]", "");
                 if (phone.length() > 11) {
                     phone = phone.substring(0, 11);
@@ -115,6 +132,90 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+    
+    private void detectPhoneNumber() {
+        // Check if we have permission to read phone state
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) 
+                != PackageManager.PERMISSION_GRANTED) {
+            // Request permission
+            ActivityCompat.requestPermissions(this, 
+                new String[]{Manifest.permission.READ_PHONE_STATE}, 
+                PHONE_PERMISSION_REQUEST);
+            return;
+        }
+        
+        // Try to get phone number
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            if (telephonyManager != null) {
+                String phoneNumber = telephonyManager.getLine1Number();
+                if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                    // Format and set the phone number
+                    String formattedPhone = formatPhoneNumber(phoneNumber);
+                    if (!formattedPhone.isEmpty()) {
+                        phoneDetected = true;
+                        phoneInput.setText(formattedPhone);
+                        phoneInput.setSelection(formattedPhone.length());
+                    }
+                }
+            }
+        } catch (SecurityException e) {
+            // Permission denied or other security issue
+            // User will need to enter manually
+        } catch (Exception e) {
+            // Other error, user will need to enter manually
+        }
+    }
+    
+    private String formatPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return "";
+        }
+        
+        // Remove all non-digit characters
+        String digits = phoneNumber.replaceAll("[^\\d]", "");
+        
+        // Handle different phone number formats
+        if (digits.length() >= 10) {
+            // Remove country code if present (Brazil +55)
+            if (digits.startsWith("55") && digits.length() == 12) {
+                digits = digits.substring(2);
+            }
+            
+            // Format Brazilian phone number
+            if (digits.length() == 10) {
+                // (11) 9999-9999
+                return String.format("(%s) %s-%s", 
+                    digits.substring(0, 2),
+                    digits.substring(2, 6),
+                    digits.substring(6));
+            } else if (digits.length() == 11) {
+                // (11) 99999-9999
+                return String.format("(%s) %s-%s", 
+                    digits.substring(0, 2),
+                    digits.substring(2, 7),
+                    digits.substring(7));
+            }
+        }
+        
+        return "";
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, 
+                                         @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == PHONE_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, try to detect phone number again
+                detectPhoneNumber();
+            } else {
+                // Permission denied, user will need to enter manually
+                Toast.makeText(this, "Phone number will need to be entered manually", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void setupDateFormatter() {

@@ -3,16 +3,21 @@ package pro.sketchware.activities.profile;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,7 +34,7 @@ import pro.sketchware.activities.auth.CategoryManager;
 import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.activities.MainActivity;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseAppCompatActivity {
     
     private AuthManager authManager;
     
@@ -41,15 +46,19 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView emailUserText;
     private TextView genderUserText;
     private TextView cepUserText;
-    private ListView categoriesListView;
+    private GridView categoriesGridView;
     private View logoutLayout;
     private ProgressBar progressBar;
+    private ExtendedFloatingActionButton logoutFab;
+    
+    // Toolbar
+    private MaterialToolbar toolbar;
     
     // Loading dialog
     private AlertDialog loadingDialog;
     
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         // Inicializar AuthManager
@@ -81,19 +90,46 @@ public class ProfileActivity extends AppCompatActivity {
         loadUserProfile();
     }
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_profile, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_edit_profile) {
+            // TODO: Implement edit profile functionality
+            Toast.makeText(this, "Edit profile feature coming soon", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Track screen view with analytics
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "ProfileActivity");
+        bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "ProfileActivity");
+        mAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
+    }
+    
     /**
      * Inicializa as views do layout
      */
     private void initializeViews() {
         profileImage = findViewById(R.id.circleimageview1);
+        toolbar = findViewById(R.id.toolbar);
         fullNameText = findViewById(R.id.full_name);
         userTypeText = findViewById(R.id.textview2);
         phoneNumberText = findViewById(R.id.phone_nunber);
         emailUserText = findViewById(R.id.email_user);
         genderUserText = findViewById(R.id.gender_user);
         cepUserText = findViewById(R.id.cep_user);
-        categoriesListView = findViewById(R.id.listview_categorias);
-        logoutLayout = findViewById(R.id.linear6);
+        categoriesGridView = findViewById(R.id.gridview_categorias);
+        logoutFab = findViewById(R.id.fab_logout);
         
         // Configurar dados iniciais
         fullNameText.setText("Loading...");
@@ -108,8 +144,22 @@ public class ProfileActivity extends AppCompatActivity {
      * Configura os listeners dos elementos interativos
      */
     private void setupListeners() {
-        // Listener para logout
-        logoutLayout.setOnClickListener(v -> performLogout());
+        // Listener para logout via FAB
+        if (logoutFab != null) {
+            logoutFab.setOnClickListener(v -> performLogout());
+        }
+        
+        // Toolbar
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Profile");
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
+            }
+            toolbar.setTitle("Profile");
+            toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        }
     }
     
     /**
@@ -353,18 +403,15 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
         
+        ArrayAdapter<String> adapter;
         if (!categoryNames.isEmpty()) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                android.R.layout.simple_list_item_1, categoryNames);
-            categoriesListView.setAdapter(adapter);
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categoryNames);
         } else {
-            // Nenhuma categoria selecionada
             List<String> noCategories = new ArrayList<>();
             noCategories.add("No categories selected");
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                android.R.layout.simple_list_item_1, noCategories);
-            categoriesListView.setAdapter(adapter);
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, noCategories);
         }
+        categoriesGridView.setAdapter(adapter);
     }
     
     /**
@@ -375,7 +422,7 @@ public class ProfileActivity extends AppCompatActivity {
             authManager.signOut();
             Toast.makeText(this, "Logout successful", Toast.LENGTH_SHORT).show();
             
-            // Redirecionar para a tela de escolha de autenticação
+            // Redirecionar para a tela principal
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
