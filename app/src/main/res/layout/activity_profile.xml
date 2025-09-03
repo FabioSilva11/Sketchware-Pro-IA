@@ -12,13 +12,13 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white" />
+            android:background="?attr/colorSurface" />
         <LinearLayout
             android:id="@+id/linear7"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:background="@android:color/white">
+            android:background="?attr/colorSurface">
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -44,7 +44,7 @@
                             android:layout_height="50dp"
                             app:civ_border_width="0dp"
                             app:civ_border_color="#008DCD"
-                            app:civ_circle_background_color="#FFFFFF"
+                            app:civ_circle_background_color="?attr/colorSurface"
                             app:civ_border_overlay="true" />
                         <LinearLayout
                             android:id="@+id/linear2"
@@ -62,7 +62,7 @@
                                 android:text="you name"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="#181830" />
+                                android:textColor="?attr/colorOnSurface" />
                             <TextView
                                 android:id="@+id/textview2"
                                 android:layout_width="wrap_content"
@@ -74,7 +74,7 @@
                                 android:text="Android programmer"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="#B0BEC5" />
+                                android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                     </LinearLayout>
                     <LinearLayout
@@ -98,7 +98,7 @@
                             android:padding="8dp"
                             android:text="TextView"
                             android:textSize="14sp"
-                            android:textColor="#181830" />
+                            android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear4"
@@ -121,7 +121,7 @@
                             android:padding="8dp"
                             android:text="TextView"
                             android:textSize="14sp"
-                            android:textColor="#181830" />
+                            android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear5"
@@ -144,7 +144,7 @@
                             android:padding="8dp"
                             android:text="TextView"
                             android:textSize="14sp"
-                            android:textColor="#181830" />
+                            android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/linear8"
@@ -167,7 +167,7 @@
                             android:padding="8dp"
                             android:text="TextView"
                             android:textSize="14sp"
-                            android:textColor="#181830" />
+                            android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -179,7 +179,7 @@
             android:text="Skills"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#181830"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="4dp" />
             <GridView

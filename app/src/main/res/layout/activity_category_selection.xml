@@ -4,22 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/backgroundColor">
+    android:background="?attr/colorSurface">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/specialty_background"
+        android:background="?attr/colorSurface"
         android:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/specialty_background"
+            android:background="?attr/colorSurface"
             app:title="@string/category_selection_title"
-            app:titleTextColor="@color/specialty_text_primary"
+            app:titleTextColor="?attr/colorOnSurface"
             app:titleTextAppearance="@style/SpecialtyTitleStyle" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -31,14 +31,14 @@
         android:orientation="horizontal"
         android:padding="16dp"
         android:gravity="center_vertical"
-        android:background="@color/specialty_surface">
+        android:background="?attr/colorSurfaceVariant">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/category_selection_selected"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textColor="@color/specialty_text_primary" />
+            android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:id="@+id/selected_count"
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="@color/specialty_surface"
+        android:background="?attr/colorSurface"
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton

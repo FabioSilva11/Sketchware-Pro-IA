@@ -16,6 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.CheckBox;
+import android.widget.Toast;
+import android.content.Intent;
+import android.net.Uri;
+import com.google.android.material.textfield.TextInputEditText;
 
 import androidx.appcompat.widget.Toolbar;
 
@@ -38,6 +43,7 @@ import a.a.a.Rs;
 import mod.hey.studios.util.Helper;
 import mod.hilal.saif.lib.PCP;
 import pro.sketchware.R;
+import pro.sketchware.ai.AiBlockCodeGenerator;
 import pro.sketchware.databinding.ActivityBlocksManagerCreatorBinding;
 import pro.sketchware.lib.base.BaseTextWatcher;
 import pro.sketchware.lib.highlighter.SimpleHighlighter;
@@ -204,6 +210,9 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
         });
 
         binding.reset.setOnClickListener(v -> binding.colour.setText(palletColour));
+        
+        // AI Code Generation
+        binding.aiGenerateCode.setOnClickListener(v -> launchAiCodeGeneration());
         binding.spec.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -509,5 +518,142 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
         FileUtil.writeFile(path, getGson().toJson(blocksList));
         SketchwareUtil.toast("Saved");
         finish();
+    }
+    
+    private void launchAiCodeGeneration() {
+        // Check if API is configured
+        if (!isGroqApiConfigured()) {
+            showMissingGroqDialog();
+            return;
+        }
+        
+        try {
+            // Create custom layout for the dialog
+            View dialogView = getLayoutInflater().inflate(R.layout.dialog_ai_block_generation, null);
+            
+            // Update block info text
+            TextView blockInfoText = dialogView.findViewById(R.id.block_info_text);
+            String blockInfo = String.format("Name: %s\nType: %s\nSpec: %s", 
+                Helper.getText(binding.name),
+                Helper.getText(binding.type),
+                Helper.getText(binding.spec));
+            blockInfoText.setText(blockInfo);
+            
+            var dialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("AI Generate Block Code")
+                    .setMessage("Describe what this block should do and AI will generate the code.")
+                    .setView(dialogView)
+                    .setPositiveButton(R.string.common_word_generate, (d, w) -> {
+                        var descriptionView = dialogView.findViewById(R.id.input_description);
+                        var includeCommentsCheckbox = dialogView.findViewById(R.id.checkbox_include_comments);
+                        var errorHandlingCheckbox = dialogView.findViewById(R.id.checkbox_error_handling);
+                        var optimizeCodeCheckbox = dialogView.findViewById(R.id.checkbox_optimize_code);
+                        
+                        if (descriptionView instanceof TextInputEditText edit) {
+                            String description = String.valueOf(edit.getText());
+                            boolean includeComments = includeCommentsCheckbox instanceof CheckBox && ((CheckBox) includeCommentsCheckbox).isChecked();
+                            boolean errorHandling = errorHandlingCheckbox instanceof CheckBox && ((CheckBox) errorHandlingCheckbox).isChecked();
+                            boolean optimizeCode = optimizeCodeCheckbox instanceof CheckBox && ((CheckBox) optimizeCodeCheckbox).isChecked();
+                            
+                            if (!description.trim().isEmpty()) {
+                                generateBlockCodeAsync(description, includeComments, errorHandling, optimizeCode);
+                            } else {
+                                SketchwareUtil.toastError("Please enter a description");
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.common_word_cancel, null)
+                    .create();
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            SketchwareUtil.toastError(e.toString());
+        }
+    }
+    
+    /**
+     * Checks if the Groq API is configured and active
+     */
+    private boolean isGroqApiConfigured() {
+        String apiKey = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance()
+                .getString(pro.sketchware.ai.GroqClient.SETTINGS_KEY_API_KEY, "");
+        return apiKey != null && !apiKey.trim().isEmpty();
+    }
+    
+    private void showMissingGroqDialog() {
+        var dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("AI (Groq) not configured")
+                .setMessage("To use the AI block code generation feature, you need to configure your Groq API key.\n\nYou can get a free API key from the Groq console.")
+                .setPositiveButton("Configure AI", (v, w) -> {
+                    startActivity(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                })
+                .setNeutralButton("Get free API key", (v, w) -> {
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/keys"));
+                    startActivity(i);
+                })
+                .setNegativeButton(R.string.common_word_cancel, null)
+                .create();
+        dialog.show();
+    }
+    
+    private void generateBlockCodeAsync(String description, boolean includeComments, boolean errorHandling, boolean optimizeCode) {
+        // Show loading
+        binding.aiGenerateCode.setEnabled(false);
+        binding.aiGenerateCode.setText("Generating...");
+        
+        new Thread(() -> {
+            try {
+                var generator = new AiBlockCodeGenerator();
+                
+                // Prepare imports list
+                List<String> imports = new ArrayList<>();
+                String customImports = Helper.getText(binding.customImport);
+                if (!TextUtils.isEmpty(customImports)) {
+                    String[] importLines = customImports.split("\n");
+                    for (String importLine : importLines) {
+                        if (!TextUtils.isEmpty(importLine.trim())) {
+                            imports.add(importLine.trim());
+                        }
+                    }
+                }
+                
+                // Create request
+                var request = new AiBlockCodeGenerator.BlockGenerationRequest(
+                    Helper.getText(binding.name),
+                    Helper.getText(binding.type),
+                    Helper.getText(binding.typename),
+                    Helper.getText(binding.spec),
+                    Helper.getText(binding.spec2),
+                    description,
+                    imports
+                );
+                
+                var result = generator.generateBlockCode(request);
+                
+                runOnUiThread(() -> {
+                    binding.aiGenerateCode.setEnabled(true);
+                    binding.aiGenerateCode.setText("IA");
+                    
+                    if (result.code != null && !result.code.isEmpty()) {
+                        binding.code.setText(result.code);
+                        SketchwareUtil.toast("Code generated successfully!");
+                    } else {
+                        SketchwareUtil.toastError("AI returned no content");
+                    }
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    binding.aiGenerateCode.setEnabled(true);
+                    binding.aiGenerateCode.setText("IA");
+                    
+                    String msg = String.valueOf(e.getMessage());
+                    if (msg != null && (msg.contains("Missing Groq API key") || msg.contains("Groq API error"))) {
+                        showMissingGroqDialog();
+                    } else {
+                        SketchwareUtil.toastError("Generation error: " + e.getMessage());
+                    }
+                });
+            }
+        }).start();
     }
 }
