@@ -65,6 +65,10 @@
     <string name="auth_section_demographic">Demographic Data</string>
     <string name="auth_section_location">Location</string>
     <string name="auth_section_business">Business Information</string>
+    <string name="category_selection_required">Please select at least one category</string>
+    <string name="category_selection_title">Select Specialties</string>
+    <string name="category_selection_selected">Selected: </string>
+    <string name="category_selection_skip">Skip this step</string>
     <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
     
     <!-- Template strings -->

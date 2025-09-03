@@ -93,7 +93,7 @@ public class CategorySelectionActivity extends AppCompatActivity {
                 setResult(RESULT_OK, resultIntent);
                 finish();
             } else {
-                Toast.makeText(this, "Please select at least one category", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.category_selection_required), Toast.LENGTH_SHORT).show();
             }
         });
 

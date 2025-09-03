@@ -18,9 +18,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/specialty_background"
-                            app:title="Select Specialties"
-        app:titleTextColor="@color/specialty_text_primary"
-        app:titleTextAppearance="@style/SpecialtyTitleStyle" />
+            app:title="@string/category_selection_title"
+            app:titleTextColor="@color/specialty_text_primary"
+            app:titleTextAppearance="@style/SpecialtyTitleStyle" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -36,7 +36,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Selected: "
+            android:text="@string/category_selection_selected"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="@color/specialty_text_primary" />
 
@@ -71,7 +71,7 @@
             android:id="@+id/btn_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Continue"
+            android:text="@string/common_word_continue"
             android:padding="12dp"
             style="@style/SpecialtyPrimaryButtonStyle"
             android:enabled="false" />
@@ -81,7 +81,7 @@
             style="@style/SpecialtySecondaryButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Skip this step"
+            android:text="@string/category_selection_skip"
             android:layout_marginTop="8dp" />
 
     </LinearLayout>

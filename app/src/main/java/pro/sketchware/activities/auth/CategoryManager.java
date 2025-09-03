@@ -69,126 +69,126 @@ public class CategoryManager {
     private void initializeCategories() {
         categories = new ArrayList<>();
         
-        // Categoria: Desenvolvimento Mobile
-        Category mobileDev = new Category("mobile_dev", "Desenvolvimento Mobile", 
-            "Criação de aplicativos para dispositivos móveis", "📱");
+        // Category: Mobile Development
+        Category mobileDev = new Category("mobile_dev", "Mobile Development", 
+            "Creating applications for mobile devices", "📱");
         
-        mobileDev.addSubCategory(new SubCategory("android_dev", "Desenvolvimento Android", 
-            "Apps nativos para Android usando Java/Kotlin", "🤖"));
-        mobileDev.addSubCategory(new SubCategory("ios_dev", "Desenvolvimento iOS", 
-            "Apps nativos para iOS usando Swift/Objective-C", "🍎"));
-        mobileDev.addSubCategory(new SubCategory("cross_platform", "Desenvolvimento Cross-Platform", 
-            "Apps que funcionam em Android e iOS", "🔄"));
+        mobileDev.addSubCategory(new SubCategory("android_dev", "Android Development", 
+            "Native Android apps using Java/Kotlin", "🤖"));
+        mobileDev.addSubCategory(new SubCategory("ios_dev", "iOS Development", 
+            "Native iOS apps using Swift/Objective-C", "🍎"));
+        mobileDev.addSubCategory(new SubCategory("cross_platform", "Cross-Platform Development", 
+            "Apps that work on Android and iOS", "🔄"));
         mobileDev.addSubCategory(new SubCategory("flutter_dev", "Flutter", 
-            "Framework Google para apps multiplataforma", "🦋"));
+            "Google framework for multiplatform apps", "🦋"));
         mobileDev.addSubCategory(new SubCategory("react_native", "React Native", 
-            "Framework Facebook para apps multiplataforma", "⚛️"));
+            "Facebook framework for multiplatform apps", "⚛️"));
         
         categories.add(mobileDev);
         
-        // Categoria: Desenvolvimento Web
-        Category webDev = new Category("web_dev", "Desenvolvimento Web", 
-            "Criação de sites e aplicações web", "🌐");
+        // Category: Web Development
+        Category webDev = new Category("web_dev", "Web Development", 
+            "Creating websites and web applications", "🌐");
         
-        webDev.addSubCategory(new SubCategory("frontend_dev", "Desenvolvimento Frontend", 
-            "Interface do usuário com HTML, CSS, JavaScript", "🎨"));
-        webDev.addSubCategory(new SubCategory("backend_dev", "Desenvolvimento Backend", 
-            "Lógica do servidor e APIs", "⚙️"));
-        webDev.addSubCategory(new SubCategory("fullstack_dev", "Desenvolvimento Full Stack", 
-            "Frontend e Backend completos", "🚀"));
+        webDev.addSubCategory(new SubCategory("frontend_dev", "Frontend Development", 
+            "User interface with HTML, CSS, JavaScript", "🎨"));
+        webDev.addSubCategory(new SubCategory("backend_dev", "Backend Development", 
+            "Server logic and APIs", "⚙️"));
+        webDev.addSubCategory(new SubCategory("fullstack_dev", "Full Stack Development", 
+            "Complete Frontend and Backend", "🚀"));
         webDev.addSubCategory(new SubCategory("react_dev", "React.js", 
-            "Biblioteca JavaScript para interfaces", "⚛️"));
+            "JavaScript library for interfaces", "⚛️"));
         webDev.addSubCategory(new SubCategory("vue_dev", "Vue.js", 
-            "Framework JavaScript progressivo", "💚"));
+            "Progressive JavaScript framework", "💚"));
         webDev.addSubCategory(new SubCategory("angular_dev", "Angular", 
-            "Framework JavaScript completo", "🅰️"));
+            "Complete JavaScript framework", "🅰️"));
         
         categories.add(webDev);
         
-        // Categoria: Design e UI/UX
-        Category design = new Category("design", "Design e UI/UX", 
-            "Criação de interfaces e experiências do usuário", "🎨");
+        // Category: Design and UI/UX
+        Category design = new Category("design", "Design and UI/UX", 
+            "Creating interfaces and user experiences", "🎨");
         
         design.addSubCategory(new SubCategory("ui_design", "UI Design", 
-            "Design de interfaces do usuário", "🎭"));
+            "User interface design", "🎭"));
         design.addSubCategory(new SubCategory("ux_design", "UX Design", 
-            "Experiência do usuário e usabilidade", "🧠"));
-        design.addSubCategory(new SubCategory("graphic_design", "Design Gráfico", 
-            "Criação de elementos visuais", "🖼️"));
-        design.addSubCategory(new SubCategory("icon_design", "Design de Ícones", 
-            "Criação de ícones e símbolos", "🔷"));
-        design.addSubCategory(new SubCategory("logo_design", "Design de Logos", 
-            "Criação de identidades visuais", "🏷️"));
-        design.addSubCategory(new SubCategory("prototyping", "Prototipagem", 
-            "Criação de protótipos interativos", "📱"));
+            "User experience and usability", "🧠"));
+        design.addSubCategory(new SubCategory("graphic_design", "Graphic Design", 
+            "Creating visual elements", "🖼️"));
+        design.addSubCategory(new SubCategory("icon_design", "Icon Design", 
+            "Creating icons and symbols", "🔷"));
+        design.addSubCategory(new SubCategory("logo_design", "Logo Design", 
+            "Creating visual identities", "🏷️"));
+        design.addSubCategory(new SubCategory("prototyping", "Prototyping", 
+            "Creating interactive prototypes", "📱"));
         
         categories.add(design);
         
-        // Categoria: Desenvolvimento de Jogos
-        Category gameDev = new Category("game_dev", "Desenvolvimento de Jogos", 
-            "Criação de jogos para diferentes plataformas", "🎮");
+        // Category: Game Development
+        Category gameDev = new Category("game_dev", "Game Development", 
+            "Creating games for different platforms", "🎮");
         
-        gameDev.addSubCategory(new SubCategory("mobile_games", "Jogos Mobile", 
-            "Jogos para smartphones e tablets", "📱"));
-        gameDev.addSubCategory(new SubCategory("pc_games", "Jogos PC", 
-            "Jogos para computadores", "💻"));
+        gameDev.addSubCategory(new SubCategory("mobile_games", "Mobile Games", 
+            "Games for smartphones and tablets", "📱"));
+        gameDev.addSubCategory(new SubCategory("pc_games", "PC Games", 
+            "Games for computers", "💻"));
         gameDev.addSubCategory(new SubCategory("unity_dev", "Unity", 
-            "Engine para desenvolvimento de jogos", "🎯"));
+            "Engine for game development", "🎯"));
         gameDev.addSubCategory(new SubCategory("unreal_dev", "Unreal Engine", 
-            "Engine avançado para jogos 3D", "🌟"));
-        gameDev.addSubCategory(new SubCategory("game_art", "Arte para Jogos", 
-            "Criação de assets visuais", "🎨"));
+            "Advanced engine for 3D games", "🌟"));
+        gameDev.addSubCategory(new SubCategory("game_art", "Game Art", 
+            "Creating visual assets", "🎨"));
         
         categories.add(gameDev);
         
-        // Categoria: Inteligência Artificial
-        Category ai = new Category("ai", "Inteligência Artificial", 
-            "Desenvolvimento de sistemas inteligentes", "🤖");
+        // Category: Artificial Intelligence
+        Category ai = new Category("ai", "Artificial Intelligence", 
+            "Developing intelligent systems", "🤖");
         
         ai.addSubCategory(new SubCategory("machine_learning", "Machine Learning", 
-            "Algoritmos de aprendizado automático", "🧠"));
+            "Automatic learning algorithms", "🧠"));
         ai.addSubCategory(new SubCategory("deep_learning", "Deep Learning", 
-            "Redes neurais profundas", "🔬"));
-        ai.addSubCategory(new SubCategory("nlp", "Processamento de Linguagem Natural", 
-            "Análise e geração de texto", "💬"));
-        ai.addSubCategory(new SubCategory("computer_vision", "Visão Computacional", 
-            "Análise de imagens e vídeos", "👁️"));
-        ai.addSubCategory(new SubCategory("ai_apps", "Apps com IA", 
-            "Aplicações que utilizam inteligência artificial", "📱"));
+            "Deep neural networks", "🔬"));
+        ai.addSubCategory(new SubCategory("nlp", "Natural Language Processing", 
+            "Text analysis and generation", "💬"));
+        ai.addSubCategory(new SubCategory("computer_vision", "Computer Vision", 
+            "Image and video analysis", "👁️"));
+        ai.addSubCategory(new SubCategory("ai_apps", "AI Apps", 
+            "Applications that use artificial intelligence", "📱"));
         
         categories.add(ai);
         
-        // Categoria: DevOps e Infraestrutura
-        Category devops = new Category("devops", "DevOps e Infraestrutura", 
-            "Automação e gerenciamento de infraestrutura", "⚙️");
+        // Category: DevOps and Infrastructure
+        Category devops = new Category("devops", "DevOps and Infrastructure", 
+            "Automation and infrastructure management", "⚙️");
         
-        devops.addSubCategory(new SubCategory("cloud_computing", "Computação em Nuvem", 
+        devops.addSubCategory(new SubCategory("cloud_computing", "Cloud Computing", 
             "AWS, Azure, Google Cloud", "☁️"));
-        devops.addSubCategory(new SubCategory("containerization", "Containerização", 
+        devops.addSubCategory(new SubCategory("containerization", "Containerization", 
             "Docker, Kubernetes", "📦"));
         devops.addSubCategory(new SubCategory("ci_cd", "CI/CD", 
-            "Integração e entrega contínua", "🔄"));
-        devops.addSubCategory(new SubCategory("monitoring", "Monitoramento", 
-            "Observabilidade e alertas", "📊"));
-        devops.addSubCategory(new SubCategory("security", "Segurança", 
-            "Segurança de aplicações e infraestrutura", "🔒"));
+            "Continuous integration and delivery", "🔄"));
+        devops.addSubCategory(new SubCategory("monitoring", "Monitoring", 
+            "Observability and alerts", "📊"));
+        devops.addSubCategory(new SubCategory("security", "Security", 
+            "Application and infrastructure security", "🔒"));
         
         categories.add(devops);
         
-        // Categoria: Blockchain e Web3
-        Category blockchain = new Category("blockchain", "Blockchain e Web3", 
-            "Tecnologias descentralizadas", "⛓️");
+        // Category: Blockchain and Web3
+        Category blockchain = new Category("blockchain", "Blockchain and Web3", 
+            "Decentralized technologies", "⛓️");
         
         blockchain.addSubCategory(new SubCategory("smart_contracts", "Smart Contracts", 
-            "Contratos inteligentes na blockchain", "📜"));
+            "Intelligent contracts on blockchain", "📜"));
         blockchain.addSubCategory(new SubCategory("defi", "DeFi", 
-            "Finanças descentralizadas", "💰"));
+            "Decentralized finance", "💰"));
         blockchain.addSubCategory(new SubCategory("nft", "NFTs", 
-            "Tokens não fungíveis", "🖼️"));
+            "Non-fungible tokens", "🖼️"));
         blockchain.addSubCategory(new SubCategory("dapps", "DApps", 
-            "Aplicações descentralizadas", "🌐"));
-        blockchain.addSubCategory(new SubCategory("cryptocurrency", "Criptomoedas", 
-            "Desenvolvimento de criptomoedas", "🪙"));
+            "Decentralized applications", "🌐"));
+        blockchain.addSubCategory(new SubCategory("cryptocurrency", "Cryptocurrency", 
+            "Cryptocurrency development", "🪙"));
         
         categories.add(blockchain);
     }
