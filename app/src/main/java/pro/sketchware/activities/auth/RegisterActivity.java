@@ -508,7 +508,7 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("home_cep", homeCep);
         userData.put("sub_category_ids", selectedCategories);
         userData.put("coin", "50");
-        userData.put("profile", "https://static.vecteezy.com/system/resources/thumbnails/015/152/832/small/profile-icon-design-for-web-interfaces-and-applications-png.png");
+        userData.put("profile", "https://blog.manpowergroup.com.br/hubfs/escritorio.jpg");
         userData.put("created_at", System.currentTimeMillis());
         userData.put("updated_at", System.currentTimeMillis());
 

@@ -6,17 +6,20 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.GridView;
+import android.view.ViewGroup;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import com.google.firebase.database.DataSnapshot;
@@ -47,10 +50,13 @@ public class ProfileActivity extends BaseAppCompatActivity {
     private TextView emailUserText;
     private TextView genderUserText;
     private TextView cepUserText;
-    private GridView categoriesGridView;
+    private TextView coinText;
+    private TextView birthdayText;
+    private RecyclerView skillsRecyclerView;
     private View logoutLayout;
     private ProgressBar progressBar;
-    private ExtendedFloatingActionButton logoutFab;
+    private Handler autoScrollHandler;
+    private Runnable autoScrollRunnable;
     
     // Toolbar
     private MaterialToolbar toolbar;
@@ -93,15 +99,14 @@ public class ProfileActivity extends BaseAppCompatActivity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_profile, menu);
+        getMenuInflater().inflate(R.menu.profile_menu, menu);
         return true;
     }
     
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_edit_profile) {
-            // TODO: Implement edit profile functionality
-            Toast.makeText(this, "Edit profile feature coming soon", Toast.LENGTH_SHORT).show();
+        if (item.getItemId() == R.id.action_logout) {
+            performLogout();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -115,6 +120,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
         bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "ProfileActivity");
         bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "ProfileActivity");
         mAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
+        startAutoScroll();
     }
     
     /**
@@ -123,14 +129,15 @@ public class ProfileActivity extends BaseAppCompatActivity {
     private void initializeViews() {
         profileImage = findViewById(R.id.circleimageview1);
         toolbar = findViewById(R.id.toolbar);
-        fullNameText = findViewById(R.id.full_name);
+        fullNameText = findViewById(R.id.textview1);
         userTypeText = findViewById(R.id.textview2);
         phoneNumberText = findViewById(R.id.phone_nunber);
-        emailUserText = findViewById(R.id.email_user);
-        genderUserText = findViewById(R.id.gender_user);
-        cepUserText = findViewById(R.id.cep_user);
-        categoriesGridView = findViewById(R.id.gridview_categorias);
-        logoutFab = findViewById(R.id.fab_logout);
+        emailUserText = findViewById(R.id.gamail);
+        genderUserText = findViewById(R.id.sexo);
+        cepUserText = findViewById(R.id.home_cep);
+        coinText = findViewById(R.id.coin);
+        birthdayText = findViewById(R.id.birthday);
+        skillsRecyclerView = findViewById(R.id.recyclerview_skills);
         
         // Configurar dados iniciais
         fullNameText.setText("Loading...");
@@ -139,16 +146,14 @@ public class ProfileActivity extends BaseAppCompatActivity {
         emailUserText.setText("Loading...");
         genderUserText.setText("Loading...");
         cepUserText.setText("Loading...");
+        coinText.setText("Loading...");
+        birthdayText.setText("Loading...");
     }
     
     /**
      * Configura os listeners dos elementos interativos
      */
     private void setupListeners() {
-        // Listener para logout via FAB
-        if (logoutFab != null) {
-            logoutFab.setOnClickListener(v -> performLogout());
-        }
         
         // Toolbar
         if (toolbar != null) {
@@ -278,6 +283,22 @@ public class ProfileActivity extends BaseAppCompatActivity {
             cepUserText.setText("CEP not provided");
         }
         
+        // Coin
+        String coin = dataSnapshot.child("coin").getValue(String.class);
+        if (coin != null && !coin.isEmpty()) {
+            coinText.setText(coin);
+        } else {
+            coinText.setText("0");
+        }
+        
+        // Birthday
+        String birthday = dataSnapshot.child("birthday").getValue(String.class);
+        if (birthday != null && !birthday.isEmpty()) {
+            birthdayText.setText(birthday);
+        } else {
+            birthdayText.setText("Not provided");
+        }
+        
         // Imagem de perfil
         String profileUrl = dataSnapshot.child("profile").getValue(String.class);
         if (profileUrl != null && !profileUrl.isEmpty()) {
@@ -321,6 +342,8 @@ public class ProfileActivity extends BaseAppCompatActivity {
             phoneNumberText.setText("Phone not provided");
             genderUserText.setText("Gender not provided");
             cepUserText.setText("CEP not provided");
+            coinText.setText("0");
+            birthdayText.setText("Not provided");
             userTypeText.setText("Developer");
         }
         
@@ -404,15 +427,79 @@ public class ProfileActivity extends BaseAppCompatActivity {
             }
         }
         
-        SkillChipAdapter adapter;
-        if (!categoryNames.isEmpty()) {
-            adapter = new SkillChipAdapter(this, categoryNames);
-        } else {
-            List<String> noCategories = new ArrayList<>();
-            noCategories.add("No categories selected");
-            adapter = new SkillChipAdapter(this, noCategories);
+        if (skillsRecyclerView != null) {
+            List<String> data = !categoryNames.isEmpty() ? categoryNames : new ArrayList<String>() {{ add("No categories selected"); }};
+            skillsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            skillsRecyclerView.setAdapter(new SkillRecyclerAdapter(data));
+            skillsRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         }
-        categoriesGridView.setAdapter(adapter);
+    }
+
+    private void startAutoScroll() {
+        if (skillsRecyclerView == null) return;
+        if (autoScrollHandler == null) autoScrollHandler = new Handler(Looper.getMainLooper());
+        if (autoScrollRunnable != null) return;
+        autoScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (skillsRecyclerView != null) {
+                    skillsRecyclerView.scrollBy(2, 0);
+                    autoScrollHandler.postDelayed(this, 16);
+                }
+            }
+        };
+        autoScrollHandler.postDelayed(autoScrollRunnable, 1000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (autoScrollHandler != null && autoScrollRunnable != null) {
+            autoScrollHandler.removeCallbacks(autoScrollRunnable);
+            autoScrollRunnable = null;
+        }
+    }
+
+    private class SkillRecyclerAdapter extends RecyclerView.Adapter<SkillRecyclerAdapter.SkillViewHolder> {
+        private final List<String> items;
+
+        SkillRecyclerAdapter(List<String> items) {
+            this.items = items;
+        }
+
+        @NonNull
+        @Override
+        public SkillViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            Chip chip = new Chip(parent.getContext());
+            chip.setTextSize(14);
+            chip.setClickable(false);
+            chip.setCheckable(false);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            chip.setLayoutParams(lp);
+            int padH = (int) (12 * parent.getResources().getDisplayMetrics().density);
+            chip.setPadding(padH, 0, padH, 0);
+            return new SkillViewHolder(chip);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull SkillRecyclerAdapter.SkillViewHolder holder, int position) {
+            if (items.isEmpty()) return;
+            String item = items.get(position % items.size());
+            holder.chip.setText(item);
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.isEmpty() ? 0 : Integer.MAX_VALUE;
+        }
+
+        class SkillViewHolder extends RecyclerView.ViewHolder {
+            Chip chip;
+            SkillViewHolder(@NonNull View itemView) {
+                super(itemView);
+                chip = (Chip) itemView;
+            }
+        }
     }
     
     /**
