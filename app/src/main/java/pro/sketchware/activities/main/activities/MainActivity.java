@@ -296,6 +296,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     tab.setText("Projects");
                     break;
                 case 1:
+                    tab.setText("Freela");
+                    break;
+                case 2:
                     tab.setText("Loja");
                     break;
             }
@@ -311,6 +314,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                         currentNavItemId = R.id.item_projects;
                         break;
                     case 1:
+                        currentNavItemId = R.id.item_loja; // reuse id for now
+                        break;
+                    case 2:
                         currentNavItemId = R.id.item_loja;
                         break;
                 }

@@ -7,6 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
 import pro.sketchware.activities.main.fragments.loja.LojaFragment;
+import pro.sketchware.activities.main.fragments.freelance.FreelanceFeedFragment;
 
 public class MainPagerAdapter extends FragmentStateAdapter {
 
@@ -21,6 +22,8 @@ public class MainPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return new ProjectsFragment();
             case 1:
+                return new FreelanceFeedFragment();
+            case 2:
                 return new LojaFragment();
             default:
                 return new ProjectsFragment();
@@ -29,6 +32,6 @@ public class MainPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // Projects e Loja
+        return 3; // Projects, Freelance, Loja
     }
 }

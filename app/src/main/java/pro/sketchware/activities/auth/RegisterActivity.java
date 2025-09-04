@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -520,6 +521,9 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Registration and data save successful
                             Toast.makeText(RegisterActivity.this, getString(R.string.auth_register_success), Toast.LENGTH_SHORT).show();
+                            try {
+                                FirebaseMessaging.getInstance().subscribeToTopic("all");
+                            } catch (Exception ignored) {}
                             
                             // Navigate to MainActivity
                             Intent intent = new Intent(RegisterActivity.this, MainActivity.class);

@@ -13,6 +13,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import pro.sketchware.R;
 import pro.sketchware.activities.main.activities.MainActivity;
@@ -91,6 +92,9 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = authManager.getCurrentUser();
                             if (user != null) {
+                                try {
+                                    FirebaseMessaging.getInstance().subscribeToTopic("all");
+                                } catch (Exception ignored) {}
                                 // Navigate to MainActivity
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

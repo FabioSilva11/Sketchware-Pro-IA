@@ -2,13 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Publicar Projeto -->
-    <item
-        android:id="@+id/action_publish_project"
-        android:icon="@drawable/ic_add"
-        android:title="Publicar Projeto"
-        app:showAsAction="never" />
-
     <!-- Configurações -->
     <item
         android:id="@+id/action_settings"

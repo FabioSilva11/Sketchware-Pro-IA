@@ -40,6 +40,7 @@ import pro.sketchware.activities.auth.CategoryManager;
 import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.activities.MainActivity;
 import pro.sketchware.adapters.SkillChipAdapter;
+import pro.sketchware.activities.profile.PublishFreelanceActivity;
 
 public class ProfileActivity extends BaseAppCompatActivity {
     
@@ -56,6 +57,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
     private TextView coinText;
     private TextView birthdayText;
     private RecyclerView skillsRecyclerView;
+    private RecyclerView myPostsRecyclerView;
     private View logoutLayout;
     private ProgressBar progressBar;
     private Handler autoScrollHandler;
@@ -170,6 +172,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
         bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "ProfileActivity");
         mAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
         startAutoScroll();
+        loadMyPosts();
     }
     
     /**
@@ -187,6 +190,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
         coinText = findViewById(R.id.coin);
         birthdayText = findViewById(R.id.birthday);
         skillsRecyclerView = findViewById(R.id.recyclerview_skills);
+        myPostsRecyclerView = findViewById(R.id.recyclerview_my_posts);
         
         // Configurar dados iniciais
         fullNameText.setText("Loading...");
@@ -214,6 +218,81 @@ public class ProfileActivity extends BaseAppCompatActivity {
             }
             toolbar.setTitle("Profile");
             toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        }
+
+        View fab = findViewById(R.id.fab_action);
+        if (fab != null) {
+            fab.setOnClickListener(v -> {
+                startActivity(new Intent(this, PublishFreelanceActivity.class));
+            });
+        }
+    }
+
+    private void loadMyPosts() {
+        if (!isUserLoggedIn()) return;
+        String uid = authManager.getCurrentUser().getUid();
+        androidx.recyclerview.widget.LinearLayoutManager lm = new androidx.recyclerview.widget.LinearLayoutManager(this);
+        myPostsRecyclerView.setLayoutManager(lm);
+        java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
+        com.google.firebase.database.FirebaseDatabase.getInstance().getReference()
+                .child("freelance_posts")
+                .orderByChild("owner/uid").equalTo(uid)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                        data.clear();
+                        for (com.google.firebase.database.DataSnapshot child : snapshot.getChildren()) {
+                            java.util.Map<String, Object> post = (java.util.Map<String, Object>) child.getValue();
+                            if (post != null) data.add(post);
+                        }
+                        myPostsRecyclerView.setAdapter(new MyPostsAdapter(data));
+                    }
+
+                    @Override
+                    public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) { }
+                });
+    }
+
+    private class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.VH> {
+        private final java.util.List<java.util.Map<String, Object>> data;
+        MyPostsAdapter(java.util.List<java.util.Map<String, Object>> data) { this.data = data; }
+
+        @androidx.annotation.NonNull
+        @Override
+        public VH onCreateViewHolder(@androidx.annotation.NonNull ViewGroup parent, int viewType) {
+            android.view.View view = android.view.LayoutInflater.from(parent.getContext()).inflate(R.layout.item_my_freelance_post, parent, false);
+            return new VH(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@androidx.annotation.NonNull VH holder, int position) {
+            java.util.Map<String, Object> post = data.get(position);
+            holder.title.setText(String.valueOf(post.get("title")));
+            holder.delete.setOnClickListener(v -> {
+                String id = String.valueOf(post.get("id"));
+                com.google.android.material.dialog.MaterialAlertDialogBuilder dlg = new com.google.android.material.dialog.MaterialAlertDialogBuilder(ProfileActivity.this);
+                dlg.setTitle("Delete ad");
+                dlg.setMessage("Do you want to delete this ad?");
+                dlg.setPositiveButton("Delete", (d, w) -> {
+                    com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child("freelance_posts").child(id).removeValue();
+                    data.remove(position);
+                    notifyItemRemoved(position);
+                });
+                dlg.setNegativeButton(R.string.common_word_cancel, null);
+                dlg.show();
+            });
+        }
+
+        @Override
+        public int getItemCount() { return data.size(); }
+
+        class VH extends RecyclerView.ViewHolder {
+            TextView title; View delete;
+            VH(@androidx.annotation.NonNull View itemView) {
+                super(itemView);
+                title = itemView.findViewById(R.id.tv_title);
+                delete = itemView.findViewById(R.id.btn_delete);
+            }
         }
     }
     

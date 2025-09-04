@@ -149,6 +149,17 @@
             android:exported="false"
             android:theme="@style/Theme.SketchwarePro" />
         
+        <!-- Publish Freelance Activity -->
+        <activity
+            android:name="pro.sketchware.activities.profile.PublishFreelanceActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+
+        <activity
+            android:name="pro.sketchware.activities.profile.FreelanceDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+
 
             
         
