@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.res.ColorStateList;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,11 +21,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.color.MaterialColors;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -57,6 +60,9 @@ public class ProfileActivity extends BaseAppCompatActivity {
     private ProgressBar progressBar;
     private Handler autoScrollHandler;
     private Runnable autoScrollRunnable;
+    
+    private DatabaseReference userRef;
+    private ValueEventListener userListener;
     
     // Toolbar
     private MaterialToolbar toolbar;
@@ -96,6 +102,49 @@ public class ProfileActivity extends BaseAppCompatActivity {
         // Carregar dados do perfil
         loadUserProfile();
     }
+    
+    @Override
+    protected void onStart() {
+        super.onStart();
+        attachLiveUpdates();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        detachLiveUpdates();
+    }
+
+    private void attachLiveUpdates() {
+        if (!isUserLoggedIn()) return;
+        String userId = authManager.getCurrentUser().getUid();
+        if (userRef == null) {
+            userRef = authManager.getDatabase().child("users").child(userId);
+        }
+        if (userListener == null) {
+            userListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        displayUserData(snapshot);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    // no-op
+                }
+            };
+        }
+        userRef.addValueEventListener(userListener);
+    }
+
+    private void detachLiveUpdates() {
+        if (userRef != null && userListener != null) {
+            userRef.removeEventListener(userListener);
+        }
+    }
+
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -432,6 +481,9 @@ public class ProfileActivity extends BaseAppCompatActivity {
             skillsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
             skillsRecyclerView.setAdapter(new SkillRecyclerAdapter(data));
             skillsRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            if (skillsRecyclerView.getItemDecorationCount() == 0) {
+                skillsRecyclerView.addItemDecoration(new HorizontalSpaceItemDecoration(dpToPx(3)));
+            }
         }
     }
 
@@ -470,15 +522,9 @@ public class ProfileActivity extends BaseAppCompatActivity {
         @NonNull
         @Override
         public SkillViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            Chip chip = new Chip(parent.getContext());
-            chip.setTextSize(14);
-            chip.setClickable(false);
-            chip.setCheckable(false);
-            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            chip.setLayoutParams(lp);
-            int padH = (int) (12 * parent.getResources().getDisplayMetrics().density);
-            chip.setPadding(padH, 0, padH, 0);
-            return new SkillViewHolder(chip);
+            android.view.LayoutInflater inflater = android.view.LayoutInflater.from(parent.getContext());
+            android.view.View view = inflater.inflate(R.layout.item_skill_chip, parent, false);
+            return new SkillViewHolder(view);
         }
 
         @Override
@@ -497,7 +543,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
             Chip chip;
             SkillViewHolder(@NonNull View itemView) {
                 super(itemView);
-                chip = (Chip) itemView;
+                chip = itemView.findViewById(R.id.skill_chip);
             }
         }
     }
@@ -567,6 +613,27 @@ public class ProfileActivity extends BaseAppCompatActivity {
         } else {
             // Retorna o CEP original se não conseguir formatar
             return cep;
+        }
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
+    private static class HorizontalSpaceItemDecoration extends RecyclerView.ItemDecoration {
+        private final int spacePx;
+
+        HorizontalSpaceItemDecoration(int spacePx) {
+            this.spacePx = spacePx;
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view);
+            outRect.left = spacePx;
+            outRect.right = spacePx;
+            // Optional: no vertical spacing since item height is fixed
         }
     }
 }
