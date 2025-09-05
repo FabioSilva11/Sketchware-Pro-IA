@@ -403,20 +403,28 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawer(GravityCompat.END);
-        } else if (viewTabAdapter.g()) {
-            hideViewPropertyView();
-        } else {
-            if (currentTabNumber > 0) {
-                currentTabNumber--;
-                viewPager.setCurrentItem(currentTabNumber);
-            } else if (t.c("P12I2")) {
-                k();
-                saveChangesAndCloseProject();
-            } else {
-                showSaveBeforeQuittingDialog();
-            }
+            return;
         }
-        super.onBackPressed();
+
+        if (viewTabAdapter.g()) {
+            hideViewPropertyView();
+            return;
+        }
+
+        if (currentTabNumber > 0) {
+            currentTabNumber--;
+            viewPager.setCurrentItem(currentTabNumber);
+            return;
+        }
+
+        if (t.c("P12I2")) {
+            k();
+            saveChangesAndCloseProject();
+            return;
+        }
+
+        // Ask user whether to save/discard or cancel. Do not finish automatically.
+        showSaveBeforeQuittingDialog();
     }
 
     public void hideViewPropertyView() {

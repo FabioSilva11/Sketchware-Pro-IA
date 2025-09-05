@@ -99,6 +99,62 @@ public class FreelanceFeedFragment extends Fragment {
             holder.tvTitle.setText(title);
             holder.tvShort.setText(shortDesc);
             holder.tvViews.setText(String.valueOf(views));
+
+            // Owner and date
+            Object ownerObj = post.get("owner");
+            if (ownerObj instanceof java.util.Map) {
+                java.util.Map owner = (java.util.Map) ownerObj;
+                String ownerName = safeString(owner.get("name"));
+                String ownerPhoto = safeString(owner.get("photo"));
+                if (holder.itemView.findViewById(R.id.tv_owner) instanceof TextView) {
+                    ((TextView) holder.itemView.findViewById(R.id.tv_owner)).setText(ownerName.isEmpty()?"Unknown":ownerName);
+                }
+                // Simple: leave default avatar; could load with Picasso if available
+            }
+            long createdAt = 0L;
+            Object ts = post.get("created_at");
+            if (ts instanceof Number) createdAt = ((Number) ts).longValue();
+            else if (ts instanceof String) try { createdAt = Long.parseLong((String) ts);} catch (Exception ignored) {}
+            if (holder.itemView.findViewById(R.id.tv_date) instanceof TextView) {
+                ((TextView) holder.itemView.findViewById(R.id.tv_date)).setText(createdAt>0? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(createdAt)) : "");
+            }
+
+            // Populate skills chips from rich structure, fallback to ids
+            if (holder.chips != null) {
+                holder.chips.removeAllViews();
+                Object rich = post.get("sub_categories");
+                java.util.List<java.util.Map<String, Object>> richList = null;
+                if (rich instanceof java.util.List) {
+                    richList = (java.util.List<java.util.Map<String, Object>>) rich;
+                }
+                if (richList != null && !richList.isEmpty()) {
+                    for (java.util.Map<String, Object> sc : richList) {
+                        String icon = safeString(sc.get("icon"));
+                        String scTitle = safeString(sc.get("title"));
+                        com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
+                        chip.setText((icon.isEmpty() ? "" : icon + " ") + scTitle);
+                        chip.setCheckable(false);
+                        holder.chips.addView(chip);
+                    }
+                } else {
+                    Object ids = post.get("skills");
+                    if (ids instanceof java.util.List) {
+                        java.util.List<?> list = (java.util.List<?>) ids;
+                        for (Object idObj : list) {
+                            String id = safeString(idObj);
+                            pro.sketchware.activities.auth.CategoryManager.SubCategory sc = pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
+                            if (sc != null) {
+                                String icon = sc.getIcon();
+                                String scTitle = sc.getTitle();
+                                com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
+                                chip.setText((icon != null && !icon.isEmpty() ? icon + " " : "") + scTitle);
+                                chip.setCheckable(false);
+                                holder.chips.addView(chip);
+                            }
+                        }
+                    }
+                }
+            }
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), FreelanceDetailActivity.class);
                 intent.putExtra("post_id", safeString(post.get("id")));
@@ -111,11 +167,13 @@ public class FreelanceFeedFragment extends Fragment {
 
         class VH extends RecyclerView.ViewHolder {
             TextView tvTitle, tvViews, tvShort;
+            com.google.android.material.chip.ChipGroup chips;
             VH(@NonNull View itemView) {
                 super(itemView);
                 tvTitle = itemView.findViewById(R.id.tv_title);
                 tvViews = itemView.findViewById(R.id.tv_views);
                 tvShort = itemView.findViewById(R.id.tv_short_desc);
+                chips = itemView.findViewById(R.id.chips_skills);
             }
         }
     }

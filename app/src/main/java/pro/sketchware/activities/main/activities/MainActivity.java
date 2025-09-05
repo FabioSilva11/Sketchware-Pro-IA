@@ -36,6 +36,10 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -481,12 +485,39 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             return;
         }
 
-        // Verificar se usuário está logado
-        if (authManager.isUserLoggedIn()) {
-            Log.d("MainActivity", "Usuário logado: " + authManager.getCurrentUser().getEmail());
+        // Verificar se usuário está logado e ainda existe no Firebase Auth
+        FirebaseUser currentUser = authManager.getCurrentUser();
+        if (currentUser != null) {
+            currentUser.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (!task.isSuccessful()) {
+                        Exception e = task.getException();
+                        if (e instanceof FirebaseAuthInvalidUserException) {
+                            showAccountDeletedDialog();
+                        } else {
+                            Log.w("MainActivity", "Falha ao atualizar usuário: " + (e != null ? e.getMessage() : "erro desconhecido"));
+                        }
+                    }
+                }
+            });
         } else {
             Log.d("MainActivity", "Usuário não está logado");
         }
+    }
+
+    private void showAccountDeletedDialog() {
+        // Sign out to clear any invalid session
+        authManager.signOut();
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Account removed")
+                .setMessage("Your account was deleted. Please create a new account.\n\nThis happened due to database updates required to support new features.")
+                .setCancelable(false)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finishAffinity();
+                })
+                .show();
     }
 
     @Override

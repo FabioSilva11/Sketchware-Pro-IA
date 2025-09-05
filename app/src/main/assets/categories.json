@@ -1,0 +1,99 @@
+{
+  "categories": [
+    {
+      "id": "mobile_dev",
+      "title": "Mobile Development",
+      "description": "Creating applications for mobile devices",
+      "icon": "📱",
+      "sub_categories": [
+        {"id": "android_dev", "title": "Android Development", "description": "Native Android apps using Java/Kotlin", "icon": "🤖"},
+        {"id": "ios_dev", "title": "iOS Development", "description": "Native iOS apps using Swift/Objective-C", "icon": "🍎"},
+        {"id": "cross_platform", "title": "Cross-Platform Development", "description": "Apps that work on Android and iOS", "icon": "🔄"},
+        {"id": "flutter_dev", "title": "Flutter", "description": "Google framework for multiplatform apps", "icon": "🦋"},
+        {"id": "react_native", "title": "React Native", "description": "Facebook framework for multiplatform apps", "icon": "⚛️"}
+      ]
+    },
+    {
+      "id": "web_dev",
+      "title": "Web Development",
+      "description": "Creating websites and web applications",
+      "icon": "🌐",
+      "sub_categories": [
+        {"id": "frontend_dev", "title": "Frontend Development", "description": "User interface with HTML, CSS, JavaScript", "icon": "🎨"},
+        {"id": "backend_dev", "title": "Backend Development", "description": "Server logic and APIs", "icon": "⚙️"},
+        {"id": "fullstack_dev", "title": "Full Stack Development", "description": "Complete Frontend and Backend", "icon": "🚀"},
+        {"id": "react_dev", "title": "React.js", "description": "JavaScript library for interfaces", "icon": "⚛️"},
+        {"id": "vue_dev", "title": "Vue.js", "description": "Progressive JavaScript framework", "icon": "💚"},
+        {"id": "angular_dev", "title": "Angular", "description": "Complete JavaScript framework", "icon": "🅰️"}
+      ]
+    },
+    {
+      "id": "design",
+      "title": "Design and UI/UX",
+      "description": "Creating interfaces and user experiences",
+      "icon": "🎨",
+      "sub_categories": [
+        {"id": "ui_design", "title": "UI Design", "description": "User interface design", "icon": "🎭"},
+        {"id": "ux_design", "title": "UX Design", "description": "User experience and usability", "icon": "🧠"},
+        {"id": "graphic_design", "title": "Graphic Design", "description": "Creating visual elements", "icon": "🖼️"},
+        {"id": "icon_design", "title": "Icon Design", "description": "Creating icons and symbols", "icon": "🔷"},
+        {"id": "logo_design", "title": "Logo Design", "description": "Creating visual identities", "icon": "🏷️"},
+        {"id": "prototyping", "title": "Prototyping", "description": "Creating interactive prototypes", "icon": "📱"}
+      ]
+    },
+    {
+      "id": "game_dev",
+      "title": "Game Development",
+      "description": "Creating games for different platforms",
+      "icon": "🎮",
+      "sub_categories": [
+        {"id": "mobile_games", "title": "Mobile Games", "description": "Games for smartphones and tablets", "icon": "📱"},
+        {"id": "pc_games", "title": "PC Games", "description": "Games for computers", "icon": "💻"},
+        {"id": "unity_dev", "title": "Unity", "description": "Engine for game development", "icon": "🎯"},
+        {"id": "unreal_dev", "title": "Unreal Engine", "description": "Advanced engine for 3D games", "icon": "🌟"},
+        {"id": "game_art", "title": "Game Art", "description": "Creating visual assets", "icon": "🎨"}
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "Artificial Intelligence",
+      "description": "Developing intelligent systems",
+      "icon": "🤖",
+      "sub_categories": [
+        {"id": "machine_learning", "title": "Machine Learning", "description": "Automatic learning algorithms", "icon": "🧠"},
+        {"id": "deep_learning", "title": "Deep Learning", "description": "Deep neural networks", "icon": "🔬"},
+        {"id": "nlp", "title": "Natural Language Processing", "description": "Text analysis and generation", "icon": "💬"},
+        {"id": "computer_vision", "title": "Computer Vision", "description": "Image and video analysis", "icon": "👁️"},
+        {"id": "ai_apps", "title": "AI Apps", "description": "Applications that use artificial intelligence", "icon": "📱"}
+      ]
+    },
+    {
+      "id": "devops",
+      "title": "DevOps and Infrastructure",
+      "description": "Automation and infrastructure management",
+      "icon": "⚙️",
+      "sub_categories": [
+        {"id": "cloud_computing", "title": "Cloud Computing", "description": "AWS, Azure, Google Cloud", "icon": "☁️"},
+        {"id": "containerization", "title": "Containerization", "description": "Docker, Kubernetes", "icon": "📦"},
+        {"id": "ci_cd", "title": "CI/CD", "description": "Continuous integration and delivery", "icon": "🔄"},
+        {"id": "monitoring", "title": "Monitoring", "description": "Observability and alerts", "icon": "📊"},
+        {"id": "security", "title": "Security", "description": "Application and infrastructure security", "icon": "🔒"}
+      ]
+    },
+    {
+      "id": "blockchain",
+      "title": "Blockchain and Web3",
+      "description": "Decentralized technologies",
+      "icon": "⛓️",
+      "sub_categories": [
+        {"id": "smart_contracts", "title": "Smart Contracts", "description": "Intelligent contracts on blockchain", "icon": "📜"},
+        {"id": "defi", "title": "DeFi", "description": "Decentralized finance", "icon": "💰"},
+        {"id": "nft", "title": "NFTs", "description": "Non-fungible tokens", "icon": "🖼️"},
+        {"id": "dapps", "title": "DApps", "description": "Decentralized applications", "icon": "🌐"},
+        {"id": "cryptocurrency", "title": "Cryptocurrency", "description": "Cryptocurrency development", "icon": "🪙"}
+      ]
+    }
+  ]
+}
+
+

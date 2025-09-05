@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputLayout;
@@ -41,6 +42,7 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
     private EditText longDescInput;
     private ChipGroup chipGroupSkills;
     private Button publishButton;
+    private MaterialToolbar toolbar;
     private FirebaseAnalytics analytics;
     private DatabaseReference db;
 
@@ -61,8 +63,12 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
         longDescInput = findViewById(R.id.input_long_description);
         chipGroupSkills = findViewById(R.id.chipgroup_skills);
         publishButton = findViewById(R.id.button_publish);
+        toolbar = findViewById(R.id.toolbar);
         analytics = FirebaseAnalytics.getInstance(this);
         db = FirebaseDatabase.getInstance().getReference();
+
+        // Configurar toolbar
+        setupToolbar();
 
         // Enforce 200 chars on short description
         shortDescInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});
@@ -136,6 +142,22 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
         });
     }
 
+    /**
+     * Configura o toolbar seguindo o padrão do Sketchware
+     */
+    private void setupToolbar() {
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Publish Freelance");
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
+            }
+            toolbar.setTitle("Publish Freelance");
+            toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        }
+    }
+
     private void attachValidationWatchers() {
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -189,7 +211,13 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
         for (CategoryManager.Category category : categories) {
             for (CategoryManager.SubCategory sub : category.getSubCategories()) {
                 Chip chip = new Chip(this);
-                chip.setText(sub.getTitle());
+                String icon = sub.getIcon();
+                String title = sub.getTitle();
+                if (icon != null && !icon.isEmpty()) {
+                    chip.setText(icon + " " + title);
+                } else {
+                    chip.setText(title);
+                }
                 chip.setCheckable(true);
                 chip.setTag(sub.getId());
                 chipGroupSkills.addView(chip);

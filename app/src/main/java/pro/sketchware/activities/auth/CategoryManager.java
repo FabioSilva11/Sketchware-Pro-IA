@@ -1,7 +1,22 @@
 package pro.sketchware.activities.auth;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import pro.sketchware.SketchApplication;
 
 public class CategoryManager {
     
@@ -56,7 +71,11 @@ public class CategoryManager {
     private List<Category> categories;
     
     private CategoryManager() {
-        initializeCategories();
+        // Carrega exclusivamente do JSON. Se falhar, mantém lista vazia.
+        if (!initializeCategoriesFromJson()) {
+            categories = new ArrayList<>();
+            Log.w("CategoryManager", "No categories loaded; ensure assets/categories.json exists and is valid");
+        }
     }
     
     public static CategoryManager getInstance() {
@@ -67,130 +86,59 @@ public class CategoryManager {
     }
     
     private void initializeCategories() {
+        // Mantida para compatibilidade, mas sem dados hardcoded
         categories = new ArrayList<>();
-        
-        // Category: Mobile Development
-        Category mobileDev = new Category("mobile_dev", "Mobile Development", 
-            "Creating applications for mobile devices", "📱");
-        
-        mobileDev.addSubCategory(new SubCategory("android_dev", "Android Development", 
-            "Native Android apps using Java/Kotlin", "🤖"));
-        mobileDev.addSubCategory(new SubCategory("ios_dev", "iOS Development", 
-            "Native iOS apps using Swift/Objective-C", "🍎"));
-        mobileDev.addSubCategory(new SubCategory("cross_platform", "Cross-Platform Development", 
-            "Apps that work on Android and iOS", "🔄"));
-        mobileDev.addSubCategory(new SubCategory("flutter_dev", "Flutter", 
-            "Google framework for multiplatform apps", "🦋"));
-        mobileDev.addSubCategory(new SubCategory("react_native", "React Native", 
-            "Facebook framework for multiplatform apps", "⚛️"));
-        
-        categories.add(mobileDev);
-        
-        // Category: Web Development
-        Category webDev = new Category("web_dev", "Web Development", 
-            "Creating websites and web applications", "🌐");
-        
-        webDev.addSubCategory(new SubCategory("frontend_dev", "Frontend Development", 
-            "User interface with HTML, CSS, JavaScript", "🎨"));
-        webDev.addSubCategory(new SubCategory("backend_dev", "Backend Development", 
-            "Server logic and APIs", "⚙️"));
-        webDev.addSubCategory(new SubCategory("fullstack_dev", "Full Stack Development", 
-            "Complete Frontend and Backend", "🚀"));
-        webDev.addSubCategory(new SubCategory("react_dev", "React.js", 
-            "JavaScript library for interfaces", "⚛️"));
-        webDev.addSubCategory(new SubCategory("vue_dev", "Vue.js", 
-            "Progressive JavaScript framework", "💚"));
-        webDev.addSubCategory(new SubCategory("angular_dev", "Angular", 
-            "Complete JavaScript framework", "🅰️"));
-        
-        categories.add(webDev);
-        
-        // Category: Design and UI/UX
-        Category design = new Category("design", "Design and UI/UX", 
-            "Creating interfaces and user experiences", "🎨");
-        
-        design.addSubCategory(new SubCategory("ui_design", "UI Design", 
-            "User interface design", "🎭"));
-        design.addSubCategory(new SubCategory("ux_design", "UX Design", 
-            "User experience and usability", "🧠"));
-        design.addSubCategory(new SubCategory("graphic_design", "Graphic Design", 
-            "Creating visual elements", "🖼️"));
-        design.addSubCategory(new SubCategory("icon_design", "Icon Design", 
-            "Creating icons and symbols", "🔷"));
-        design.addSubCategory(new SubCategory("logo_design", "Logo Design", 
-            "Creating visual identities", "🏷️"));
-        design.addSubCategory(new SubCategory("prototyping", "Prototyping", 
-            "Creating interactive prototypes", "📱"));
-        
-        categories.add(design);
-        
-        // Category: Game Development
-        Category gameDev = new Category("game_dev", "Game Development", 
-            "Creating games for different platforms", "🎮");
-        
-        gameDev.addSubCategory(new SubCategory("mobile_games", "Mobile Games", 
-            "Games for smartphones and tablets", "📱"));
-        gameDev.addSubCategory(new SubCategory("pc_games", "PC Games", 
-            "Games for computers", "💻"));
-        gameDev.addSubCategory(new SubCategory("unity_dev", "Unity", 
-            "Engine for game development", "🎯"));
-        gameDev.addSubCategory(new SubCategory("unreal_dev", "Unreal Engine", 
-            "Advanced engine for 3D games", "🌟"));
-        gameDev.addSubCategory(new SubCategory("game_art", "Game Art", 
-            "Creating visual assets", "🎨"));
-        
-        categories.add(gameDev);
-        
-        // Category: Artificial Intelligence
-        Category ai = new Category("ai", "Artificial Intelligence", 
-            "Developing intelligent systems", "🤖");
-        
-        ai.addSubCategory(new SubCategory("machine_learning", "Machine Learning", 
-            "Automatic learning algorithms", "🧠"));
-        ai.addSubCategory(new SubCategory("deep_learning", "Deep Learning", 
-            "Deep neural networks", "🔬"));
-        ai.addSubCategory(new SubCategory("nlp", "Natural Language Processing", 
-            "Text analysis and generation", "💬"));
-        ai.addSubCategory(new SubCategory("computer_vision", "Computer Vision", 
-            "Image and video analysis", "👁️"));
-        ai.addSubCategory(new SubCategory("ai_apps", "AI Apps", 
-            "Applications that use artificial intelligence", "📱"));
-        
-        categories.add(ai);
-        
-        // Category: DevOps and Infrastructure
-        Category devops = new Category("devops", "DevOps and Infrastructure", 
-            "Automation and infrastructure management", "⚙️");
-        
-        devops.addSubCategory(new SubCategory("cloud_computing", "Cloud Computing", 
-            "AWS, Azure, Google Cloud", "☁️"));
-        devops.addSubCategory(new SubCategory("containerization", "Containerization", 
-            "Docker, Kubernetes", "📦"));
-        devops.addSubCategory(new SubCategory("ci_cd", "CI/CD", 
-            "Continuous integration and delivery", "🔄"));
-        devops.addSubCategory(new SubCategory("monitoring", "Monitoring", 
-            "Observability and alerts", "📊"));
-        devops.addSubCategory(new SubCategory("security", "Security", 
-            "Application and infrastructure security", "🔒"));
-        
-        categories.add(devops);
-        
-        // Category: Blockchain and Web3
-        Category blockchain = new Category("blockchain", "Blockchain and Web3", 
-            "Decentralized technologies", "⛓️");
-        
-        blockchain.addSubCategory(new SubCategory("smart_contracts", "Smart Contracts", 
-            "Intelligent contracts on blockchain", "📜"));
-        blockchain.addSubCategory(new SubCategory("defi", "DeFi", 
-            "Decentralized finance", "💰"));
-        blockchain.addSubCategory(new SubCategory("nft", "NFTs", 
-            "Non-fungible tokens", "🖼️"));
-        blockchain.addSubCategory(new SubCategory("dapps", "DApps", 
-            "Decentralized applications", "🌐"));
-        blockchain.addSubCategory(new SubCategory("cryptocurrency", "Cryptocurrency", 
-            "Cryptocurrency development", "🪙"));
-        
-        categories.add(blockchain);
+    }
+
+    /**
+     * Carrega categorias de assets/categories.json
+     * @return true se conseguiu carregar do JSON, false caso contrário
+     */
+    private boolean initializeCategoriesFromJson() {
+        categories = new ArrayList<>();
+        Context context = SketchApplication.getContext();
+        if (context == null) return false;
+
+        AssetManager am = context.getAssets();
+        try (InputStream is = am.open("categories.json");
+             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(isr)) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            JSONObject root = new JSONObject(sb.toString());
+            JSONArray cats = root.optJSONArray("categories");
+            if (cats == null) return false;
+
+            for (int i = 0; i < cats.length(); i++) {
+                JSONObject c = cats.getJSONObject(i);
+                String id = c.optString("id");
+                String title = c.optString("title");
+                String description = c.optString("description");
+                String icon = c.optString("icon");
+                Category category = new Category(id, title, description, icon);
+
+                JSONArray subs = c.optJSONArray("sub_categories");
+                if (subs != null) {
+                    for (int j = 0; j < subs.length(); j++) {
+                        JSONObject s = subs.getJSONObject(j);
+                        String sid = s.optString("id");
+                        String stitle = s.optString("title");
+                        String sdesc = s.optString("description");
+                        String sicon = s.optString("icon");
+                        category.addSubCategory(new SubCategory(sid, stitle, sdesc, sicon));
+                    }
+                }
+                categories.add(category);
+            }
+            return !categories.isEmpty();
+        } catch (IOException | JSONException e) {
+            Log.w("CategoryManager", "Failed to load categories.json, using defaults", e);
+            categories.clear();
+            return false;
+        }
     }
     
     public List<Category> getAllCategories() {

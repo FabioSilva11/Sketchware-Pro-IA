@@ -268,6 +268,59 @@ public class ProfileActivity extends BaseAppCompatActivity {
         public void onBindViewHolder(@androidx.annotation.NonNull VH holder, int position) {
             java.util.Map<String, Object> post = data.get(position);
             holder.title.setText(String.valueOf(post.get("title")));
+            // owner/date
+            Object ownerObj = post.get("owner");
+            if (ownerObj instanceof java.util.Map) {
+                java.util.Map owner = (java.util.Map) ownerObj;
+                String ownerName = String.valueOf(owner.get("name"));
+                android.view.View vOwner = holder.itemView.findViewById(R.id.tv_owner);
+                if (vOwner instanceof android.widget.TextView) {
+                    ((android.widget.TextView) vOwner).setText(ownerName == null || ownerName.equals("null") ? "You" : ownerName);
+                }
+            }
+            long createdAt = 0L;
+            Object ts = post.get("created_at");
+            if (ts instanceof Number) createdAt = ((Number) ts).longValue();
+            else if (ts instanceof String) try { createdAt = Long.parseLong((String) ts);} catch (Exception ignored) {}
+            android.view.View vDate = holder.itemView.findViewById(R.id.tv_date);
+            if (vDate instanceof android.widget.TextView) {
+                ((android.widget.TextView) vDate).setText(createdAt>0? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(createdAt)) : "");
+            }
+            if (holder.chips != null) {
+                holder.chips.removeAllViews();
+                Object rich = post.get("sub_categories");
+                java.util.List<java.util.Map<String, Object>> richList = null;
+                if (rich instanceof java.util.List) {
+                    richList = (java.util.List<java.util.Map<String, Object>>) rich;
+                }
+                if (richList != null && !richList.isEmpty()) {
+                    for (java.util.Map<String, Object> sc : richList) {
+                        String icon = String.valueOf(sc.get("icon"));
+                        String scTitle = String.valueOf(sc.get("title"));
+                        com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
+                        chip.setText((icon == null || icon.equals("null") || icon.isEmpty() ? "" : icon + " ") + scTitle);
+                        chip.setCheckable(false);
+                        holder.chips.addView(chip);
+                    }
+                } else {
+                    Object ids = post.get("skills");
+                    if (ids instanceof java.util.List) {
+                        java.util.List<?> list = (java.util.List<?>) ids;
+                        for (Object idObj : list) {
+                            String id = String.valueOf(idObj);
+                            pro.sketchware.activities.auth.CategoryManager.SubCategory sc = pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
+                            if (sc != null) {
+                                String icon = sc.getIcon();
+                                String scTitle = sc.getTitle();
+                                com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
+                                chip.setText((icon != null && !icon.isEmpty() ? icon + " " : "") + scTitle);
+                                chip.setCheckable(false);
+                                holder.chips.addView(chip);
+                            }
+                        }
+                    }
+                }
+            }
             holder.delete.setOnClickListener(v -> {
                 String id = String.valueOf(post.get("id"));
                 com.google.android.material.dialog.MaterialAlertDialogBuilder dlg = new com.google.android.material.dialog.MaterialAlertDialogBuilder(ProfileActivity.this);
@@ -287,11 +340,12 @@ public class ProfileActivity extends BaseAppCompatActivity {
         public int getItemCount() { return data.size(); }
 
         class VH extends RecyclerView.ViewHolder {
-            TextView title; View delete;
+            TextView title; View delete; com.google.android.material.chip.ChipGroup chips;
             VH(@androidx.annotation.NonNull View itemView) {
                 super(itemView);
                 title = itemView.findViewById(R.id.tv_title);
                 delete = itemView.findViewById(R.id.btn_delete);
+                chips = itemView.findViewById(R.id.chips_skills);
             }
         }
     }
@@ -483,6 +537,20 @@ public class ProfileActivity extends BaseAppCompatActivity {
      * Define o tipo de usuário baseado nas categorias selecionadas
      */
     private void setUserType(DataSnapshot dataSnapshot) {
+        // Prefer rich structure when available
+        DataSnapshot richSnapshot = dataSnapshot.child("sub_categories");
+        if (richSnapshot.exists() && richSnapshot.hasChildren()) {
+            DataSnapshot first = null;
+            for (DataSnapshot child : richSnapshot.getChildren()) { first = child; break; }
+            if (first != null) {
+                String title = first.child("title").getValue(String.class);
+                if (title != null && !title.isEmpty()) {
+                    userTypeText.setText(title);
+                    return;
+                }
+            }
+        }
+
         DataSnapshot categoriesSnapshot = dataSnapshot.child("sub_category_ids");
         if (categoriesSnapshot.exists()) {
             List<String> categoryIds = new ArrayList<>();
@@ -528,29 +596,42 @@ public class ProfileActivity extends BaseAppCompatActivity {
      * Carrega e exibe as categorias selecionadas pelo usuário
      */
     private void loadUserCategories(DataSnapshot dataSnapshot) {
-        DataSnapshot categoriesSnapshot = dataSnapshot.child("sub_category_ids");
+        DataSnapshot richSnapshot = dataSnapshot.child("sub_categories");
         List<String> categoryNames = new ArrayList<>();
-        
-        if (categoriesSnapshot.exists()) {
-            // Verificar se é uma lista (array) ou um objeto
-            if (categoriesSnapshot.hasChildren()) {
-                // É um objeto com children (estrutura do Firebase)
-                for (DataSnapshot categorySnapshot : categoriesSnapshot.getChildren()) {
-                    String categoryId = categorySnapshot.getValue(String.class);
-                    if (categoryId != null) {
-                        CategoryManager.SubCategory subCategory = CategoryManager.getInstance()
-                                .getSubCategoryById(categoryId);
-                        if (subCategory != null) {
-                            categoryNames.add(subCategory.getTitle());
+
+        if (richSnapshot.exists() && richSnapshot.hasChildren()) {
+            for (DataSnapshot child : richSnapshot.getChildren()) {
+                String title = child.child("title").getValue(String.class);
+                String icon = child.child("icon").getValue(String.class);
+                if (title != null && !title.isEmpty()) {
+                    categoryNames.add(icon != null && !icon.isEmpty() ? (icon + " " + title) : title);
+                }
+            }
+        } else {
+            DataSnapshot categoriesSnapshot = dataSnapshot.child("sub_category_ids");
+            if (categoriesSnapshot.exists()) {
+                // Verificar se é uma lista (array) ou um objeto
+                if (categoriesSnapshot.hasChildren()) {
+                    // É um objeto com children (estrutura do Firebase)
+                    for (DataSnapshot categorySnapshot : categoriesSnapshot.getChildren()) {
+                        String categoryId = categorySnapshot.getValue(String.class);
+                        if (categoryId != null) {
+                            CategoryManager.SubCategory subCategory = CategoryManager.getInstance()
+                                    .getSubCategoryById(categoryId);
+                            if (subCategory != null) {
+                                String icon = subCategory.getIcon();
+                                String title = subCategory.getTitle();
+                                categoryNames.add(icon != null && !icon.isEmpty() ? (icon + " " + title) : title);
+                            }
                         }
                     }
-                }
-            } else {
-                // Tentar ler como string direta (pode ser um array serializado)
-                String categoriesString = categoriesSnapshot.getValue(String.class);
-                if (categoriesString != null && !categoriesString.isEmpty()) {
-                    // Aqui você pode implementar parsing de array se necessário
-                    categoryNames.add("Categorias: " + categoriesString);
+                } else {
+                    // Tentar ler como string direta (pode ser um array serializado)
+                    String categoriesString = categoriesSnapshot.getValue(String.class);
+                    if (categoriesString != null && !categoriesString.isEmpty()) {
+                        // Aqui você pode implementar parsing de array se necessário
+                        categoryNames.add("Categorias: " + categoriesString);
+                    }
                 }
             }
         }

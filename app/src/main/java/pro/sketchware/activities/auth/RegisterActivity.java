@@ -507,7 +507,29 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("pin", pin);
         userData.put("gender", gender);
         userData.put("home_cep", homeCep);
+        // Persist both: ids (para queries) e objetos ricos (para UI)
         userData.put("sub_category_ids", selectedCategories);
+        java.util.List<java.util.Map<String, Object>> subCategoriesRich = new java.util.ArrayList<>();
+        for (String id : selectedCategories) {
+            pro.sketchware.activities.auth.CategoryManager.SubCategory sc = 
+                pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
+            if (sc != null) {
+                java.util.Map<String, Object> scMap = new java.util.HashMap<>();
+                scMap.put("id", sc.getId());
+                scMap.put("title", sc.getTitle());
+                scMap.put("icon", sc.getIcon());
+                // description opcional para futuras telas
+                scMap.put("description", sc.getDescription());
+                subCategoriesRich.add(scMap);
+            } else {
+                // fallback mínimo caso id não seja encontrado no JSON
+                java.util.Map<String, Object> scMap = new java.util.HashMap<>();
+                scMap.put("id", id);
+                scMap.put("title", id);
+                subCategoriesRich.add(scMap);
+            }
+        }
+        userData.put("sub_categories", subCategoriesRich);
         userData.put("coin", "50");
         userData.put("profile", "https://blog.manpowergroup.com.br/hubfs/escritorio.jpg");
         userData.put("created_at", System.currentTimeMillis());

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/backgroundColor">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,11 +40,15 @@
                         android:id="@+id/til_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Title">
+                        android:hint="Title"
+                        app:boxBackgroundColor="@color/inputLayoutBackgroundColor"
+                        app:boxStrokeColor="@color/inputLayoutStrokeColor"
+                        app:hintTextColor="@color/color_primary">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/input_title"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_onSurface" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -54,11 +58,15 @@
                         android:hint="Short description (max. 200)"
                         android:layout_marginTop="12dp"
                         app:counterEnabled="true"
-                        app:counterMaxLength="200">
+                        app:counterMaxLength="200"
+                        app:boxBackgroundColor="@color/inputLayoutBackgroundColor"
+                        app:boxStrokeColor="@color/inputLayoutStrokeColor"
+                        app:hintTextColor="@color/color_primary">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/input_short_description"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/color_text_onSurface" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -66,13 +74,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Long description"
-                        android:layout_marginTop="12dp">
+                        android:layout_marginTop="12dp"
+                        app:boxBackgroundColor="@color/inputLayoutBackgroundColor"
+                        app:boxStrokeColor="@color/inputLayoutStrokeColor"
+                        app:hintTextColor="@color/color_primary">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/input_long_description"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minLines="4"
-                            android:gravity="top|start" />
+                            android:gravity="top|start"
+                            android:textColor="@color/color_text_onSurface" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
@@ -80,6 +92,8 @@
                         android:layout_height="wrap_content"
                         android:text="Target Skills"
                         android:textStyle="bold"
+                        android:textColor="#2962FF"
+                        android:textSize="14sp"
                         android:layout_marginTop="16dp" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -102,7 +116,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Publish"
-                />
+                android:textColor="@color/tool_bar_text_color"
+                app:backgroundTint="@color/color_primary"
+                app:cornerRadius="8dp"
+                android:layout_marginTop="16dp" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
