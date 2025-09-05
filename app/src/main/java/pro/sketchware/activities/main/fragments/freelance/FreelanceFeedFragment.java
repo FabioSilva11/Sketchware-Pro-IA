@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,6 +21,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import pro.sketchware.activities.profile.FreelanceDetailActivity;
 public class FreelanceFeedFragment extends Fragment {
 
     private RecyclerView recyclerView;
+    private SwipeRefreshLayout swipeRefresh;
     private View emptyView;
     private final List<Map<String, Object>> items = new ArrayList<>();
     private FeedAdapter adapter;
@@ -41,10 +44,16 @@ public class FreelanceFeedFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_freelance_feed, container, false);
         recyclerView = root.findViewById(R.id.recycler_feed);
+        swipeRefresh = root.findViewById(R.id.swipe_refresh);
         emptyView = root.findViewById(R.id.empty_view);
+        
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new FeedAdapter(items);
         recyclerView.setAdapter(adapter);
+        
+        // Configurar refresh
+        swipeRefresh.setOnRefreshListener(this::refreshPosts);
+        
         ref = FirebaseDatabase.getInstance().getReference().child("freelance_posts");
         loadPosts();
         return root;
@@ -55,7 +64,7 @@ public class FreelanceFeedFragment extends Fragment {
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                items.clear();
+                List<Map<String, Object>> allPosts = new ArrayList<>();
                 for (DataSnapshot child : snapshot.getChildren()) {
                     Map<String, Object> post = (Map<String, Object>) child.getValue();
                     if (post == null) continue;
@@ -65,15 +74,33 @@ public class FreelanceFeedFragment extends Fragment {
                         // skip own posts in main feed
                         continue;
                     }
-                    items.add(post);
+                    allPosts.add(post);
                 }
+                
+                // Embaralhar e limitar a 50 itens
+                Collections.shuffle(allPosts);
+                items.clear();
+                items.addAll(allPosts.subList(0, Math.min(50, allPosts.size())));
+                
                 adapter.notifyDataSetChanged();
                 emptyView.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                
+                if (swipeRefresh.isRefreshing()) {
+                    swipeRefresh.setRefreshing(false);
+                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) { 
+                if (swipeRefresh.isRefreshing()) {
+                    swipeRefresh.setRefreshing(false);
+                }
+            }
         });
+    }
+    
+    private void refreshPosts() {
+        loadPosts();
     }
 
     private class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.VH> {

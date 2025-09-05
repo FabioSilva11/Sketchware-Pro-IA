@@ -130,6 +130,7 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                     ownerUid = (String) owner.get("uid");
                     ownerEmail = (String) owner.get("email");
                     ownerPhone = (String) owner.get("phone");
+                    
                     // Check if already unlocked
                     String myUid = AuthManager.getInstance().getCurrentUser() != null ? AuthManager.getInstance().getCurrentUser().getUid() : null;
                     Object unlockedMap = post.get("unlocked_by");
@@ -138,9 +139,18 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                         Object val = ((Map<?, ?>) unlockedMap).get(myUid);
                         already = val instanceof Boolean && (Boolean) val;
                     }
+                    
                     setContactsMasked(!already);
                     isUnlocked = already;
-                    btnUnlock.setEnabled(!already && (myUid == null || !myUid.equals(ownerUid)));
+                    
+                    // Set button state based on unlock status and ownership
+                    boolean canUnlock = !already && (myUid != null && !myUid.equals(ownerUid));
+                    btnUnlock.setEnabled(canUnlock);
+                    btnUnlock.setText(already ? "Unlocked" : "Unlock");
+                    
+                    if (myUid != null && myUid.equals(ownerUid)) {
+                        btnUnlock.setVisibility(View.GONE); // Hide button for own posts
+                    }
                 }
 
                 // Bind skills grid
@@ -175,11 +185,6 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                     rvSkills.setAdapter(new SkillsAdapter(labels));
                 }
 
-                // If viewing own post, disable unlock
-                String myUid = AuthManager.getInstance().getCurrentUser() != null ? AuthManager.getInstance().getCurrentUser().getUid() : null;
-                if (!TextUtils.isEmpty(ownerUid) && ownerUid.equals(myUid)) {
-                    btnUnlock.setEnabled(false);
-                }
             }
 
             @Override
@@ -190,13 +195,18 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
     private void attemptUnlock() {
         String myUid = AuthManager.getInstance().getCurrentUser() != null ? AuthManager.getInstance().getCurrentUser().getUid() : null;
         if (TextUtils.isEmpty(myUid)) {
-                         Toast.makeText(this, "Please login to unlock", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please login to unlock", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!TextUtils.isEmpty(ownerUid) && ownerUid.equals(myUid)) {
             btnUnlock.setEnabled(false);
+            Toast.makeText(this, "Cannot unlock your own post", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Disable button temporarily to prevent multiple clicks
+        btnUnlock.setEnabled(false);
+        btnUnlock.setText("Checking...");
 
         // Check if already unlocked
         ref.child("unlocked_by").child(myUid).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -205,11 +215,17 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                     setContactsMasked(false);
                     isUnlocked = true;
                     btnUnlock.setEnabled(false);
+                    btnUnlock.setText("Unlocked");
+                    Toast.makeText(FreelanceDetailActivity.this, "Already unlocked", Toast.LENGTH_SHORT).show();
                 } else {
                     chargeAndUnlock(myUid);
                 }
             }
-            @Override public void onCancelled(DatabaseError error) { }
+            @Override public void onCancelled(DatabaseError error) { 
+                btnUnlock.setEnabled(true);
+                btnUnlock.setText("Unlock");
+                Toast.makeText(FreelanceDetailActivity.this, "Error checking unlock status", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -221,6 +237,10 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                 Object val = snapshot.getValue();
                 final int currentCoins = getCurrentCoins(val);
                 
+                // Reset button state
+                btnUnlock.setEnabled(true);
+                btnUnlock.setText("Unlock");
+                
                 new MaterialAlertDialogBuilder(FreelanceDetailActivity.this)
                     .setTitle("Unlock contacts")
                     .setMessage("Current balance: " + currentCoins + " coins\n\nCost: 10 coins\nBalance after: " + (currentCoins - 10) + " coins\n\nContinue?")
@@ -231,18 +251,26 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                         }
                         performChargeAndUnlock(myUid);
                     })
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                        // Keep button enabled for retry
+                    })
                     .show();
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
+                btnUnlock.setEnabled(true);
+                btnUnlock.setText("Unlock");
                 Toast.makeText(FreelanceDetailActivity.this, "Error checking balance", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void performChargeAndUnlock(String myUid) {
+        // Update button state
+        btnUnlock.setEnabled(false);
+        btnUnlock.setText("Processing...");
+        
         DatabaseReference coinRef = usersRef.child(myUid).child("coin");
         coinRef.runTransaction(new Transaction.Handler() {
             @NonNull @Override
@@ -262,16 +290,34 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
 
             @Override
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                if (error != null) {
+                    btnUnlock.setEnabled(true);
+                    btnUnlock.setText("Unlock");
+                    Toast.makeText(FreelanceDetailActivity.this, "Transaction error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
                 if (!committed) {
+                    btnUnlock.setEnabled(true);
+                    btnUnlock.setText("Unlock");
                     Toast.makeText(FreelanceDetailActivity.this, "Insufficient balance (10)", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                
                 // Mark unlocked and reveal
-                ref.child("unlocked_by").child(myUid).setValue(true);
-                setContactsMasked(false);
-                isUnlocked = true;
-                btnUnlock.setEnabled(false);
-                Toast.makeText(FreelanceDetailActivity.this, "Contacts unlocked", Toast.LENGTH_SHORT).show();
+                ref.child("unlocked_by").child(myUid).setValue(true).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        setContactsMasked(false);
+                        isUnlocked = true;
+                        btnUnlock.setEnabled(false);
+                        btnUnlock.setText("Unlocked");
+                        Toast.makeText(FreelanceDetailActivity.this, "Contacts unlocked successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        btnUnlock.setEnabled(true);
+                        btnUnlock.setText("Unlock");
+                        Toast.makeText(FreelanceDetailActivity.this, "Failed to unlock: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

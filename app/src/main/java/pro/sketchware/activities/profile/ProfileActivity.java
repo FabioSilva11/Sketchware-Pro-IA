@@ -18,10 +18,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import com.google.firebase.database.DataSnapshot;
@@ -40,6 +43,7 @@ import pro.sketchware.activities.auth.CategoryManager;
 import pro.sketchware.activities.auth.LoginActivity;
 import pro.sketchware.activities.main.activities.MainActivity;
 import pro.sketchware.adapters.SkillChipAdapter;
+import pro.sketchware.adapters.ProfilePagerAdapter;
 import pro.sketchware.activities.profile.PublishFreelanceActivity;
 
 public class ProfileActivity extends BaseAppCompatActivity {
@@ -56,8 +60,9 @@ public class ProfileActivity extends BaseAppCompatActivity {
     private TextView cepUserText;
     private TextView coinText;
     private TextView birthdayText;
-    private RecyclerView skillsRecyclerView;
-    private RecyclerView myPostsRecyclerView;
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
+    private ProfilePagerAdapter pagerAdapter;
     private View logoutLayout;
     private ProgressBar progressBar;
     private Handler autoScrollHandler;
@@ -196,8 +201,8 @@ public class ProfileActivity extends BaseAppCompatActivity {
         cepUserText = findViewById(R.id.home_cep);
         coinText = findViewById(R.id.coin);
         birthdayText = findViewById(R.id.birthday);
-        skillsRecyclerView = findViewById(R.id.recyclerview_skills);
-        myPostsRecyclerView = findViewById(R.id.recyclerview_my_posts);
+        viewPager = findViewById(R.id.view_pager);
+        tabLayout = findViewById(R.id.tab_layout);
         
         // Configurar dados iniciais
         fullNameText.setText("Loading...");
@@ -214,6 +219,15 @@ public class ProfileActivity extends BaseAppCompatActivity {
      * Configura os listeners dos elementos interativos
      */
     private void setupListeners() {
+        
+        // Configurar ViewPager
+        pagerAdapter = new ProfilePagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+        
+        // Configurar TabLayout
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            tab.setText(pagerAdapter.getPageTitle(position));
+        }).attach();
         
         // Toolbar
         if (toolbar != null) {
@@ -239,7 +253,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
         if (!isUserLoggedIn()) return;
         String uid = authManager.getCurrentUser().getUid();
         androidx.recyclerview.widget.LinearLayoutManager lm = new androidx.recyclerview.widget.LinearLayoutManager(this);
-        myPostsRecyclerView.setLayoutManager(lm);
+        // ViewPager agora gerencia os posts
         java.util.List<java.util.Map<String, Object>> data = new java.util.ArrayList<>();
         com.google.firebase.database.FirebaseDatabase.getInstance().getReference()
                 .child("freelance_posts")
@@ -252,7 +266,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
                             java.util.Map<String, Object> post = (java.util.Map<String, Object>) child.getValue();
                             if (post != null) data.add(post);
                         }
-                        myPostsRecyclerView.setAdapter(new MyPostsAdapter(data));
+                        // Posts agora são gerenciados pelo ViewPager
                     }
 
                     @Override
@@ -629,31 +643,11 @@ public class ProfileActivity extends BaseAppCompatActivity {
             }
         }
         
-        if (skillsRecyclerView != null) {
-            List<String> data = !categoryNames.isEmpty() ? categoryNames : new ArrayList<String>() {{ add("No categories selected"); }};
-            skillsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-            skillsRecyclerView.setAdapter(new SkillRecyclerAdapter(data));
-            skillsRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-            if (skillsRecyclerView.getItemDecorationCount() == 0) {
-                skillsRecyclerView.addItemDecoration(new HorizontalSpaceItemDecoration(dpToPx(3)));
-            }
-        }
+        // Skills agora são gerenciados pelo ViewPager
     }
 
     private void startAutoScroll() {
-        if (skillsRecyclerView == null) return;
-        if (autoScrollHandler == null) autoScrollHandler = new Handler(Looper.getMainLooper());
-        if (autoScrollRunnable != null) return;
-        autoScrollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (skillsRecyclerView != null) {
-                    skillsRecyclerView.scrollBy(2, 0);
-                    autoScrollHandler.postDelayed(this, 16);
-                }
-            }
-        };
-        autoScrollHandler.postDelayed(autoScrollRunnable, 1000);
+        // Auto scroll removido - ViewPager gerencia a navegação
     }
 
     @Override

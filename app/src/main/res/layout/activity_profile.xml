@@ -211,49 +211,24 @@
                                 android:textSize="12sp"
                                 android:textColor="#90A4AE" />
                         </LinearLayout>
-                        <LinearLayout
-                            android:id="@+id/linear11"
+                        <com.google.android.material.tabs.TabLayout
+                            android:id="@+id/tab_layout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-                            <TextView
-                                android:id="@+id/textview8"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:padding="8dp"
-                                android:text="Skills"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-                        </LinearLayout>
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/recyclerview_skills"
+                            android:layout_marginTop="16dp"
+                            android:background="?attr/colorSurface"
+                            app:tabMode="fixed"
+                            app:tabGravity="fill"
+                            app:tabTextColor="?attr/colorOnSurfaceVariant"
+                            app:tabSelectedTextColor="?attr/colorPrimary"
+                            app:tabIndicatorColor="?attr/colorPrimary" />
+
+                        <androidx.viewpager2.widget.ViewPager2
+                            android:id="@+id/view_pager"
                             android:layout_width="match_parent"
-                            android:layout_height="50dp"
-                            android:padding="8dp"
-                            android:clipToPadding="false"
-                            android:scrollbars="horizontal"
-                            android:overScrollMode="never"
-                            android:nestedScrollingEnabled="false" />
-                        <LinearLayout
-                            android:id="@+id/lineadr7"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-                            <TextView
-                                android:id="@+id/textview6y"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:padding="8dp"
-                                android:text="post"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-                        </LinearLayout>
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/recyclerview_my_posts"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp" />
                     </LinearLayout>
                 </ScrollView>
             </LinearLayout>
