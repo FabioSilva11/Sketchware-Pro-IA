@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,7 @@ import pro.sketchware.activities.auth.AuthManager;
 public class FreelanceDetailActivity extends BaseAppCompatActivity {
 
     private TextView tvTitle, tvLongDesc, tvEmail, tvPhone, tvViews;
+    private androidx.recyclerview.widget.RecyclerView rvSkills;
     private MaterialButton btnUnlock;
     private DatabaseReference ref;
     private DatabaseReference usersRef;
@@ -38,6 +41,22 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
     private String ownerEmail;
     private String ownerPhone;
     private boolean isUnlocked = false;
+
+    private static class SkillsAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<SkillsAdapter.VH> {
+        private final java.util.List<String> items;
+        SkillsAdapter(java.util.List<String> items) { this.items = items; }
+        @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            android.widget.TextView tv = new android.widget.TextView(parent.getContext());
+            tv.setPadding(12, 8, 12, 8);
+            tv.setTextSize(14);
+            return new VH(tv);
+        }
+        @Override public void onBindViewHolder(@NonNull VH holder, int position) {
+            ((android.widget.TextView) holder.itemView).setText(items.get(position));
+        }
+        @Override public int getItemCount() { return items.size(); }
+        static class VH extends androidx.recyclerview.widget.RecyclerView.ViewHolder { VH(@NonNull View itemView) { super(itemView); } }
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,6 +67,10 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
         tvEmail = findViewById(R.id.tv_email);
         tvPhone = findViewById(R.id.tv_phone);
         tvViews = findViewById(R.id.tv_views);
+        rvSkills = findViewById(R.id.rv_skills);
+        if (rvSkills != null) {
+            rvSkills.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
+        }
         btnUnlock = findViewById(R.id.btn_unlock);
 
         postId = getIntent().getStringExtra("post_id");
@@ -118,6 +141,38 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                     setContactsMasked(!already);
                     isUnlocked = already;
                     btnUnlock.setEnabled(!already && (myUid == null || !myUid.equals(ownerUid)));
+                }
+
+                // Bind skills grid
+                Object rich = post.get("sub_categories");
+                java.util.List<java.util.Map<String, Object>> richList = null;
+                if (rich instanceof java.util.List) {
+                    richList = (java.util.List<java.util.Map<String, Object>>) rich;
+                }
+                if (rvSkills != null) {
+                    java.util.List<String> labels = new java.util.ArrayList<>();
+                    if (richList != null && !richList.isEmpty()) {
+                        for (java.util.Map<String, Object> sc : richList) {
+                            String icon = String.valueOf(sc.get("icon"));
+                            String scTitle = String.valueOf(sc.get("title"));
+                            labels.add(((icon != null && !icon.equals("null") && !icon.isEmpty()) ? icon + " " : "") + scTitle);
+                        }
+                    } else {
+                        Object ids = post.get("skills");
+                        if (ids instanceof java.util.List) {
+                            java.util.List<?> list = (java.util.List<?>) ids;
+                            for (Object idObj : list) {
+                                String id = String.valueOf(idObj);
+                                pro.sketchware.activities.auth.CategoryManager.SubCategory sc = pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
+                                if (sc != null) {
+                                    String icon = sc.getIcon();
+                                    String scTitle = sc.getTitle();
+                                    labels.add(((icon != null && !icon.isEmpty()) ? icon + " " : "") + scTitle);
+                                }
+                            }
+                        }
+                    }
+                    rvSkills.setAdapter(new SkillsAdapter(labels));
                 }
 
                 // If viewing own post, disable unlock

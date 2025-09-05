@@ -109,7 +109,18 @@ public class FreelanceFeedFragment extends Fragment {
                 if (holder.itemView.findViewById(R.id.tv_owner) instanceof TextView) {
                     ((TextView) holder.itemView.findViewById(R.id.tv_owner)).setText(ownerName.isEmpty()?"Unknown":ownerName);
                 }
-                // Simple: leave default avatar; could load with Picasso if available
+                android.view.View avatar = holder.itemView.findViewById(R.id.iv_owner);
+                if (avatar instanceof de.hdodenhof.circleimageview.CircleImageView) {
+                    if (ownerPhoto != null && !ownerPhoto.isEmpty()) {
+                        try {
+                            com.squareup.picasso.Picasso.get()
+                                .load(ownerPhoto)
+                                .placeholder(R.drawable.ic_person)
+                                .error(R.drawable.ic_person)
+                                .into((de.hdodenhof.circleimageview.CircleImageView) avatar);
+                        } catch (Exception ignored) {}
+                    }
+                }
             }
             long createdAt = 0L;
             Object ts = post.get("created_at");
@@ -119,41 +130,9 @@ public class FreelanceFeedFragment extends Fragment {
                 ((TextView) holder.itemView.findViewById(R.id.tv_date)).setText(createdAt>0? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(createdAt)) : "");
             }
 
-            // Populate skills chips from rich structure, fallback to ids
+            // Hide skills on main feed per requirement
             if (holder.chips != null) {
-                holder.chips.removeAllViews();
-                Object rich = post.get("sub_categories");
-                java.util.List<java.util.Map<String, Object>> richList = null;
-                if (rich instanceof java.util.List) {
-                    richList = (java.util.List<java.util.Map<String, Object>>) rich;
-                }
-                if (richList != null && !richList.isEmpty()) {
-                    for (java.util.Map<String, Object> sc : richList) {
-                        String icon = safeString(sc.get("icon"));
-                        String scTitle = safeString(sc.get("title"));
-                        com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
-                        chip.setText((icon.isEmpty() ? "" : icon + " ") + scTitle);
-                        chip.setCheckable(false);
-                        holder.chips.addView(chip);
-                    }
-                } else {
-                    Object ids = post.get("skills");
-                    if (ids instanceof java.util.List) {
-                        java.util.List<?> list = (java.util.List<?>) ids;
-                        for (Object idObj : list) {
-                            String id = safeString(idObj);
-                            pro.sketchware.activities.auth.CategoryManager.SubCategory sc = pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
-                            if (sc != null) {
-                                String icon = sc.getIcon();
-                                String scTitle = sc.getTitle();
-                                com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
-                                chip.setText((icon != null && !icon.isEmpty() ? icon + " " : "") + scTitle);
-                                chip.setCheckable(false);
-                                holder.chips.addView(chip);
-                            }
-                        }
-                    }
-                }
+                holder.chips.setVisibility(View.GONE);
             }
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), FreelanceDetailActivity.class);

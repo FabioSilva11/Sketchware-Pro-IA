@@ -12,9 +12,9 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/img_icon_view"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="12dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="9dp"
         app:strokeWidth="0.5dp">
 
         <RelativeLayout

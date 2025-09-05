@@ -96,8 +96,8 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
             }
 
             String uid = auth.getCurrentUser().getUid();
-            String email = auth.getCurrentUser().getEmail();
-            String phone = auth.getCurrentUser().getPhoneNumber();
+            String fallbackEmail = auth.getCurrentUser().getEmail();
+            String fallbackPhone = auth.getCurrentUser().getPhoneNumber();
 
             DatabaseReference postsRef = db.child("freelance_posts").push();
             String postId = postsRef.getKey();
@@ -111,35 +111,65 @@ public class PublishFreelanceActivity extends BaseAppCompatActivity {
             post.put("views", 0);
             Map<String, Object> owner = new HashMap<>();
             owner.put("uid", uid);
-            owner.put("email", email);
-            owner.put("phone", phone);
-            post.put("owner", owner);
-            post.put("created_at", System.currentTimeMillis());
 
-            // Salvar e notificar
-            postsRef.setValue(post).addOnSuccessListener(aVoid -> {
-                // Analytics
-                Bundle params = new Bundle();
-                params.putString("post_id", postId);
-                params.putString("title_len", String.valueOf(title.length()));
-                params.putInt("skills_count", selectedSkillIds.size());
-                analytics.logEvent("freelance_post_published", params);
+            // Buscar contato no DB e publicar após obter
+            db.child("users").child(uid).addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                @Override
+                public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                    String dbEmail = snapshot.child("email").getValue(String.class);
+                    String dbPhone = snapshot.child("phone_number").getValue(String.class);
+                    String dbName = snapshot.child("name").getValue(String.class);
+                    String dbPhoto = snapshot.child("profile").getValue(String.class);
+                    String dbWhatsapp = snapshot.child("whatsapp").getValue(String.class);
+                    String dbTelegram = snapshot.child("telegram").getValue(String.class);
 
-                // Enfileira notificação para todos os usuários (processada por backend/Cloud Function)
-                Map<String, Object> notif = new HashMap<>();
-                notif.put("type", "freelance_post");
-                notif.put("title", "Novo anúncio de freela");
-                notif.put("body", title);
-                notif.put("post_id", postId);
-                notif.put("created_at", System.currentTimeMillis());
-                db.child("notifications").child("broadcasts").push().setValue(notif);
+                    if (dbEmail == null || dbEmail.isEmpty()) dbEmail = fallbackEmail;
+                    if (dbPhone == null || dbPhone.isEmpty()) dbPhone = fallbackPhone;
 
-                Toast.makeText(this, "Ad published", Toast.LENGTH_SHORT).show();
-                finish();
-            }).addOnFailureListener(e -> {
-                Toast.makeText(this, "Failed to publish: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    owner.put("email", dbEmail);
+                    owner.put("phone", dbPhone);
+                    if (dbName != null && !dbName.isEmpty()) owner.put("name", dbName);
+                    if (dbPhoto != null && !dbPhoto.isEmpty()) owner.put("photo", dbPhoto);
+                    if (dbWhatsapp != null && !dbWhatsapp.isEmpty()) owner.put("whatsapp", dbWhatsapp);
+                    if (dbTelegram != null && !dbTelegram.isEmpty()) owner.put("telegram", dbTelegram);
+                    post.put("owner", owner);
+                    post.put("created_at", System.currentTimeMillis());
+
+                    postsRef.setValue(post).addOnSuccessListener(aVoid -> {
+                        // Analytics
+                        Bundle params = new Bundle();
+                        params.putString("post_id", postId);
+                        params.putString("title_len", String.valueOf(title.length()));
+                        params.putInt("skills_count", selectedSkillIds.size());
+                        analytics.logEvent("freelance_post_published", params);
+
+                        // Enfileira notificação para todos os usuários (processada por backend/Cloud Function)
+                        Map<String, Object> notif = new HashMap<>();
+                        notif.put("type", "freelance_post");
+                        notif.put("title", "Novo anúncio de freela");
+                        notif.put("body", title);
+                        notif.put("post_id", postId);
+                        notif.put("created_at", System.currentTimeMillis());
+                        db.child("notifications").child("broadcasts").push().setValue(notif);
+
+                        Toast.makeText(PublishFreelanceActivity.this, "Ad published", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(PublishFreelanceActivity.this, "Failed to publish: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+                }
+
+                @Override
+                public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {
+                    Toast.makeText(PublishFreelanceActivity.this, "Failed to read contact info", Toast.LENGTH_SHORT).show();
+                }
             });
+
+            // Salvar e notificar (agora feito no callback)
+            /* postsRef.setValue(post).addOnSuccessListener(...); */
+
         });
+        
     }
 
     /**

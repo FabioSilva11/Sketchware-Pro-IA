@@ -159,6 +159,13 @@ public class ProfileActivity extends BaseAppCompatActivity {
         if (item.getItemId() == R.id.action_logout) {
             performLogout();
             return true;
+        } else if (item.getItemId() == R.id.action_buy_coins) {
+            startActivity(new Intent(this, CoinStoreActivity.class));
+            // Analytics
+            Bundle params = new Bundle();
+            params.putString("from", "profile_menu");
+            mAnalytics.logEvent("open_coin_store", params);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -260,7 +267,7 @@ public class ProfileActivity extends BaseAppCompatActivity {
         @androidx.annotation.NonNull
         @Override
         public VH onCreateViewHolder(@androidx.annotation.NonNull ViewGroup parent, int viewType) {
-            android.view.View view = android.view.LayoutInflater.from(parent.getContext()).inflate(R.layout.item_my_freelance_post, parent, false);
+            android.view.View view = android.view.LayoutInflater.from(parent.getContext()).inflate(R.layout.item_freelance_post, parent, false);
             return new VH(view);
         }
 
@@ -268,58 +275,40 @@ public class ProfileActivity extends BaseAppCompatActivity {
         public void onBindViewHolder(@androidx.annotation.NonNull VH holder, int position) {
             java.util.Map<String, Object> post = data.get(position);
             holder.title.setText(String.valueOf(post.get("title")));
+            Object shortObj = post.get("short_description");
+            if (holder.shortDesc != null) holder.shortDesc.setText(shortObj == null ? "" : String.valueOf(shortObj));
+            // views
+            int views = 0;
+            Object vObj = post.get("views");
+            if (vObj instanceof Number) views = ((Number) vObj).intValue();
+            else if (vObj instanceof String) try { views = Integer.parseInt((String) vObj); } catch (Exception ignored) {}
+            if (holder.views != null) holder.views.setText(String.valueOf(views));
             // owner/date
             Object ownerObj = post.get("owner");
             if (ownerObj instanceof java.util.Map) {
                 java.util.Map owner = (java.util.Map) ownerObj;
                 String ownerName = String.valueOf(owner.get("name"));
-                android.view.View vOwner = holder.itemView.findViewById(R.id.tv_owner);
-                if (vOwner instanceof android.widget.TextView) {
-                    ((android.widget.TextView) vOwner).setText(ownerName == null || ownerName.equals("null") ? "You" : ownerName);
+                android.widget.TextView tvOwner = holder.ownerName;
+                if (tvOwner != null) {
+                    tvOwner.setText(ownerName == null || ownerName.equals("null") || ownerName.isEmpty() ? "You" : ownerName);
+                }
+                String photo = String.valueOf(owner.get("photo"));
+                if (holder.ownerAvatar != null && photo != null && !photo.equals("null") && !photo.isEmpty()) {
+                    try {
+                        com.squareup.picasso.Picasso.get()
+                            .load(photo)
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person)
+                            .into(holder.ownerAvatar);
+                    } catch (Exception ignored) {}
                 }
             }
             long createdAt = 0L;
             Object ts = post.get("created_at");
             if (ts instanceof Number) createdAt = ((Number) ts).longValue();
             else if (ts instanceof String) try { createdAt = Long.parseLong((String) ts);} catch (Exception ignored) {}
-            android.view.View vDate = holder.itemView.findViewById(R.id.tv_date);
-            if (vDate instanceof android.widget.TextView) {
-                ((android.widget.TextView) vDate).setText(createdAt>0? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(createdAt)) : "");
-            }
-            if (holder.chips != null) {
-                holder.chips.removeAllViews();
-                Object rich = post.get("sub_categories");
-                java.util.List<java.util.Map<String, Object>> richList = null;
-                if (rich instanceof java.util.List) {
-                    richList = (java.util.List<java.util.Map<String, Object>>) rich;
-                }
-                if (richList != null && !richList.isEmpty()) {
-                    for (java.util.Map<String, Object> sc : richList) {
-                        String icon = String.valueOf(sc.get("icon"));
-                        String scTitle = String.valueOf(sc.get("title"));
-                        com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
-                        chip.setText((icon == null || icon.equals("null") || icon.isEmpty() ? "" : icon + " ") + scTitle);
-                        chip.setCheckable(false);
-                        holder.chips.addView(chip);
-                    }
-                } else {
-                    Object ids = post.get("skills");
-                    if (ids instanceof java.util.List) {
-                        java.util.List<?> list = (java.util.List<?>) ids;
-                        for (Object idObj : list) {
-                            String id = String.valueOf(idObj);
-                            pro.sketchware.activities.auth.CategoryManager.SubCategory sc = pro.sketchware.activities.auth.CategoryManager.getInstance().getSubCategoryById(id);
-                            if (sc != null) {
-                                String icon = sc.getIcon();
-                                String scTitle = sc.getTitle();
-                                com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(holder.itemView.getContext());
-                                chip.setText((icon != null && !icon.isEmpty() ? icon + " " : "") + scTitle);
-                                chip.setCheckable(false);
-                                holder.chips.addView(chip);
-                            }
-                        }
-                    }
-                }
+            if (holder.date != null) {
+                holder.date.setText(createdAt>0? new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(createdAt)) : "");
             }
             holder.delete.setOnClickListener(v -> {
                 String id = String.valueOf(post.get("id"));
@@ -340,12 +329,16 @@ public class ProfileActivity extends BaseAppCompatActivity {
         public int getItemCount() { return data.size(); }
 
         class VH extends RecyclerView.ViewHolder {
-            TextView title; View delete; com.google.android.material.chip.ChipGroup chips;
+            TextView title; TextView shortDesc; TextView views; TextView ownerName; TextView date; View delete; de.hdodenhof.circleimageview.CircleImageView ownerAvatar;
             VH(@androidx.annotation.NonNull View itemView) {
                 super(itemView);
                 title = itemView.findViewById(R.id.tv_title);
+                shortDesc = itemView.findViewById(R.id.tv_short_desc);
+                views = itemView.findViewById(R.id.tv_views);
+                ownerName = itemView.findViewById(R.id.tv_owner);
+                date = itemView.findViewById(R.id.tv_date);
+                ownerAvatar = itemView.findViewById(R.id.iv_owner);
                 delete = itemView.findViewById(R.id.btn_delete);
-                chips = itemView.findViewById(R.id.chips_skills);
             }
         }
     }

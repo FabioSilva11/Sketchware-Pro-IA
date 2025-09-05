@@ -7,7 +7,7 @@
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurfaceContainer"
-    app:cardCornerRadius="20dp">
+    app:cardCornerRadius="5dp">
 
     <LinearLayout
         android:id="@+id/project_one"
@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingVertical="12dp">
+        android:paddingVertical="9dp">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
@@ -25,8 +25,8 @@
 
             <ImageView
                 android:id="@+id/iv_create_new"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:padding="16dp"
                 android:src="@drawable/ic_mtrl_history"
                 app:tint="?attr/colorPrimary" />

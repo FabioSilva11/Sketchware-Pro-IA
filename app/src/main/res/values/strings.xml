@@ -2361,6 +2361,7 @@ Please try again later"</string>
     <string name="unknown_attr">Unknown Attribute</string>
     <string name="attr_already_exist">This attribute already exists</string>
     <string name="profile_menu_title">profile icon</string>
+    <string name="coin_store_title">Coin store</string>
 
 
 </resources>

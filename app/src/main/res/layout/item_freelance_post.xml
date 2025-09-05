@@ -3,92 +3,137 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:orientation="horizontal"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <FrameLayout
+        android:layout_width="24dp"
+        android:layout_height="match_parent">
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:background="#E0E0E0" />
+        <View
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/timeline_dot" />
+    </FrameLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/iv_owner"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_person"
-            app:civ_border_width="0dp"/>
+        android:layout_weight="1"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="2dp"
+        app:cardCornerRadius="8dp">
+
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingLeft="8dp">
-            <TextView
-                android:id="@+id/tv_owner"
-                android:layout_width="wrap_content"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Owner"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_owner"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_person"
+                    app:civ_border_width="0dp"/>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingLeft="8dp">
+                    <TextView
+                        android:id="@+id/tv_owner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Owner"
+                        android:textStyle="bold"
+                        android:textColor="#2196F3"
+                        android:textSize="13sp"/>
+                    <TextView
+                        android:id="@+id/tv_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="just now"
+                        android:textSize="11sp"
+                        android:textColor="#9E9E9E"/>
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/btn_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Delete"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:visibility="gone"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:textStyle="bold"
-                android:textSize="12sp"/>
+                android:textSize="16sp"
+                android:text="Title" />
+
             <TextView
-                android:id="@+id/tv_date"
-                android:layout_width="wrap_content"
+                android:id="@+id/tv_short_desc"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="now"
-                android:textSize="11sp"
-                android:textColor="@color/color_text_onSurface"/>
+                android:layout_marginTop="6dp"
+                android:text="Short description"
+                android:textSize="13sp"
+                android:textColor="#616161" />
+
+            <ImageView
+                android:id="@+id/iv_media"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginTop="10dp"
+                android:scaleType="centerCrop"
+                android:src="@android:color/transparent"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/avd_hide_password" />
+                <TextView
+                    android:id="@+id/tv_views"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="6dp"
+                    android:text="0" />
+            </LinearLayout>
+
         </LinearLayout>
-        <TextView
-            android:id="@+id/btn_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete"
-            android:textColor="@android:color/holo_red_dark"
-            android:visibility="gone"/>
-    </LinearLayout>
 
-    <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:text="Title" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="6dp">
-
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@drawable/avd_hide_password" />
-        <TextView
-            android:id="@+id/tv_views"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="6dp"
-            android:text="0" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_short_desc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Short description" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chips_skills"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:singleLine="true"
-        app:chipSpacingHorizontal="8dp"
-        app:chipSpacingVertical="4dp" />
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>
 

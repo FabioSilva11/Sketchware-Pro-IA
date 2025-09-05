@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/transparent"
+        android:theme="@style/ThemeOverlay.Material3.ActionBar"
+        app:titleTextColor="?attr/colorOnSurfaceVariant" />
+
+    <GridView
+        android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:numColumns="2"
+        android:verticalSpacing="12dp"
+        android:horizontalSpacing="12dp"
+        android:padding="16dp"
+        android:clipToPadding="false"
+        android:stretchMode="columnWidth" />
+
+</LinearLayout>
+
+

@@ -155,6 +155,12 @@
             android:exported="false"
             android:theme="@style/Theme.SketchwarePro" />
 
+        <!-- Coin Store Activity -->
+        <activity
+            android:name="pro.sketchware.activities.profile.CoinStoreActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+
         <activity
             android:name="pro.sketchware.activities.profile.FreelanceDetailActivity"
             android:exported="false"
