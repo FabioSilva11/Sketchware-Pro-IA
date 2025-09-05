@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="?attr/colorSurfaceVariant"
+    android:layout_margin="4dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:text="✓"
+        android:textSize="12sp"
+        android:textColor="#4CAF50"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginEnd="8dp" />
+
+    <TextView
+        android:id="@+id/tv_purchase_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="John Smith"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurface"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="purchased"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginEnd="4dp" />
+
+    <TextView
+        android:id="@+id/tv_purchase_pack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Starter Pack"
+        android:textSize="12sp"
+        android:textColor="?attr/colorPrimary"
+        android:textStyle="bold" />
+
+</LinearLayout>

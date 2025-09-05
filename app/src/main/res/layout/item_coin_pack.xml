@@ -3,37 +3,73 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="16dp"
     android:foreground="?attr/selectableItemBackground"
-    android:elevation="2dp">
+    android:elevation="4dp"
+    android:background="?attr/colorSurface"
+    android:layout_margin="8dp">
 
     <ImageView
         android:id="@+id/iv_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/categorize_48" />
+        android:src="@drawable/categorize_48"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Starter Pack"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/tv_coins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_gravity="center_horizontal"
         android:text="100"
         android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="?attr/colorOnSurface" />
+        android:textSize="18sp"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/tv_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:layout_gravity="center_horizontal"
         android:text="$0.99"
-        android:textSize="14sp"
-        android:textColor="?attr/colorOnSurfaceVariant" />
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tv_urgency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Limited Time!"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:textColor="#FF4444"
+        android:visibility="gone"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:id="@+id/tv_social_proof"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Most Popular!"
+        android:textSize="10sp"
+        android:textColor="#4CAF50"
+        android:visibility="gone" />
 
 </LinearLayout>
 

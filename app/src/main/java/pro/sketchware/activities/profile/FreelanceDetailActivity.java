@@ -237,6 +237,9 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                 Object val = snapshot.getValue();
                 final int currentCoins = getCurrentCoins(val);
                 
+                // Debug: Log the balance check
+                android.util.Log.d("UnlockDebug", "Balance check - Raw value: " + val + ", Parsed: " + currentCoins);
+                
                 // Reset button state
                 btnUnlock.setEnabled(true);
                 btnUnlock.setText("Unlock");
@@ -277,19 +280,54 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
             public Transaction.Result doTransaction(@NonNull MutableData currentData) {
                 Object val = currentData.getValue();
                 int coins = 0;
-                if (val instanceof Number) coins = ((Number) val).intValue();
-                else if (val instanceof String) try { coins = Integer.parseInt((String) val); } catch (Exception ignored) {}
-                if (coins < 10) {
+                
+                // Debug: Log the current value
+                android.util.Log.d("UnlockDebug", "Transaction - Current coin value: " + val + " (type: " + (val != null ? val.getClass().getSimpleName() : "null") + ")");
+                
+                if (val instanceof Number) {
+                    coins = ((Number) val).intValue();
+                    android.util.Log.d("UnlockDebug", "Transaction - Parsed as Number: " + coins);
+                } else if (val instanceof String) {
+                    try { 
+                        coins = Integer.parseInt((String) val); 
+                        android.util.Log.d("UnlockDebug", "Transaction - Parsed as String: " + coins);
+                    } catch (Exception e) {
+                        android.util.Log.e("UnlockDebug", "Transaction - Error parsing coin value: " + val, e);
+                        return Transaction.abort();
+                    }
+                } else if (val == null) {
+                    android.util.Log.w("UnlockDebug", "Transaction - Coin value is null, setting to 0");
+                    coins = 0;
+                } else {
+                    android.util.Log.w("UnlockDebug", "Transaction - Unknown value type: " + val.getClass().getSimpleName());
                     return Transaction.abort();
                 }
+                
+                android.util.Log.d("UnlockDebug", "Transaction - Final parsed coins: " + coins);
+                
+                if (coins < 10) {
+                    android.util.Log.w("UnlockDebug", "Transaction - Insufficient coins: " + coins + " < 10");
+                    return Transaction.abort();
+                }
+                
                 coins -= 10;
-                // Preserve original type (store as String to match existing schema)
-                currentData.setValue(String.valueOf(coins));
+                android.util.Log.d("UnlockDebug", "Transaction - New coin value: " + coins);
+                
+                // Keep the same type as the original value
+                if (val instanceof Number) {
+                    currentData.setValue(coins);
+                } else {
+                    currentData.setValue(String.valueOf(coins));
+                }
+                
+                android.util.Log.d("UnlockDebug", "Transaction - Setting new value: " + currentData.getValue());
                 return Transaction.success(currentData);
             }
 
             @Override
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                android.util.Log.d("UnlockDebug", "Transaction completed - Error: " + error + ", Committed: " + committed);
+                
                 if (error != null) {
                     btnUnlock.setEnabled(true);
                     btnUnlock.setText("Unlock");
@@ -323,15 +361,32 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
     }
 
     private int getCurrentCoins(Object val) {
+        android.util.Log.d("UnlockDebug", "getCurrentCoins - Raw value: " + val + " (type: " + (val != null ? val.getClass().getSimpleName() : "null") + ")");
+        
         if (val instanceof Number) {
-            return ((Number) val).intValue();
+            int result = ((Number) val).intValue();
+            android.util.Log.d("UnlockDebug", "Parsed as Number: " + result);
+            return result;
         } else if (val instanceof String) {
             try {
-                return Integer.parseInt((String) val);
-            } catch (Exception ignored) {
+                int result = Integer.parseInt((String) val);
+                android.util.Log.d("UnlockDebug", "Parsed as String: " + result);
+                return result;
+            } catch (Exception e) {
+                android.util.Log.e("UnlockDebug", "Error parsing String value: " + val, e);
                 return 0;
             }
+        } else if (val instanceof Long) {
+            int result = ((Long) val).intValue();
+            android.util.Log.d("UnlockDebug", "Parsed as Long: " + result);
+            return result;
+        } else if (val instanceof Double) {
+            int result = ((Double) val).intValue();
+            android.util.Log.d("UnlockDebug", "Parsed as Double: " + result);
+            return result;
         }
+        
+        android.util.Log.w("UnlockDebug", "Unknown value type, returning 0");
         return 0;
     }
 
@@ -346,18 +401,28 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
     }
 
     private String maskEmail(String email) {
-        if (email == null || email.length() < 3) return "***";
+        if (email == null || email.length() < 3) return "prod******@gmail.com";
         int at = email.indexOf('@');
-        if (at <= 1) return "***@";
+        if (at <= 1) return "prod******@gmail.com";
         String name = email.substring(0, at);
         String domain = email.substring(at);
-        String masked = name.charAt(0) + "***" + name.charAt(name.length()-1);
-        return masked + domain;
+        if (name.length() >= 4) {
+            String masked = name.substring(0, 4) + "******";
+            return masked + domain;
+        } else {
+            return "prod******@gmail.com";
+        }
     }
 
     private String maskPhone(String phone) {
-        if (phone == null || phone.length() < 4) return "****";
-        return phone.substring(0, Math.min(3, phone.length())) + "****";
+        if (phone == null || phone.length() < 4) return "9798*****55";
+        // Remove caracteres não numéricos
+        String digits = phone.replaceAll("[^\\d]", "");
+        if (digits.length() >= 4) {
+            return digits.substring(0, 4) + "*****" + digits.substring(digits.length() - 2);
+        } else {
+            return "9798*****55";
+        }
     }
 }
 

@@ -215,7 +215,7 @@
                             android:id="@+id/tab_layout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="3dp"
                             android:background="?attr/colorSurface"
                             app:tabMode="fixed"
                             app:tabGravity="fill"
