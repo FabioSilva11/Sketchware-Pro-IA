@@ -403,7 +403,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
                 holder.coins.setTextSize(18); // Mesmo tamanho
                 holder.urgencyText.setVisibility(View.GONE);
                 holder.socialProof.setVisibility(View.GONE);
-                convertView.setBackgroundColor(getResources().getColor(R.color.colorSurface, getTheme()));
+                convertView.setBackgroundColor(getResources().getColor(R.color.backgroundColor, getTheme()));
                 convertView.setElevation(0); // Sem elevação
             }
             
