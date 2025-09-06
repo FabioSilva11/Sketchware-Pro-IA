@@ -135,8 +135,8 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         packs.add(new CoinPack("pack_3", 200, "$7.99", false, "Standard Pack"));
         packs.add(new CoinPack("pack_4", 400, "$9.99", false, "Premium Pack"));
         
-        // Pacote mais vendido (engenharia social + escassez) - MÁXIMO $15.00
-        packs.add(new CoinPack("pack_bestseller", 1500, "$15.00", true, "🔥 BESTSELLER", "⚡ Only 2 left in stock!", "⭐ 10,000+ sold this week"));
+        // Pacote mais vendido - MÁXIMO $15.00
+        packs.add(new CoinPack("pack_bestseller", 1500, "$15.00", true, "🔥 BESTSELLER"));
         
         // Pacotes intermediários
         packs.add(new CoinPack("pack_5", 600, "$11.99", false, "Pro Pack"));
@@ -372,56 +372,39 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
             
             // Configurar estilo para bestseller
             if (pack.isBestseller) {
-                // Título em destaque
-                holder.title.setTextColor(0xFFFF6B35); // Cor laranja para destaque
-                holder.title.setTextSize(12); // Mesmo tamanho dos outros
+                // Aplicar borda de 3dp com cor do tema
+                convertView.setBackground(getResources().getDrawable(R.drawable.bestseller_border, getTheme()));
+                
+                // Cores de texto para contraste com fundo colorido - MESMOS TAMANHOS
+                holder.title.setTextColor(0xFFFFFFFF); // Branco para contraste
+                holder.title.setTextSize(12); // Mesmo tamanho
                 holder.title.setTypeface(null, android.graphics.Typeface.BOLD);
                 
-                // Preço em destaque
-                holder.price.setTextColor(0xFFFF6B35);
-                holder.price.setTextSize(16); // Mesmo tamanho dos outros
+                holder.price.setTextColor(0xFFFFFFFF); // Branco para contraste
+                holder.price.setTextSize(16); // Mesmo tamanho
                 
-                // Coins em destaque
-                holder.coins.setTextColor(0xFF2E7D32);
-                holder.coins.setTextSize(18); // Mesmo tamanho dos outros
+                holder.coins.setTextColor(0xFFFFFFFF); // Branco para contraste
+                holder.coins.setTextSize(18); // Mesmo tamanho
                 
-                // Mostrar texto de urgência se disponível
-                if (pack.urgencyText != null) {
-                    holder.urgencyText.setVisibility(View.VISIBLE);
-                    holder.urgencyText.setText(pack.urgencyText);
-                    holder.urgencyText.setTextColor(0xFFFF4444); // Vermelho para urgência
-                    holder.urgencyText.setTypeface(null, android.graphics.Typeface.BOLD);
-                } else {
-                    holder.urgencyText.setVisibility(View.GONE);
-                }
-                
-                // Mostrar prova social se disponível
-                if (pack.socialProof != null) {
-                    holder.socialProof.setVisibility(View.VISIBLE);
-                    holder.socialProof.setText(pack.socialProof);
-                    holder.socialProof.setTextColor(0xFF4CAF50); // Verde para prova social
-                    holder.socialProof.setTypeface(null, android.graphics.Typeface.BOLD);
-                } else {
-                    holder.socialProof.setVisibility(View.GONE);
-                }
-                
-                // Destacar o card
-                convertView.setBackgroundColor(0xFFFFF3E0); // Fundo laranja claro
-                convertView.setElevation(4); // Mesma elevação dos outros cards
-                
-            } else {
-                // Reset para pacotes normais
-                holder.title.setTextColor(0xFF666666);
-                holder.title.setTextSize(12);
-                holder.title.setTypeface(null, android.graphics.Typeface.NORMAL);
-                holder.price.setTextColor(0xFF2196F3);
-                holder.price.setTextSize(16);
-                holder.coins.setTextColor(0xFF333333);
-                holder.coins.setTextSize(18);
+                // Ocultar textos extras
                 holder.urgencyText.setVisibility(View.GONE);
                 holder.socialProof.setVisibility(View.GONE);
-                convertView.setBackgroundColor(0xFFFFFFFF); // Fundo branco
-                convertView.setElevation(4); // Elevação normal
+                
+                convertView.setElevation(0); // Sem elevação
+                
+            } else {
+                // Reset para pacotes normais usando cores do tema - MESMOS TAMANHOS
+                holder.title.setTextColor(getResources().getColor(R.color.color_text_onSurfaceVariant, getTheme()));
+                holder.title.setTextSize(12); // Mesmo tamanho
+                holder.title.setTypeface(null, android.graphics.Typeface.NORMAL);
+                holder.price.setTextColor(getResources().getColor(R.color.color_primary, getTheme()));
+                holder.price.setTextSize(16); // Mesmo tamanho
+                holder.coins.setTextColor(getResources().getColor(R.color.color_text_onSurface, getTheme()));
+                holder.coins.setTextSize(18); // Mesmo tamanho
+                holder.urgencyText.setVisibility(View.GONE);
+                holder.socialProof.setVisibility(View.GONE);
+                convertView.setBackgroundColor(getResources().getColor(R.color.colorSurface, getTheme()));
+                convertView.setElevation(0); // Sem elevação
             }
             
             return convertView;

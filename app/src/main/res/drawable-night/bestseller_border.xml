@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    
+    <!-- Cor de fundo para modo escuro -->
+    <solid android:color="@color/color_primary" />
+    
+    <!-- Borda de 3dp -->
+    <stroke 
+        android:width="3dp"
+        android:color="@color/color_primary" />
+    
+    <!-- Cantos arredondados -->
+    <corners android:radius="8dp" />
+    
+</shape>

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:foreground="?attr/selectableItemBackground"
-    android:elevation="4dp"
+    android:elevation="0dp"
     android:background="?attr/colorSurface"
     android:layout_margin="8dp">
 
