@@ -32,11 +32,22 @@
             android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="4dp" />
 
-        <LinearLayout
-            android:id="@+id/live_purchases_container"
+        <HorizontalScrollView
+            android:id="@+id/live_purchases_scroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:scrollbars="none"
+            android:fadingEdge="horizontal"
+            android:fadingEdgeLength="20dp">
+
+            <LinearLayout
+                android:id="@+id/live_purchases_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+
+        </HorizontalScrollView>
 
     </LinearLayout>
 

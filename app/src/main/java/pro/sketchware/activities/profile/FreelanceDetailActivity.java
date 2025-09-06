@@ -345,15 +345,21 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                 // Mark unlocked and reveal
                 ref.child("unlocked_by").child(myUid).setValue(true).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        setContactsMasked(false);
-                        isUnlocked = true;
-                        btnUnlock.setEnabled(false);
-                        btnUnlock.setText("Unlocked");
-                        Toast.makeText(FreelanceDetailActivity.this, "Contacts unlocked successfully!", Toast.LENGTH_SHORT).show();
+                        // Atualizar UI na thread principal
+                        runOnUiThread(() -> {
+                            setContactsMasked(false);
+                            isUnlocked = true;
+                            btnUnlock.setEnabled(false);
+                            btnUnlock.setText("Unlocked");
+                            Toast.makeText(FreelanceDetailActivity.this, "Contacts unlocked successfully!", Toast.LENGTH_SHORT).show();
+                        });
                     } else {
-                        btnUnlock.setEnabled(true);
-                        btnUnlock.setText("Unlock");
-                        Toast.makeText(FreelanceDetailActivity.this, "Failed to unlock: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        // Atualizar UI na thread principal
+                        runOnUiThread(() -> {
+                            btnUnlock.setEnabled(true);
+                            btnUnlock.setText("Unlock");
+                            Toast.makeText(FreelanceDetailActivity.this, "Failed to unlock: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        });
                     }
                 });
             }

@@ -6,12 +6,13 @@ import android.os.Looper;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 
@@ -32,12 +33,15 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
     private MaterialToolbar toolbar;
     private GridView gridView;
     private LinearLayout livePurchasesContainer;
+    private HorizontalScrollView livePurchasesScroll;
 
     private final List<CoinPack> packs = new ArrayList<>();
     private final List<String> fakeNames = new ArrayList<>();
     private final List<String> coinPackNames = new ArrayList<>();
     private Handler livePurchasesHandler;
     private Runnable livePurchasesRunnable;
+    private Handler scrollHandler;
+    private Runnable scrollRunnable;
     private Random random = new Random();
 
     @Override
@@ -59,6 +63,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
 
         gridView = findViewById(R.id.grid);
         livePurchasesContainer = findViewById(R.id.live_purchases_container);
+        livePurchasesScroll = findViewById(R.id.live_purchases_scroll);
         
         seedDummyData();
         initializeFakeNames();
@@ -104,6 +109,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         mAnalytics.logEvent("coin_store_opened", openParams);
         
         startLivePurchases();
+        startAutoScroll();
     }
     
     @Override
@@ -117,6 +123,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         mAnalytics.logEvent("coin_store_closed", closeParams);
         
         stopLivePurchases();
+        stopAutoScroll();
     }
 
     private void seedDummyData() {
@@ -270,12 +277,12 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         nameText.setText(name);
         packText.setText(packName);
         
-        // Adicionar à container
-        livePurchasesContainer.addView(purchaseView, 0);
+        // Adicionar à container (sempre no final para o letreiro)
+        livePurchasesContainer.addView(purchaseView);
         
-        // Limitar a 3 compras visíveis
-        if (livePurchasesContainer.getChildCount() > 3) {
-            livePurchasesContainer.removeViewAt(livePurchasesContainer.getChildCount() - 1);
+        // Limitar a 10 compras para não sobrecarregar
+        if (livePurchasesContainer.getChildCount() > 10) {
+            livePurchasesContainer.removeViewAt(0);
         }
         
         // Animar entrada
@@ -299,6 +306,31 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
                     .start();
             }
         }, 8000);
+    }
+    
+    private void startAutoScroll() {
+        if (scrollHandler == null) {
+            scrollHandler = new Handler(Looper.getMainLooper());
+        }
+        
+        scrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (livePurchasesScroll != null && livePurchasesContainer.getChildCount() > 0) {
+                    // Scroll suave para a direita
+                    livePurchasesScroll.smoothScrollBy(2, 0);
+                }
+                scrollHandler.postDelayed(this, 50); // 50ms = 20 FPS
+            }
+        };
+        
+        scrollHandler.post(scrollRunnable);
+    }
+    
+    private void stopAutoScroll() {
+        if (scrollHandler != null && scrollRunnable != null) {
+            scrollHandler.removeCallbacks(scrollRunnable);
+        }
     }
 
     private static class CoinPack {
@@ -390,7 +422,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
                 
                 // Destacar o card
                 convertView.setBackgroundColor(0xFFFFF3E0); // Fundo laranja claro
-                convertView.setElevation(8); // Maior elevação
+                convertView.setElevation(4); // Mesma elevação dos outros cards
                 
             } else {
                 // Reset para pacotes normais
