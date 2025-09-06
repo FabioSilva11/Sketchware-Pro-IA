@@ -37,14 +37,17 @@
             android:layout_height="wrap_content"
             android:scrollbars="none"
             android:fadingEdge="horizontal"
-            android:fadingEdgeLength="20dp">
+            android:fadingEdgeLength="20dp"
+            android:fillViewport="false"
+            android:scrollbarStyle="outsideOverlay">
 
             <LinearLayout
                 android:id="@+id/live_purchases_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical" />
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp" />
 
         </HorizontalScrollView>
 

@@ -230,6 +230,9 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
     }
     
     private void startLivePurchases() {
+        // Criar todas as compras fictícias de uma vez para scroll contínuo
+        createAllFakePurchases();
+        
         if (livePurchasesHandler == null) {
             livePurchasesHandler = new Handler(Looper.getMainLooper());
         }
@@ -237,28 +240,57 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         livePurchasesRunnable = new Runnable() {
             @Override
             public void run() {
-                showRandomPurchase();
+                // Adicionar nova compra ocasionalmente para manter o letreiro vivo
+                if (random.nextInt(10) == 0) { // 10% de chance a cada ciclo
+                    showRandomPurchase();
+                    
+                    // Analytics para compra fictícia
+                    Bundle params = new Bundle();
+                    params.putString("fake_purchase", "true");
+                    params.putString("pack_name", coinPackNames.get(random.nextInt(coinPackNames.size())));
+                    mAnalytics.logEvent("fake_purchase_displayed", params);
+                }
                 
-                // Analytics para compra fictícia
-                Bundle params = new Bundle();
-                params.putString("fake_purchase", "true");
-                params.putString("pack_name", coinPackNames.get(random.nextInt(coinPackNames.size())));
-                mAnalytics.logEvent("fake_purchase_displayed", params);
-                
-                // Próxima compra em 1-3 segundos para scroll mais contínuo
-                int delay = 1000 + random.nextInt(2000);
+                // Próxima verificação em 2-4 segundos
+                int delay = 2000 + random.nextInt(2000);
                 livePurchasesHandler.postDelayed(this, delay);
             }
         };
         
-        // Primeira compra em 1-2 segundos
-        int initialDelay = 1000 + random.nextInt(1000);
-        livePurchasesHandler.postDelayed(livePurchasesRunnable, initialDelay);
+        // Primeira verificação em 3 segundos
+        livePurchasesHandler.postDelayed(livePurchasesRunnable, 3000);
     }
     
     private void stopLivePurchases() {
         if (livePurchasesHandler != null && livePurchasesRunnable != null) {
             livePurchasesHandler.removeCallbacks(livePurchasesRunnable);
+        }
+    }
+    
+    private void createAllFakePurchases() {
+        if (livePurchasesContainer == null) return;
+        
+        // Limpar container primeiro
+        livePurchasesContainer.removeAllViews();
+        
+        // Criar 15-20 compras fictícias para scroll contínuo
+        int purchaseCount = 15 + random.nextInt(6); // 15-20 compras
+        
+        for (int i = 0; i < purchaseCount; i++) {
+            String name = fakeNames.get(random.nextInt(fakeNames.size()));
+            String packName = coinPackNames.get(random.nextInt(coinPackNames.size()));
+            
+            // Criar view da compra
+            View purchaseView = LayoutInflater.from(this).inflate(R.layout.item_live_purchase, livePurchasesContainer, false);
+            
+            TextView nameText = purchaseView.findViewById(R.id.tv_purchase_name);
+            TextView packText = purchaseView.findViewById(R.id.tv_purchase_pack);
+            
+            nameText.setText(name);
+            packText.setText(packName);
+            
+            // Adicionar à container
+            livePurchasesContainer.addView(purchaseView);
         }
     }
     
@@ -280,8 +312,8 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         // Adicionar à container (sempre no final para o letreiro)
         livePurchasesContainer.addView(purchaseView);
         
-        // Limitar a 5 compras para manter o scroll suave
-        if (livePurchasesContainer.getChildCount() > 5) {
+        // Limitar a 25 compras para manter performance mas permitir scroll longo
+        if (livePurchasesContainer.getChildCount() > 25) {
             livePurchasesContainer.removeViewAt(0);
         }
         
@@ -289,7 +321,7 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         purchaseView.setAlpha(0f);
         purchaseView.animate()
             .alpha(1f)
-            .setDuration(300)
+            .setDuration(200)
             .start();
     }
     
@@ -302,10 +334,16 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
             @Override
             public void run() {
                 if (livePurchasesScroll != null && livePurchasesContainer.getChildCount() > 0) {
-                    // Scroll suave para a direita
-                    livePurchasesScroll.smoothScrollBy(2, 0);
+                    // Scroll mais rápido e suave da direita para esquerda
+                    livePurchasesScroll.smoothScrollBy(4, 0);
+                    
+                    // Scroll infinito: quando chegar perto do final, voltar ao início
+                    int maxScrollX = livePurchasesContainer.getWidth() - livePurchasesScroll.getWidth();
+                    if (livePurchasesScroll.getScrollX() >= maxScrollX - 100) { // 100px de margem
+                        livePurchasesScroll.scrollTo(0, 0);
+                    }
                 }
-                scrollHandler.postDelayed(this, 50); // 50ms = 20 FPS
+                scrollHandler.postDelayed(this, 30); // 30ms = ~33 FPS para scroll mais suave
             }
         };
         
