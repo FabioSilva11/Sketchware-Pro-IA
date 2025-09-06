@@ -245,14 +245,14 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
                 params.putString("pack_name", coinPackNames.get(random.nextInt(coinPackNames.size())));
                 mAnalytics.logEvent("fake_purchase_displayed", params);
                 
-                // Próxima compra em 3-8 segundos
-                int delay = 3000 + random.nextInt(5000);
+                // Próxima compra em 1-3 segundos para scroll mais contínuo
+                int delay = 1000 + random.nextInt(2000);
                 livePurchasesHandler.postDelayed(this, delay);
             }
         };
         
-        // Primeira compra em 2-5 segundos
-        int initialDelay = 2000 + random.nextInt(3000);
+        // Primeira compra em 1-2 segundos
+        int initialDelay = 1000 + random.nextInt(1000);
         livePurchasesHandler.postDelayed(livePurchasesRunnable, initialDelay);
     }
     
@@ -280,32 +280,17 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
         // Adicionar à container (sempre no final para o letreiro)
         livePurchasesContainer.addView(purchaseView);
         
-        // Limitar a 10 compras para não sobrecarregar
-        if (livePurchasesContainer.getChildCount() > 10) {
+        // Limitar a 5 compras para manter o scroll suave
+        if (livePurchasesContainer.getChildCount() > 5) {
             livePurchasesContainer.removeViewAt(0);
         }
         
-        // Animar entrada
+        // Animar entrada suave
         purchaseView.setAlpha(0f);
         purchaseView.animate()
             .alpha(1f)
-            .setDuration(500)
+            .setDuration(300)
             .start();
-        
-        // Remover após 8 segundos
-        purchaseView.postDelayed(() -> {
-            if (livePurchasesContainer != null && purchaseView.getParent() != null) {
-                purchaseView.animate()
-                    .alpha(0f)
-                    .setDuration(500)
-                    .withEndAction(() -> {
-                        if (livePurchasesContainer != null) {
-                            livePurchasesContainer.removeView(purchaseView);
-                        }
-                    })
-                    .start();
-            }
-        }, 8000);
     }
     
     private void startAutoScroll() {
@@ -389,16 +374,16 @@ public class CoinStoreActivity extends BaseAppCompatActivity {
             if (pack.isBestseller) {
                 // Título em destaque
                 holder.title.setTextColor(0xFFFF6B35); // Cor laranja para destaque
-                holder.title.setTextSize(14);
+                holder.title.setTextSize(12); // Mesmo tamanho dos outros
                 holder.title.setTypeface(null, android.graphics.Typeface.BOLD);
                 
                 // Preço em destaque
                 holder.price.setTextColor(0xFFFF6B35);
-                holder.price.setTextSize(18);
+                holder.price.setTextSize(16); // Mesmo tamanho dos outros
                 
                 // Coins em destaque
                 holder.coins.setTextColor(0xFF2E7D32);
-                holder.coins.setTextSize(20);
+                holder.coins.setTextSize(18); // Mesmo tamanho dos outros
                 
                 // Mostrar texto de urgência se disponível
                 if (pack.urgencyText != null) {
