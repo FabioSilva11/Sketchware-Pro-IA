@@ -569,7 +569,7 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                             eventTabAdapter.refreshEvents();
                         }
                     }
-                } else {
+                } else if (position == 2) {
                     bottomMenu.findItem(7).setVisible(false);
                     if (viewTabAdapter != null) {
                         xmlLayoutOrientation.setImageResource(R.drawable.ic_mtrl_code);
@@ -577,6 +577,16 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                         if (componentTabAdapter != null) {
                             componentTabAdapter.refreshData();
                         }
+                    }
+                } else if (position == 3) {
+                    bottomMenu.findItem(7).setVisible(false);
+                    if (viewTabAdapter != null) {
+                        xmlLayoutOrientation.setImageResource(R.drawable.ic_mtrl_code);
+                        viewTabAdapter.c(false);
+                    }
+                    Fragment current = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.viewpager + ":" + position);
+                    if (current instanceof StringsTabFragment) {
+                        ((StringsTabFragment) current).refreshList();
                     }
                 }
                 refresh();
@@ -1765,18 +1775,20 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
 
     private class ViewPagerAdapter extends FragmentPagerAdapter {
         private final String[] labels;
+        private StringsTabFragment stringsTab;
 
         public ViewPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
             labels = new String[]{
                     Helper.getResString(R.string.design_tab_title_view),
                     Helper.getResString(R.string.design_tab_title_event),
-                    Helper.getResString(R.string.design_tab_title_component)};
+                    Helper.getResString(R.string.design_tab_title_component),
+                    Helper.getResString(R.string.design_tab_title_strings)};
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
 
         @Override
@@ -1792,8 +1804,10 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 viewTabAdapter = (ViewEditorFragment) fragment;
             } else if (position == 1) {
                 eventTabAdapter = (rs) fragment;
-            } else {
+            } else if (position == 2) {
                 componentTabAdapter = (br) fragment;
+            } else if (position == 3 && fragment instanceof StringsTabFragment) {
+                stringsTab = (StringsTabFragment) fragment;
             }
 
             return fragment;
@@ -1804,8 +1818,12 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
         public Fragment getItem(int position) {
             if (position == 0) {
                 return new ViewEditorFragment();
+            } else if (position == 1) {
+                return new rs();
+            } else if (position == 2) {
+                return new br();
             } else {
-                return position == 1 ? new rs() : new br();
+                return new StringsTabFragment();
             }
         }
     }

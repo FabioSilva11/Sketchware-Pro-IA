@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_add_string"
+        android:icon="@drawable/outline_add_24"
+        android:title="Add"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_save_strings"
+        android:icon="@android:drawable/stat_sys_download_done"
+        android:title="Save"
+        app:showAsAction="ifRoom" />
+</menu>
+

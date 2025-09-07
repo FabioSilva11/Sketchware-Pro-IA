@@ -63,11 +63,13 @@ import pro.sketchware.activities.resourceseditor.components.utils.StringsEditorM
 import pro.sketchware.databinding.PropertyInputItemBinding;
 import pro.sketchware.databinding.PropertyPopupInputTextBinding;
 import pro.sketchware.databinding.PropertyPopupParentAttrBinding;
+import pro.sketchware.databinding.ViewStringEditorAddBinding;
 import pro.sketchware.lib.base.BaseTextWatcher;
 import pro.sketchware.lib.highlighter.SyntaxScheme;
 import pro.sketchware.lib.validator.MinMaxInputValidator;
 import pro.sketchware.lib.validator.PropertyNameValidator;
 import pro.sketchware.utility.FileUtil;
+import pro.sketchware.utility.XmlUtil;
 
 @SuppressLint("ViewConstructor")
 public class PropertyInputItem extends RelativeLayout implements View.OnClickListener {
@@ -222,6 +224,7 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
             }
         });
         dialog.setNegativeButton(Helper.getResString(R.string.common_word_cancel), null);
+        dialog.setNeutralButton("Create string", null);
         dialog.show();
     }
 
@@ -296,13 +299,27 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
             if (!isInject) {
                 Button neutralButton = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
                 neutralButton.setVisibility(View.VISIBLE);
-                neutralButton.setText(Helper.getResString(R.string.strings_xml));
                 neutralButton.setOnClickListener(view -> {
-                    if (binding.edTiAutoCompleteInput.getText().toString().isEmpty()) {
+                    // Ensure the field has the @string/ prefix
+                    if (!Helper.getText(binding.edTiAutoCompleteInput).startsWith(stringsStart)) {
                         binding.edTiAutoCompleteInput.setText(stringsStart);
                         binding.edTiAutoCompleteInput.setSelection(stringsStart.length());
                     }
-                    binding.edTiAutoCompleteInput.requestFocus();
+
+                    String ref = Helper.getText(binding.edTiAutoCompleteInput);
+                    if (ref.equals(stringsStart)) {
+                        // No key yet; open creator with empty key, user fills value then we set ref
+                        promptToCreateStringResource(stringsStart, () -> {
+                            // After creation, refresh autocomplete list
+                            loadStringsListMap();
+                            setupAutoCompleteTextView(binding.edTiAutoCompleteInput);
+                        }, binding.tiAutoCompleteInput);
+                    } else {
+                        promptToCreateStringResource(ref, () -> {
+                            loadStringsListMap();
+                            setupAutoCompleteTextView(binding.edTiAutoCompleteInput);
+                        }, binding.tiAutoCompleteInput);
+                    }
                 });
             }
         });
@@ -336,7 +353,22 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
             if (isInject) {
                 setValue(Helper.getText(input));
             } else {
-                setValue(Helper.getText(autoCompleteTextView));
+                String raw = Helper.getText(autoCompleteTextView);
+                // Auto-create string if user typed plain text (not @string/)
+                if (!raw.startsWith(stringsStart)) {
+                    // Try to find existing key with same text to avoid duplicates
+                    loadStringsListMap();
+                    String existingKey = findExistingKeyByText(raw);
+                    String keyToUse = existingKey != null ? existingKey : generateUniqueStringKey(raw);
+                    if (existingKey == null) {
+                        createOrUpdateString(keyToUse, raw, "");
+                    }
+                    String ref = stringsStart + keyToUse;
+                    autoCompleteTextView.setText(ref);
+                    setValue(ref);
+                } else {
+                    setValue(raw);
+                }
             }
             if (valueChangeListener != null) {
                 String inputText = Helper.getText(autoCompleteTextView);
@@ -350,11 +382,145 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
                     );
                     textAutoCompleteInput.setError(errorMessage);
                 } else {
-                    valueChangeListener.a(key, value);
-                    dialog.dismiss();
+                    if (!isInject && inputText.startsWith(stringsStart) && !keysList.contains(inputText)) {
+                        // Offer creating a new string resource when not found
+                        promptToCreateStringResource(inputText, () -> {
+                            // After creating, accept and dismiss
+                            valueChangeListener.a(key, value);
+                            dialog.dismiss();
+                        }, textAutoCompleteInput);
+                    } else {
+                        valueChangeListener.a(key, value);
+                        dialog.dismiss();
+                    }
                 }
             }
         }
+    }
+
+    private void promptToCreateStringResource(String ref, Runnable onCreated, TextInputLayout errorTarget) {
+        String keyName = ref.equals(stringsStart) ? generateUniqueStringKey(Helper.getText(tvValue)) : ref.substring(stringsStart.length());
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
+        builder.setTitle("Create string: " + keyName);
+
+        ViewStringEditorAddBinding dialogBinding = ViewStringEditorAddBinding.inflate(LayoutInflater.from(getContext()));
+        dialogBinding.stringKeyInput.setText(keyName);
+        dialogBinding.stringKeyInput.setEnabled(false);
+
+        builder.setView(dialogBinding.getRoot());
+        builder.setPositiveButton(R.string.common_word_save, (d, w) -> {
+            String valueInput = String.valueOf(dialogBinding.stringValueInput.getText());
+            String headerInput = String.valueOf(dialogBinding.stringHeaderInput.getText()).trim();
+
+            if (valueInput.isEmpty()) {
+                errorTarget.setError("Value cannot be empty");
+                return;
+            }
+
+            String filePath = FileUtil.getExternalStorageDir()
+                    .concat("/.sketchware/data/")
+                    .concat(sc_id.concat("/files/resource/values/strings.xml"));
+
+            ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+            StringsEditorManager sem = new StringsEditorManager();
+            sem.convertXmlStringsToListMap(FileUtil.readFileIfExist(filePath), list);
+
+            if (sem.isXmlStringsExist(list, keyName)) {
+                errorTarget.setError("Key already exists in strings.xml");
+                return;
+            }
+
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("key", keyName);
+            map.put("text", valueInput);
+            list.add(map);
+            if (!headerInput.isEmpty()) {
+                sem.notesMap.put(list.size() - 1, headerInput);
+            }
+
+            XmlUtil.saveXml(filePath, sem.convertListMapToXmlStrings(list, sem.notesMap));
+
+            // Update local cache for autocomplete in this session
+            stringsListMap.clear();
+            stringsListMap.addAll(list);
+            keysList.add(stringsStart + keyName);
+
+            if (onCreated != null) onCreated.run();
+        });
+        builder.setNegativeButton(R.string.common_word_cancel, null);
+        builder.show();
+    }
+
+    private String generateUniqueStringKey(String source) {
+        // basic sanitize: lowercase, letters/digits/underscore; fallback to "text_value"
+        String base = source == null ? "" : source.trim().toLowerCase()
+                .replaceAll("[^a-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+        if (base.isEmpty()) base = "text_value";
+
+        String key = base;
+        int index = 1;
+        while (keysList.contains(stringsStart + key)) {
+            key = base + "_" + index++;
+        }
+        return key;
+    }
+
+    private void createOrUpdateString(String key, String value, String note) {
+        String filePath = FileUtil.getExternalStorageDir()
+                .concat("/.sketchware/data/")
+                .concat(sc_id.concat("/files/resource/values/strings.xml"));
+
+        ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+        StringsEditorManager sem = new StringsEditorManager();
+        sem.convertXmlStringsToListMap(FileUtil.readFileIfExist(filePath), list);
+
+        boolean updated = false;
+        for (HashMap<String, Object> item : list) {
+            if (key.equals(item.get("key"))) {
+                item.put("text", value);
+                updated = true;
+                break;
+            }
+        }
+        if (!updated) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("key", key);
+            map.put("text", value);
+            list.add(map);
+            if (!note.isEmpty()) {
+                sem.notesMap.put(list.size() - 1, note);
+            }
+        }
+
+        XmlUtil.saveXml(filePath, sem.convertListMapToXmlStrings(list, sem.notesMap));
+
+        stringsListMap.clear();
+        stringsListMap.addAll(list);
+        if (!keysList.contains(stringsStart + key)) keysList.add(stringsStart + key);
+    }
+
+    private String findExistingKeyByText(String text) {
+        if (text == null) return null;
+        String needle = text.trim();
+        if (needle.isEmpty()) return null;
+
+        String filePath = FileUtil.getExternalStorageDir()
+                .concat("/.sketchware/data/")
+                .concat(sc_id.concat("/files/resource/values/strings.xml"));
+
+        ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+        StringsEditorManager sem = new StringsEditorManager();
+        sem.convertXmlStringsToListMap(FileUtil.readFileIfExist(filePath), list);
+
+        for (HashMap<String, Object> item : list) {
+            Object val = item.get("text");
+            if (val != null && needle.equals(String.valueOf(val))) {
+                return String.valueOf(item.get("key"));
+            }
+        }
+        return null;
     }
 
     private void loadStringsListMap() {
