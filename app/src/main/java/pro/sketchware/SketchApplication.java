@@ -7,6 +7,9 @@ import android.os.Process;
 import android.util.Log;
 
 import com.besome.sketch.tools.CollectErrorActivity;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import pro.sketchware.utility.theme.ThemeManager;
 
@@ -33,5 +36,13 @@ public class SketchApplication extends Application {
         });
         super.onCreate();
         ThemeManager.applyTheme(this, ThemeManager.getCurrentTheme(this));
+        
+        // Initialize AdMob
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+                Log.d("AdMob", "AdMob initialization completed");
+            }
+        });
     }
 }

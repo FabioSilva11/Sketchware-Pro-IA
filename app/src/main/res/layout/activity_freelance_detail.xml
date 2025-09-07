@@ -209,7 +209,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:text="Unlock Contact Information"
+            android:text="Watch Ad to Unlock"
             android:textSize="16sp"
             app:cornerRadius="12dp"
             app:icon="@drawable/color_new_96"

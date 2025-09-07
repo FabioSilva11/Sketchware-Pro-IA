@@ -163,5 +163,9 @@ dependencies {
     implementation "com.google.firebase:firebase-auth"
     implementation "com.google.firebase:firebase-database"
     implementation "com.google.firebase:firebase-storage"
+    
+    // Google AdMob
+    implementation 'com.google.android.gms:play-services-ads:23.5.0'
+    
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs_nio:2.1.5"
 }

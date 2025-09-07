@@ -164,13 +164,6 @@ public class ProfileActivity extends BaseAppCompatActivity {
         if (item.getItemId() == R.id.action_logout) {
             performLogout();
             return true;
-        } else if (item.getItemId() == R.id.action_buy_coins) {
-            startActivity(new Intent(this, CoinStoreActivity.class));
-            // Analytics
-            Bundle params = new Bundle();
-            params.putString("from", "profile_menu");
-            mAnalytics.logEvent("open_coin_store", params);
-            return true;
         }
         return super.onOptionsItemSelected(item);
     }

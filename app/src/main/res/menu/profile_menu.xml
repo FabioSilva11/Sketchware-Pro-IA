@@ -9,13 +9,6 @@
         android:title="Configurações"
         app:showAsAction="never" />
 
-    <!-- Comprar Coins -->
-    <item
-        android:id="@+id/action_buy_coins"
-        android:icon="@drawable/discount_96"
-        android:title="Comprar Coins"
-        app:showAsAction="never" />
-
     <!-- Logout -->
     <item
         android:id="@+id/action_logout"

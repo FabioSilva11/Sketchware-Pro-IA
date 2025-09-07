@@ -29,6 +29,15 @@ import java.util.Map;
 import pro.sketchware.R;
 import pro.sketchware.activities.auth.AuthManager;
 
+// AdMob imports
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
 public class FreelanceDetailActivity extends BaseAppCompatActivity {
 
     private TextView tvTitle, tvLongDesc, tvEmail, tvPhone, tvViews;
@@ -41,6 +50,10 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
     private String ownerEmail;
     private String ownerPhone;
     private boolean isUnlocked = false;
+    
+    // AdMob variables
+    private RewardedAd rewardedAd;
+    private static final String AD_UNIT_ID = "ca-app-pub-6598765502914364/8882268588";
 
     private static class SkillsAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<SkillsAdapter.VH> {
         private final java.util.List<String> items;
@@ -77,6 +90,10 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         ref = db.getReference().child("freelance_posts").child(postId);
         usersRef = db.getReference().child("users");
+        
+        // Initialize AdMob
+        initializeAdMob();
+        
         loadPost();
 
         btnUnlock.setOnClickListener(v -> {
@@ -108,6 +125,33 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                 Uri uri = Uri.parse("https://wa.me/" + digits);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 try { startActivity(intent); } catch (Exception ignored) {}
+            }
+        });
+    }
+    
+    private void initializeAdMob() {
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+                loadRewardedAd();
+            }
+        });
+    }
+    
+    private void loadRewardedAd() {
+        AdRequest adRequest = new AdRequest.Builder().build();
+        
+        RewardedAd.load(this, AD_UNIT_ID, adRequest, new RewardedAdLoadCallback() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                rewardedAd = null;
+                android.util.Log.d("AdMob", "Rewarded ad failed to load: " + adError.getMessage());
+            }
+
+            @Override
+            public void onAdLoaded(@NonNull RewardedAd ad) {
+                rewardedAd = ad;
+                android.util.Log.d("AdMob", "Rewarded ad loaded successfully");
             }
         });
     }
@@ -218,7 +262,7 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
                     btnUnlock.setText("Unlocked");
                     Toast.makeText(FreelanceDetailActivity.this, "Already unlocked", Toast.LENGTH_SHORT).show();
                 } else {
-                    chargeAndUnlock(myUid);
+                    showVideoAdToUnlock(myUid);
                 }
             }
             @Override public void onCancelled(DatabaseError error) { 
@@ -229,172 +273,65 @@ public class FreelanceDetailActivity extends BaseAppCompatActivity {
         });
     }
 
-    private void chargeAndUnlock(String myUid) {
-        // Show confirmation dialog with current balance
-        usersRef.child(myUid).child("coin").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Object val = snapshot.getValue();
-                final int currentCoins = getCurrentCoins(val);
-                
-                // Debug: Log the balance check
-                android.util.Log.d("UnlockDebug", "Balance check - Raw value: " + val + ", Parsed: " + currentCoins);
-                
-                // Reset button state
-                btnUnlock.setEnabled(true);
-                btnUnlock.setText("Unlock");
-                
-                new MaterialAlertDialogBuilder(FreelanceDetailActivity.this)
-                    .setTitle("Unlock contacts")
-                    .setMessage("Current balance: " + currentCoins + " coins\n\nCost: 10 coins\nBalance after: " + (currentCoins - 10) + " coins\n\nContinue?")
-                    .setPositiveButton("Unlock", (dialog, which) -> {
-                        if (currentCoins < 10) {
-                            Toast.makeText(FreelanceDetailActivity.this, "Insufficient balance (10)", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        performChargeAndUnlock(myUid);
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> {
-                        // Keep button enabled for retry
-                    })
-                    .show();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                btnUnlock.setEnabled(true);
-                btnUnlock.setText("Unlock");
-                Toast.makeText(FreelanceDetailActivity.this, "Error checking balance", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void performChargeAndUnlock(String myUid) {
-        // Update button state
-        btnUnlock.setEnabled(false);
-        btnUnlock.setText("Processing...");
+    private void showVideoAdToUnlock(String myUid) {
+        // Reset button state
+        btnUnlock.setEnabled(true);
+        btnUnlock.setText("Watch Ad to Unlock");
         
-        DatabaseReference coinRef = usersRef.child(myUid).child("coin");
-        coinRef.runTransaction(new Transaction.Handler() {
-            @NonNull @Override
-            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                Object val = currentData.getValue();
-                int coins = 0;
-                
-                // Debug: Log the current value
-                android.util.Log.d("UnlockDebug", "Transaction - Current coin value: " + val + " (type: " + (val != null ? val.getClass().getSimpleName() : "null") + ")");
-                
-                if (val instanceof Number) {
-                    coins = ((Number) val).intValue();
-                    android.util.Log.d("UnlockDebug", "Transaction - Parsed as Number: " + coins);
-                } else if (val instanceof String) {
-                    try { 
-                        coins = Integer.parseInt((String) val); 
-                        android.util.Log.d("UnlockDebug", "Transaction - Parsed as String: " + coins);
-                    } catch (Exception e) {
-                        android.util.Log.e("UnlockDebug", "Transaction - Error parsing coin value: " + val, e);
-                        return Transaction.abort();
-                    }
-                } else if (val == null) {
-                    android.util.Log.w("UnlockDebug", "Transaction - Coin value is null, setting to 0");
-                    coins = 0;
-                } else {
-                    android.util.Log.w("UnlockDebug", "Transaction - Unknown value type: " + val.getClass().getSimpleName());
-                    return Transaction.abort();
-                }
-                
-                android.util.Log.d("UnlockDebug", "Transaction - Final parsed coins: " + coins);
-                
-                if (coins < 10) {
-                    android.util.Log.w("UnlockDebug", "Transaction - Insufficient coins: " + coins + " < 10");
-                    return Transaction.abort();
-                }
-                
-                coins -= 10;
-                android.util.Log.d("UnlockDebug", "Transaction - New coin value: " + coins);
-                
-                // Keep the same type as the original value
-                if (val instanceof Number) {
-                    currentData.setValue(coins);
-                } else {
-                    currentData.setValue(String.valueOf(coins));
-                }
-                
-                android.util.Log.d("UnlockDebug", "Transaction - Setting new value: " + currentData.getValue());
-                return Transaction.success(currentData);
-            }
-
-            @Override
-            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                android.util.Log.d("UnlockDebug", "Transaction completed - Error: " + error + ", Committed: " + committed);
-                
-                if (error != null) {
+        if (rewardedAd != null) {
+            new MaterialAlertDialogBuilder(FreelanceDetailActivity.this)
+                .setTitle("Unlock Contact Information")
+                .setMessage("Watch a video ad to unlock the contact information for this freelance post.")
+                .setPositiveButton("Watch Ad", (dialog, which) -> {
+                    showRewardedAd(myUid);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    // Keep button enabled for retry
+                })
+                .show();
+        } else {
+            Toast.makeText(this, "Ad not ready. Please try again in a moment.", Toast.LENGTH_SHORT).show();
+            // Try to reload the ad
+            loadRewardedAd();
+        }
+    }
+    
+    private void showRewardedAd(String myUid) {
+        if (rewardedAd != null) {
+            rewardedAd.show(this, rewardItem -> {
+                // User earned reward - unlock the contacts
+                unlockContacts(myUid);
+            });
+        } else {
+            Toast.makeText(this, "Ad not available. Please try again.", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void unlockContacts(String myUid) {
+        // Mark as unlocked in database
+        ref.child("unlocked_by").child(myUid).setValue(true).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Update UI
+                runOnUiThread(() -> {
+                    setContactsMasked(false);
+                    isUnlocked = true;
+                    btnUnlock.setEnabled(false);
+                    btnUnlock.setText("Unlocked");
+                    Toast.makeText(FreelanceDetailActivity.this, "Contact information unlocked!", Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                runOnUiThread(() -> {
                     btnUnlock.setEnabled(true);
-                    btnUnlock.setText("Unlock");
-                    Toast.makeText(FreelanceDetailActivity.this, "Transaction error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                
-                if (!committed) {
-                    btnUnlock.setEnabled(true);
-                    btnUnlock.setText("Unlock");
-                    Toast.makeText(FreelanceDetailActivity.this, "Insufficient balance (10)", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                
-                // Mark unlocked and reveal
-                ref.child("unlocked_by").child(myUid).setValue(true).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // Atualizar UI na thread principal
-                        runOnUiThread(() -> {
-                            setContactsMasked(false);
-                            isUnlocked = true;
-                            btnUnlock.setEnabled(false);
-                            btnUnlock.setText("Unlocked");
-                            Toast.makeText(FreelanceDetailActivity.this, "Contacts unlocked successfully!", Toast.LENGTH_SHORT).show();
-                        });
-                    } else {
-                        // Atualizar UI na thread principal
-                        runOnUiThread(() -> {
-                            btnUnlock.setEnabled(true);
-                            btnUnlock.setText("Unlock");
-                            Toast.makeText(FreelanceDetailActivity.this, "Failed to unlock: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        });
-                    }
+                    btnUnlock.setText("Watch Ad to Unlock");
+                    Toast.makeText(FreelanceDetailActivity.this, "Failed to unlock. Please try again.", Toast.LENGTH_SHORT).show();
                 });
             }
         });
+        
+        // Load a new ad for next time
+        loadRewardedAd();
     }
 
-    private int getCurrentCoins(Object val) {
-        android.util.Log.d("UnlockDebug", "getCurrentCoins - Raw value: " + val + " (type: " + (val != null ? val.getClass().getSimpleName() : "null") + ")");
-        
-        if (val instanceof Number) {
-            int result = ((Number) val).intValue();
-            android.util.Log.d("UnlockDebug", "Parsed as Number: " + result);
-            return result;
-        } else if (val instanceof String) {
-            try {
-                int result = Integer.parseInt((String) val);
-                android.util.Log.d("UnlockDebug", "Parsed as String: " + result);
-                return result;
-            } catch (Exception e) {
-                android.util.Log.e("UnlockDebug", "Error parsing String value: " + val, e);
-                return 0;
-            }
-        } else if (val instanceof Long) {
-            int result = ((Long) val).intValue();
-            android.util.Log.d("UnlockDebug", "Parsed as Long: " + result);
-            return result;
-        } else if (val instanceof Double) {
-            int result = ((Double) val).intValue();
-            android.util.Log.d("UnlockDebug", "Parsed as Double: " + result);
-            return result;
-        }
-        
-        android.util.Log.w("UnlockDebug", "Unknown value type, returning 0");
-        return 0;
-    }
 
     private void setContactsMasked(boolean masked) {
         if (masked) {
