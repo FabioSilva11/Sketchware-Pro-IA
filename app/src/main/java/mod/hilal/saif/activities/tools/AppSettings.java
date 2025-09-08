@@ -47,8 +47,13 @@ import pro.sketchware.databinding.ActivityAppSettingsBinding;
 import pro.sketchware.databinding.DialogSelectApkToSignBinding;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 public class AppSettings extends BaseAppCompatActivity {
+
+    private AdView adView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +71,9 @@ public class AppSettings extends BaseAppCompatActivity {
         binding.topAppBar.setNavigationOnClickListener(Helper.getBackPressedClickListener(this));
 
         setupPreferences(binding.content);
+
+        // Load AdMob banner above the preferences list
+        loadBannerAd(binding);
     }
 
     private void setupPreferences(ViewGroup content) {
@@ -83,6 +91,41 @@ public class AppSettings extends BaseAppCompatActivity {
         preferences.add(createPreference(R.drawable.ic_mtrl_settings, Helper.getResString(R.string.main_drawer_title_system_settings), "Auto-save and vibrations", new ActivityLauncher(new Intent(getApplicationContext(), SystemSettingActivity.class))));
         preferences.add(createPreference(R.drawable.ic_mtrl_settings_applications, "AI (Groq) settings", "Configure API key and model", new ActivityLauncher(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class))));
         preferences.forEach(content::addView);
+    }
+
+    private void loadBannerAd(ActivityAppSettingsBinding binding) {
+        ViewGroup adContainer = binding.getRoot().findViewById(R.id.ad_container_app_settings);
+        if (adContainer == null) return;
+
+        if (adView != null) {
+            adContainer.removeView(adView);
+            adView.destroy();
+            adView = null;
+        }
+
+        adView = new AdView(this);
+        adView.setAdUnitId("ca-app-pub-6598765502914364/1327212196");
+
+        adContainer.post(() -> {
+            int containerWidthPx = adContainer.getWidth();
+            if (containerWidthPx == 0) containerWidthPx = getResources().getDisplayMetrics().widthPixels;
+            float density = getResources().getDisplayMetrics().density;
+            int adWidth = Math.max(1, (int) (containerWidthPx / density));
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
+            adView.setAdSize(adSize);
+            adContainer.addView(adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        if (adView != null) {
+            adView.destroy();
+            adView = null;
+        }
+        super.onDestroy();
     }
 
     private View.OnClickListener openSettingsActivity(String fragmentTag) {

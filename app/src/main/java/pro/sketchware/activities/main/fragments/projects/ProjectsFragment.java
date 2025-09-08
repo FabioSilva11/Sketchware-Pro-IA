@@ -29,6 +29,9 @@ import com.besome.sketch.editor.manage.library.ProjectComparator;
 import com.besome.sketch.projects.MyProjectSettingActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +60,7 @@ public class ProjectsFragment extends DA {
     private final List<HashMap<String, Object>> projectsList = new ArrayList<>();
     private MyprojectsBinding binding;
     private ProjectsAdapter projectsAdapter;
+    private AdView adView;
     public final ActivityResultLauncher<Intent> openProjectSettings = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
             Intent data = result.getData();
@@ -128,6 +132,10 @@ public class ProjectsFragment extends DA {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (adView != null) {
+            adView.destroy();
+            adView = null;
+        }
         binding = null; // avoid memory leaks
     }
 
@@ -166,6 +174,9 @@ public class ProjectsFragment extends DA {
         binding.iconSort.setOnClickListener(v -> showProjectSortingDialog());
         binding.specialAction.getRoot().setOnClickListener(v -> restoreProject());
 
+        // Load AdMob banner between restore project and list
+        loadBannerAd();
+
         menuProvider = new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
@@ -198,6 +209,40 @@ public class ProjectsFragment extends DA {
         };
 
         requireActivity().addMenuProvider(menuProvider);
+    }
+
+    private void loadBannerAd() {
+        if (binding == null) return;
+        ViewGroup container = binding.adContainer;
+        if (container == null) return;
+
+        if (adView != null) {
+            container.removeView(adView);
+            adView.destroy();
+            adView = null;
+        }
+
+        adView = new AdView(requireContext());
+        adView.setAdUnitId("ca-app-pub-6598765502914364/1327212196");
+
+        container.post(() -> {
+            if (!isAdded()) return;
+            AdSize adSize = getAdaptiveAdSize(container);
+            adView.setAdSize(adSize);
+            container.addView(adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+        });
+    }
+
+    private AdSize getAdaptiveAdSize(View container) {
+        int containerWidthPx = container.getWidth();
+        if (containerWidthPx == 0) {
+            containerWidthPx = getResources().getDisplayMetrics().widthPixels;
+        }
+        float density = getResources().getDisplayMetrics().density;
+        int adWidth = Math.max(1, (int) (containerWidthPx / density));
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth);
     }
 
     @Override

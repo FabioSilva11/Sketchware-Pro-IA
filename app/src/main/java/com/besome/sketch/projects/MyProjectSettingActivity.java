@@ -66,6 +66,9 @@ import pro.sketchware.lib.validator.AppNameValidator;
 import pro.sketchware.lib.validator.PackageNameValidator;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 public class MyProjectSettingActivity extends BaseAppCompatActivity implements View.OnClickListener {
 
@@ -85,6 +88,7 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
     private boolean isIconAdaptive;
     private Bitmap icon;
     private String sc_id;
+    private AdView adView;
 
     private static final int CROP_SHAPE_RECT = 0;
     private static final int CROP_SHAPE_CIRCLE = 1;
@@ -146,6 +150,9 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
         binding.tilAppName.setHint(Helper.getResString(R.string.myprojects_settings_hint_enter_application_name));
         binding.tilPackageName.setHint(Helper.getResString(R.string.myprojects_settings_hint_enter_package_name));
         binding.tilProjectName.setHint(Helper.getResString(R.string.myprojects_settings_hint_enter_project_name));
+
+        // Load AdMob banner below Theme Presets
+        loadBannerAd();
 
         projectAppNameValidator = new AppNameValidator(getApplicationContext(), binding.tilAppName);
         projectPackageNameValidator = new PackageNameValidator(getApplicationContext(), binding.tilPackageName);
@@ -228,6 +235,44 @@ public class MyProjectSettingActivity extends BaseAppCompatActivity implements V
             }
         }
         syncThemeColors();
+    }
+
+    private void loadBannerAd() {
+        if (binding == null) return;
+        ViewGroup container = binding.adContainerSettings;
+        if (container == null) return;
+
+        if (adView != null) {
+            container.removeView(adView);
+            adView.destroy();
+            adView = null;
+        }
+
+        adView = new AdView(this);
+        adView.setAdUnitId("ca-app-pub-6598765502914364/1327212196");
+
+        container.post(() -> {
+            int containerWidthPx = container.getWidth();
+            if (containerWidthPx == 0) {
+                containerWidthPx = getResources().getDisplayMetrics().widthPixels;
+            }
+            float density = getResources().getDisplayMetrics().density;
+            int adWidth = Math.max(1, (int) (containerWidthPx / density));
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
+            adView.setAdSize(adSize);
+            container.addView(adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        if (adView != null) {
+            adView.destroy();
+            adView = null;
+        }
+        super.onDestroy();
     }
 
     @Override

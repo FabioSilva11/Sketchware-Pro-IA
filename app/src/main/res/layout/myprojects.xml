@@ -33,6 +33,15 @@
                         layout="@layout/myprojects_item_special" />
                 </FrameLayout>
 
+                <!-- AdMob banner container (placed between Restore Project and list) -->
+                <FrameLayout
+                    android:id="@+id/ad_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -57,8 +66,9 @@
 
                         <ImageView
                             android:id="@+id/icon_sort"
-                            android:layout_width="@dimen/mtrl_min_touch_target_size"
-                            android:layout_height="@dimen/mtrl_min_touch_target_size"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginHorizontal="10dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:scaleType="centerInside"
                             app:srcCompat="@drawable/ic_mtrl_sort" />

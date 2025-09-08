@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+
 import pro.sketchware.activities.about.adapters.TeamAdapter;
 import pro.sketchware.activities.about.models.AboutAppViewModel;
 import pro.sketchware.databinding.FragmentAboutAppBinding;
@@ -38,5 +39,11 @@ public class TeamFragment extends Fragment {
                 binding.list.setAdapter(new TeamAdapter(teamArrayList));
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

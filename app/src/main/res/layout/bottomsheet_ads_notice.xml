@@ -1,0 +1,50 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="15dp"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Important Notice"
+        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Soon, Sketchware will display ads in a few places (like banners).\n\n🔹 Ads will be unobtrusive and won’t interfere with usability.\n🔹 100% of the revenue will be reinvested into Sketchware to ensure continuous improvements.\n\n🚀 Key highlights coming soon:\n\n⭐ Full AI integration to assist development.\n\n⭐ MSQL integration.\n\n⭐ Support for multiple ad providers (better performance and more options).\n\n⭐ In‑app payments system.\n\n⭐ Project versioning with GitHub directly in Sketchware.\n\n⭐ New component manager with modern libraries.\n\n⭐ Performance improvements and refreshed UI.\n\n⭐ More templates and ready‑made examples to accelerate projects.\n\n⭐ Ongoing updates with community‑driven features.\n\n✨ Our goal is to make Sketchware even more powerful, modern, and accessible for everyone.\n\nThank you for supporting the development! 🙏"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="16dp">
+
+        <Button
+            android:id="@+id/copy"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:text="Copy" />
+
+        <Button
+            android:id="@+id/close"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Close (10)" />
+    </LinearLayout>
+
+</LinearLayout>
+

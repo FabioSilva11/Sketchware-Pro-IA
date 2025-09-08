@@ -30,6 +30,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.besome.sketch.lib.base.BasePermissionAppCompatActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -93,6 +95,9 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     private Fragment activeFragment;
     @IdRes
     private int currentNavItemId = R.id.item_projects;
+    private static final String PREFS_ADS_NOTICE = "ads_notice";
+    private static final String KEY_ADS_NOTICE_SHOWN = "shown";
+    private AlertDialog adsNoticeDialog;
 
     @Override
     // onRequestPermissionsResult but for Storage access only, and only when granted
@@ -177,6 +182,8 @@ public class MainActivity extends BasePermissionAppCompatActivity {
 
         // Verificar autenticação Firebase
         checkFirebaseAuth();
+        // Mostrar aviso de anúncios (apenas uma vez)
+        maybeShowAdsNoticeOnce();
 
         tryLoadingCustomizedAppStrings();
         binding = MainBinding.inflate(getLayoutInflater());
@@ -283,6 +290,61 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         } else if (currentNavItemId == R.id.item_loja) {
             binding.viewPager.setCurrentItem(1);
         }
+    }
+
+    private void maybeShowAdsNoticeOnce() {
+        if (adsNoticeDialog != null && adsNoticeDialog.isShowing()) return;
+        boolean shown = getSharedPreferences(PREFS_ADS_NOTICE, MODE_PRIVATE).getBoolean(KEY_ADS_NOTICE_SHOWN, false);
+        if (shown) return;
+
+        View content = getLayoutInflater().inflate(R.layout.bottomsheet_ads_notice, null);
+        adsNoticeDialog = new MaterialAlertDialogBuilder(this)
+                .setView(content)
+                .create();
+        adsNoticeDialog.setCanceledOnTouchOutside(false);
+        adsNoticeDialog.setCancelable(false);
+
+        View close = content.findViewById(R.id.close);
+        View copy = content.findViewById(R.id.copy);
+        close.setEnabled(false);
+
+        close.postDelayed(() -> {
+            if (adsNoticeDialog == null) return;
+            if (close instanceof android.widget.Button) {
+                ((android.widget.Button) close).setText("Close");
+            }
+            adsNoticeDialog.setCancelable(true);
+            close.setEnabled(true);
+        }, 10_000L);
+
+        close.setOnClickListener(v -> {
+            if (!v.isEnabled()) return;
+            getSharedPreferences(PREFS_ADS_NOTICE, MODE_PRIVATE)
+                    .edit().putBoolean(KEY_ADS_NOTICE_SHOWN, true).apply();
+            adsNoticeDialog.dismiss();
+        });
+
+        copy.setOnClickListener(v -> {
+            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Sketchware Notice", ((android.widget.TextView) content.findViewById(R.id.body)).getText());
+            cm.setPrimaryClip(clip);
+            SketchwareUtil.toast("Copied to clipboard");
+        });
+
+        final int[] seconds = {10};
+        Runnable ticker = new Runnable() {
+            @Override
+            public void run() {
+                if (!(close instanceof android.widget.Button)) return;
+                if (seconds[0] <= 0) return;
+                ((android.widget.Button) close).setText("Close (" + seconds[0] + ")");
+                seconds[0]--;
+                close.postDelayed(this, 1000);
+            }
+        };
+        close.post(ticker);
+
+        adsNoticeDialog.show();
     }
 
     private void setupTabs() {

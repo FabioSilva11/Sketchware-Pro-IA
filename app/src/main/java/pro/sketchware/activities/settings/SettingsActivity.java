@@ -26,6 +26,7 @@ public class SettingsActivity extends BaseAppCompatActivity {
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
         String fragmentTag = getIntent().getStringExtra(FRAGMENT_TAG_EXTRA);
         Fragment fragment = switch (fragmentTag) {
             case SETTINGS_APPEARANCE_FRAGMENT -> new SettingsAppearanceFragment();
@@ -42,4 +43,6 @@ public class SettingsActivity extends BaseAppCompatActivity {
                 .replace(binding.settingsFragmentContainer.getId(), fragment)
                 .commit();
     }
+
+    
 }

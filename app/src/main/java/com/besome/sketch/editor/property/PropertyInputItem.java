@@ -91,6 +91,8 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
     private Kw valueChangeListener;
     private List<String> keysList = new ArrayList<>();
     private ViewBean bean;
+    // Holds currently edited string key when value is an @string reference
+    private String editingRefKey = null;
 
     public PropertyInputItem(Context context, boolean z) {
         super(context);
@@ -146,7 +148,12 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
 
     public void setValue(String value) {
         this.value = value;
-        tvValue.setText(value);
+        String toDisplay = value;
+        if (value != null && value.startsWith(stringsStart)) {
+            String resolved = resolveStringRef(value);
+            if (resolved != null && !resolved.isEmpty()) toDisplay = resolved;
+        }
+        tvValue.setText(toDisplay);
     }
 
     public void setBean(ViewBean bean) {
@@ -285,9 +292,25 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
             dialog.setView(binding.getRoot());
 
             setupAutoCompleteTextView(binding.edTiAutoCompleteInput);
+
+            // Pre-fill with resolved content if current value is an @string reference
+            editingRefKey = null;
+            if (value != null && value.startsWith(stringsStart)) {
+                editingRefKey = value.substring(stringsStart.length());
+                String resolved = resolveStringRef(value);
+                if (resolved != null) {
+                    binding.edTiAutoCompleteInput.setText(resolved);
+                    binding.edTiAutoCompleteInput.setSelection(binding.edTiAutoCompleteInput.getText().length());
+                }
+            } else {
+                binding.edTiAutoCompleteInput.setText(value);
+                binding.edTiAutoCompleteInput.setSelection(binding.edTiAutoCompleteInput.getText().length());
+            }
         }
 
-        lengthValidator.a(value);
+        // Validate current visible text, not raw reference
+        String initialForValidation = (value != null && value.startsWith(stringsStart)) ? resolveStringRef(value) : value;
+        lengthValidator.a(initialForValidation);
         dialog.setView(binding.getRoot());
         dialog.setPositiveButton(Helper.getResString(R.string.common_word_save), (v, which) ->
                 handleSave(lengthValidator, binding.edInput, binding.edTiAutoCompleteInput, binding.tiAutoCompleteInput, isInject, v));
@@ -354,9 +377,15 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
                 setValue(Helper.getText(input));
             } else {
                 String raw = Helper.getText(autoCompleteTextView);
-                // Auto-create string if user typed plain text (not @string/)
-                if (!raw.startsWith(stringsStart)) {
-                    // Try to find existing key with same text to avoid duplicates
+                // If currently editing an existing @string reference and user typed plain text,
+                // update that existing key instead of creating a new one
+                if (!raw.startsWith(stringsStart) && editingRefKey != null && !editingRefKey.isEmpty()) {
+                    createOrUpdateString(editingRefKey, raw, "");
+                    String ref = stringsStart + editingRefKey;
+                    autoCompleteTextView.setText(ref);
+                    setValue(ref);
+                } else if (!raw.startsWith(stringsStart)) {
+                    // Auto-create string if user typed plain text (not @string/)
                     loadStringsListMap();
                     String existingKey = findExistingKeyByText(raw);
                     String keyToUse = existingKey != null ? existingKey : generateUniqueStringKey(raw);
@@ -396,6 +425,27 @@ public class PropertyInputItem extends RelativeLayout implements View.OnClickLis
                 }
             }
         }
+    }
+
+    private String resolveStringRef(String ref) {
+        try {
+            if (ref == null || !ref.startsWith(stringsStart)) return ref;
+            String keyName = ref.substring(stringsStart.length());
+            String filePath = FileUtil.getExternalStorageDir()
+                    .concat("/.sketchware/data/")
+                    .concat(sc_id.concat("/files/resource/values/strings.xml"));
+            ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+            StringsEditorManager sem = new StringsEditorManager();
+            sem.convertXmlStringsToListMap(FileUtil.readFileIfExist(filePath), list);
+            for (HashMap<String, Object> item : list) {
+                if (keyName.equals(String.valueOf(item.get("key")))) {
+                    Object text = item.get("text");
+                    return text == null ? ref : String.valueOf(text);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return ref;
     }
 
     private void promptToCreateStringResource(String ref, Runnable onCreated, TextInputLayout errorTarget) {

@@ -25,6 +25,9 @@ import pro.sketchware.activities.about.models.AboutAppViewModel;
 import pro.sketchware.activities.about.models.AboutResponseModel;
 import pro.sketchware.databinding.ActivityAboutAppBinding;
 import pro.sketchware.utility.Network;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 public class AboutActivity extends BaseAppCompatActivity {
 
@@ -32,6 +35,7 @@ public class AboutActivity extends BaseAppCompatActivity {
     public AboutAppViewModel aboutAppData;
     private ActivityAboutAppBinding binding;
     private SharedPreferences sharedPref;
+    private AdView adView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,6 +81,8 @@ public class AboutActivity extends BaseAppCompatActivity {
                 binding.viewPager.setCurrentItem(1);
             }
         }
+
+        loadBannerAd();
     }
 
     private void initData() {
@@ -93,6 +99,41 @@ public class AboutActivity extends BaseAppCompatActivity {
 
             aboutAppData.setTeamMembers(aboutResponseModel.getTeam());
         });
+    }
+
+    private void loadBannerAd() {
+        android.view.ViewGroup container = (android.view.ViewGroup) findViewById(pro.sketchware.R.id.ad_container_about);
+        if (container == null) return;
+
+        if (adView != null) {
+            container.removeView(adView);
+            adView.destroy();
+            adView = null;
+        }
+
+        adView = new AdView(this);
+        adView.setAdUnitId("ca-app-pub-6598765502914364/1327212196");
+
+        container.post(() -> {
+            int containerWidthPx = container.getWidth();
+            if (containerWidthPx == 0) containerWidthPx = getResources().getDisplayMetrics().widthPixels;
+            float density = getResources().getDisplayMetrics().density;
+            int adWidth = Math.max(1, (int) (containerWidthPx / density));
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
+            adView.setAdSize(adSize);
+            container.addView(adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        if (adView != null) {
+            adView.destroy();
+            adView = null;
+        }
+        super.onDestroy();
     }
 
     // ----------------- classes ----------------- //
