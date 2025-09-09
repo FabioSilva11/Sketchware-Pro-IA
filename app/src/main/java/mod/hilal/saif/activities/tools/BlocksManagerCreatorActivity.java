@@ -28,6 +28,8 @@ import com.besome.sketch.lib.ui.ColorPickerDialog;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.JsonParseException;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,6 +75,12 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityBlocksManagerCreatorBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Initialize and load AdMob banner
+        try {
+            MobileAds.initialize(this, initializationStatus -> {});
+            var adRequest = new AdRequest.Builder().build();
+            binding.adView.loadAd(adRequest);
+        } catch (Exception ignored) {}
         initialize();
         initializeLogic();
     }
@@ -426,11 +434,18 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
 
     private void updateBlockSpec(String specId, String color) {
         binding.blockArea.removeAllViews();
-        var blockType = specId.equalsIgnoreCase("regular") ? " " : specId;
+        String blockType = specId;
+        if (blockType == null || blockType.isEmpty() || blockType.equalsIgnoreCase("regular")) {
+            blockType = " ";
+        }
         try {
             var block = new Rs(this, -1, Helper.getText(binding.spec), blockType, Helper.getText(binding.name));
+            // Set color before and after layout build in case build logic overrides it
             block.e = PropertiesUtil.isHexColor(color) ? PropertiesUtil.parseColor(color) : Color.parseColor("#F0F0F0");
             binding.blockArea.addView(block);
+            block.k();
+            block.e = PropertiesUtil.isHexColor(color) ? PropertiesUtil.parseColor(color) : Color.parseColor("#F0F0F0");
+            block.invalidate();
         } catch (Exception e) {
             var block = new TextView(this);
             block.setTextColor(Color.RED);

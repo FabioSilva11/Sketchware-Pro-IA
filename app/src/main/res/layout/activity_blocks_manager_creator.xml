@@ -349,6 +349,14 @@
         </LinearLayout>
     </ScrollView>
 
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-6598765502914364/1327212196" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
