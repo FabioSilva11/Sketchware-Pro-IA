@@ -34,96 +34,183 @@ public final class AiBlockCodeGenerator {
 
     private String buildSystemPrompt() {
         StringJoiner sj = new StringJoiner("\n");
-        
-        sj.add("You are an assistant that generates Java code for Sketchware Pro blocks.");
-        sj.add("You will receive a block specification and must generate appropriate Java code.");
-        sj.add("The code should be practical, efficient, and follow Android development best practices.");
+
+        sj.add("Você é um gerador de código Java especializado em Sketchware Pro.");
+        sj.add("Sua função é receber uma especificação de bloco e produzir o código Java correto que será usado no editor de blocos do Sketchware Pro.");
+        sj.add("O código será embutido diretamente no compilador de blocos, portanto deve ser totalmente compatível e autocontido.");
         sj.add("");
-        sj.add("BLOCK TYPES AND THEIR PURPOSES:");
-        sj.add("- regular: Standard block that executes code");
-        sj.add("- c: Conditional block (if statement)");
-        sj.add("- e: If-else block");
-        sj.add("- s: String block (returns a string)");
-        sj.add("- b: Boolean block (returns true/false)");
-        sj.add("- d: Number block (returns a number)");
-        sj.add("- v: Variable block (assigns to a variable)");
-        sj.add("- a: Map block (works with HashMap)");
-        sj.add("- f: Stop block (terminates execution)");
-        sj.add("- l: List block (works with ArrayList)");
-        sj.add("- p: Component block (works with UI components)");
-        sj.add("- h: Header block (for organization)");
+
+        sj.add("### SOBRE O SKETCHWARE PRO");
+        sj.add("- É um IDE visual para Android que converte blocos em código Java.");
+        sj.add("- Cada bloco é definido por: { code, name, type, typeName, palette, spec, spec2 }.");
+        sj.add("- O campo 'code' contém o código Java com placeholders (%s, %b, %d, %m.*).");
+        sj.add("- Esses placeholders são substituídos pelos valores ou blocos internos durante a compilação.");
         sj.add("");
-        sj.add("PARAMETER TYPES:");
-        sj.add("- %s: String parameter");
-        sj.add("- %b: Boolean parameter");
-        sj.add("- %d: Number parameter");
-        sj.add("- %m.varMap: Map variable");
-        sj.add("- %m.view: View component");
-        sj.add("- %m.textview: TextView component");
-        sj.add("- %m.edittext: EditText component");
-        sj.add("- %m.imageview: ImageView component");
-        sj.add("- %m.listview: ListView component");
-        sj.add("- %m.list: List variable");
-        sj.add("- %m.listMap: List of Maps");
-        sj.add("- %m.listStr: List of Strings");
-        sj.add("- %m.listInt: List of Numbers");
-        sj.add("- %m.intent: Intent object");
-        sj.add("- %m.color: Color value");
-        sj.add("- %m.activity: Activity reference");
-        sj.add("- %m.resource: Resource reference");
-        sj.add("- %m.customViews: Custom views");
-        sj.add("- %m.layout: Layout reference");
-        sj.add("- %m.anim: Animation reference");
-        sj.add("- %m.drawable: Drawable reference");
-        sj.add("- %m.ResString: String resource");
+
+        sj.add("### TIPOS DE BLOCOS DISPONÍVEIS");
+        sj.add("- h: Header (usado para títulos, sem código)");
+        sj.add("- regular: bloco padrão que executa código");
+        sj.add("- c: Condicional (if, while, etc)");
+        sj.add("- e: If-Else ou Try-Catch (dois fluxos de código)");
+        sj.add("- s: String (retorna texto)");
+        sj.add("- b: Boolean (retorna true/false)");
+        sj.add("- d: Number (retorna número)");
+        sj.add("- v: Variável (atribuição ou acesso)");
+        sj.add("- a: Mapa (HashMap e pares chave-valor)");
+        sj.add("- f: Fluxo (stop, break, continue)");
+        sj.add("- l: Lista (ArrayList e manipulação)");
+        sj.add("- p: Procedimento ou bloco de componente");
         sj.add("");
-        sj.add("CODE GENERATION RULES:");
-        sj.add("- Generate only the Java code, no explanations");
-        sj.add("- Use proper variable naming conventions");
-        sj.add("- Include necessary null checks");
-        sj.add("- Handle exceptions appropriately");
-        sj.add("- Use Android best practices");
-        sj.add("- Make code readable and maintainable");
-        sj.add("- Include proper comments for complex logic");
-        sj.add("- Use StringBuilder for string concatenation when appropriate");
-        sj.add("- Follow Java coding standards");
+
+        sj.add("### TIPOS DE PARÂMETROS SUPORTADOS");
+        sj.add("- %s : String");
+        sj.add("- %b : Boolean");
+        sj.add("- %d : Número inteiro ou double");
+        sj.add("- %m.varMap : variável HashMap");
+        sj.add("- %m.view : componente View");
+        sj.add("- %m.textview : componente TextView");
+        sj.add("- %m.edittext : componente EditText");
+        sj.add("- %m.imageview : componente ImageView");
+        sj.add("- %m.listview : componente ListView");
+        sj.add("- %m.list : variável de lista");
+        sj.add("- %m.listMap : lista de mapas");
+        sj.add("- %m.listStr : lista de Strings");
+        sj.add("- %m.listInt : lista de inteiros");
+        sj.add("- %m.intent : Intent do Android");
+        sj.add("- %m.color : valor de cor");
+        sj.add("- %m.activity : referência de Activity");
+        sj.add("- %m.resource : referência a recurso");
+        sj.add("- %m.customViews : custom view");
+        sj.add("- %m.layout : Layout");
+        sj.add("- %m.anim : Animação");
+        sj.add("- %m.drawable : Drawable");
+        sj.add("- %m.ResString : String de recurso");
         sj.add("");
-        sj.add("IMPORTANT:");
-        sj.add("- The code will be embedded in a block context");
-        sj.add("- Variables are already declared in the scope");
-        sj.add("- Focus on the core functionality");
-        sj.add("- Don't include class declarations or method signatures");
-        sj.add("- The code should be self-contained");
-        
+
+        sj.add("### EXEMPLOS REAIS DE BLOCOS");
+        sj.add("Bloco TRY-CATCH:");
+        sj.add("try {");
+        sj.add("    %s");
+        sj.add("} catch(Exception e) {");
+        sj.add("    %s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco IF APP INSTALADO:");
+        sj.add("android.content.pm.PackageManager %1$s = getPackageManager();");
+        sj.add("try {");
+        sj.add("    %1$s.getPackageInfo(%2$s, android.content.pm.PackageManager.GET_ACTIVITIES);");
+        sj.add("    %3$s");
+        sj.add("    return;");
+        sj.add("} catch (android.content.pm.PackageManager.NameNotFoundException e) { }");
+        sj.add("%4$s");
+        sj.add("");
+
+        sj.add("Bloco IF NOME DO PACOTE:");
+        sj.add("if (getApplicationContext().getPackageName().equals(%1$s)) {");
+        sj.add("    %2$s");
+        sj.add("} else {");
+        sj.add("    %3$s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco IF APP INSTALADO DA PLAY STORE:");
+        sj.add("android.content.pm.PackageManager %1$s = getPackageManager();");
+        sj.add("final String %1$sS = %1$s.getInstallerPackageName(getPackageName());");
+        sj.add("if (\"com.android.vending\".equals(%1$sS)) {");
+        sj.add("    %2$s");
+        sj.add("} else {");
+        sj.add("    %3$s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco IF WIFI ATIVO:");
+        sj.add("final android.net.wifi.WifiManager %1$s = (android.net.wifi.WifiManager)getSystemService(Context.WIFI_SERVICE);");
+        sj.add("if (%1$s.isWifiEnabled()) {");
+        sj.add("    %2$s");
+        sj.add("} else {");
+        sj.add("    %3$s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco ROOT CHECK:");
+        sj.add("try {");
+        sj.add("    Runtime.getRuntime().exec(\"su\");");
+        sj.add("    %s");
+        sj.add("} catch (Exception e) {");
+        sj.add("    %s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco IF CONECTADO:");
+        sj.add("if (SketchwareUtil.isConnected(getApplicationContext())) {");
+        sj.add("    %2$s");
+        sj.add("} else {");
+        sj.add("    %3$s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco FILE CHECK:");
+        sj.add("if (FileUtil.isExistFile(%s)) {");
+        sj.add("    %s");
+        sj.add("} else {");
+        sj.add("    %s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco LOOP WHILE:");
+        sj.add("while(%1$s) {");
+        sj.add("    %2$s");
+        sj.add("}");
+        sj.add("");
+
+        sj.add("Bloco STOP:");
+        sj.add("break;");
+        sj.add("");
+
+        sj.add("### REGRAS DE GERAÇÃO");
+        sj.add("1. Gere apenas código Java, nunca explicações.");
+        sj.add("2. Use placeholders (%s, %d, %b, %m.*) exatamente como o Sketchware Pro exige.");
+        sj.add("3. Se o bloco for condicional, use estruturas if/else ou while.");
+        sj.add("4. Se for de fluxo, use break, continue, return.");
+        sj.add("5. Se for de retorno (s, b, d), sempre use return.");
+        sj.add("6. Sempre use nomes de variáveis claros e sem conflito (%1$s, %2$s).");
+        sj.add("7. Use try-catch sempre que houver risco de erro (IO, reflection, runtime).");
+        sj.add("8. Evite imports desnecessários.");
+        sj.add("9. O código precisa ser limpo, eficiente e manter compatibilidade Android.");
+        sj.add("");
+
         return sj.toString();
     }
 
     private String buildUserPrompt(BlockGenerationRequest request) {
         StringJoiner sj = new StringJoiner("\n");
         
-        sj.add("Generate Java code for a Sketchware Pro block with the following specifications:");
+        sj.add("Gere código Java para um bloco do Sketchware Pro com as seguintes especificações:");
         sj.add("");
-        sj.add("BLOCK NAME: " + request.blockName);
-        sj.add("BLOCK TYPE: " + request.blockType);
-        sj.add("TYPE NAME: " + request.typeName);
-        sj.add("SPECIFICATION: " + request.specification);
-        sj.add("DESCRIPTION: " + request.description);
+        sj.add("NOME DO BLOCO: " + request.blockName);
+        sj.add("TIPO DO BLOCO: " + request.blockType);
+        sj.add("NOME DO TIPO: " + request.typeName);
+        sj.add("ESPECIFICAÇÃO: " + request.specification);
+        sj.add("DESCRIÇÃO: " + request.description);
         
         if (request.blockType.equals("e")) {
-            sj.add("SPECIFICATION 2: " + request.specification2);
+            sj.add("ESPECIFICAÇÃO 2: " + request.specification2);
         }
         
         if (request.imports != null && !request.imports.isEmpty()) {
-            sj.add("REQUIRED IMPORTS: " + String.join(", ", request.imports));
+            sj.add("IMPORTS NECESSÁRIOS: " + String.join(", ", request.imports));
         }
         
         sj.add("");
-        sj.add("Please generate appropriate Java code that:");
-        sj.add("1. Handles the parameters specified in the specification");
-        sj.add("2. Implements the functionality described");
-        sj.add("3. Returns appropriate values based on the block type");
-        sj.add("4. Uses the provided imports if any");
-        sj.add("5. Follows Android development best practices");
+        sj.add("Gere código Java que:");
+        sj.add("1. Manipule os parâmetros especificados na especificação");
+        sj.add("2. Implemente a funcionalidade descrita");
+        sj.add("3. Retorne valores apropriados baseado no tipo do bloco");
+        sj.add("4. Use os imports fornecidos se houver");
+        sj.add("5. Siga as melhores práticas de desenvolvimento Android");
+        sj.add("6. Use placeholders corretos (%s, %b, %d, %m.*)");
+        sj.add("7. Seja compatível com o compilador de blocos do Sketchware Pro");
         
         return sj.toString();
     }
