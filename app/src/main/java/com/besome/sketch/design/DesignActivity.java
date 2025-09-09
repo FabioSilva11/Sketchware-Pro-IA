@@ -32,7 +32,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -118,6 +117,7 @@ import mod.jbk.diagnostic.MissingFileException;
 import mod.jbk.util.LogUtil;
 import mod.khaled.logcat.LogReaderActivity;
 import pro.sketchware.R;
+import pro.sketchware.activities.ai.ManageAiActivity;
 import pro.sketchware.activities.appcompat.ManageAppCompatActivity;
 import pro.sketchware.activities.editor.command.ManageXMLCommandActivity;
 import pro.sketchware.activities.editor.view.CodeViewerActivity;
@@ -703,7 +703,7 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 .setTitle("AI (Groq) not configured")
                 .setMessage("To use the AI layout generation feature, you need to configure your Groq API key.\n\nYou can get a free API key from the Groq console.")
                 .setPositiveButton("Configure AI", (v, w) -> {
-                    startActivity(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                    startActivity(new Intent(getApplicationContext(), ManageAiActivity.class));
                 })
                 .setNeutralButton("Get free API key", (v, w) -> {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/keys"));

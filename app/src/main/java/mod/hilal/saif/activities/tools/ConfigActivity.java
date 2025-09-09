@@ -35,6 +35,7 @@ import dev.chrisbanes.insetter.Insetter;
 import mod.hey.studios.util.Helper;
 import mod.jbk.util.LogUtil;
 import pro.sketchware.R;
+import pro.sketchware.activities.ai.ManageAiActivity;
 import pro.sketchware.databinding.DialogCreateNewFileLayoutBinding;
 import pro.sketchware.databinding.PreferenceActivityBinding;
 import pro.sketchware.utility.FileUtil;
@@ -280,7 +281,7 @@ public class ConfigActivity extends BaseAppCompatActivity {
             Preference groq = findPreference("ai-groq-settings");
             if (groq != null) {
                 groq.setOnPreferenceClickListener(p -> {
-                    startActivity(new Intent(requireContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                    startActivity(new Intent(requireContext(), ManageAiActivity.class));
                     return true;
                 });
             }

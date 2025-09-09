@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.CheckBox;
-import android.widget.Toast;
 import android.content.Intent;
 import android.net.Uri;
 import com.google.android.material.textfield.TextInputEditText;
@@ -43,6 +42,7 @@ import a.a.a.Rs;
 import mod.hey.studios.util.Helper;
 import mod.hilal.saif.lib.PCP;
 import pro.sketchware.R;
+import pro.sketchware.activities.ai.ManageAiActivity;
 import pro.sketchware.ai.AiBlockCodeGenerator;
 import pro.sketchware.databinding.ActivityBlocksManagerCreatorBinding;
 import pro.sketchware.lib.base.BaseTextWatcher;
@@ -585,7 +585,7 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
                 .setTitle("AI (Groq) not configured")
                 .setMessage("To use the AI block code generation feature, you need to configure your Groq API key.\n\nYou can get a free API key from the Groq console.")
                 .setPositiveButton("Configure AI", (v, w) -> {
-                    startActivity(new Intent(getApplicationContext(), pro.sketchware.activities.ai.ManageGroqActivity.class));
+                    startActivity(new Intent(getApplicationContext(), ManageAiActivity.class));
                 })
                 .setNeutralButton("Get free API key", (v, w) -> {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/keys"));

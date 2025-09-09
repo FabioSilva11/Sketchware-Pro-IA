@@ -15,15 +15,20 @@ import com.besome.sketch.beans.ViewBean;
 import mod.agus.jcoderz.beans.ViewBeans;
 
 /**
- * High-level helper that asks Groq to generate Android XML layout code
+ * High-level helper that asks AI models to generate Android XML layout code
  * constrained to the components available in the Sketchware palette.
+ * Supports multiple AI providers: Groq, OpenAI, and Claude.
  */
 public final class AiCodeGenerator {
 
-    private final GroqClient client;
+    private final GroqClient groqClient;
+    private final OpenAIClient openAIClient;
+    private final ClaudeClient claudeClient;
 
     public AiCodeGenerator() {
-        this.client = new GroqClient();
+        this.groqClient = new GroqClient();
+        this.openAIClient = new OpenAIClient();
+        this.claudeClient = new ClaudeClient();
     }
 
     public String generateLayoutXml(@NonNull String userPrompt) throws IOException, JSONException {
@@ -33,15 +38,24 @@ public final class AiCodeGenerator {
     public String generateLayoutXml(@NonNull String userPrompt, String currentLayoutXml, Map<String, String> stylePreferences) throws IOException, JSONException {
         String system = buildSystemPrompt(currentLayoutXml, stylePreferences);
         
-        // Get user's preferred language for layout generation
-        String userLanguage = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance()
-                .getString(pro.sketchware.activities.ai.ManageGroqActivity.SETTINGS_KEY_LAYOUT_LANGUAGE, "en");
+        // Determine which provider to use based on configured model
+        String selectedModel = getSelectedModel();
+        String provider = getProviderFromModel(selectedModel);
         
-        // Add language instruction to the prompt
-        String localizedPrompt = addLanguageInstruction(userPrompt, userLanguage);
-        
-        List<GroqClient.Message> messages = GroqClient.Message.of(system, localizedPrompt);
-        return client.chat(messages);
+        switch (provider) {
+            case "openai":
+                List<OpenAIClient.Message> openAIMessages = OpenAIClient.Message.of(system, userPrompt);
+                return openAIClient.chat(openAIMessages);
+                
+            case "claude":
+                List<ClaudeClient.Message> claudeMessages = ClaudeClient.Message.of(system, userPrompt);
+                return claudeClient.chat(claudeMessages);
+                
+            case "groq":
+            default:
+                List<GroqClient.Message> groqMessages = GroqClient.Message.of(system, userPrompt);
+                return groqClient.chat(groqMessages);
+        }
     }
 
     private String buildSystemPrompt() {
@@ -229,52 +243,49 @@ public final class AiCodeGenerator {
     }
     
     /**
-     * Adds language instruction to the user prompt based on user's preferred language
+     * Get the currently selected model from settings (only from enabled providers)
      */
-    private String addLanguageInstruction(String userPrompt, String languageCode) {
-        String languageInstruction = "";
+    private String getSelectedModel() {
+        var ds = mod.hilal.saif.activities.tools.ConfigActivity.DataStore.getInstance();
         
-        switch (languageCode) {
-            case "pt-BR":
-                languageInstruction = "IMPORTANT: The user's prompt is in Portuguese (Brazil). Please understand and respond accordingly. ";
-                break;
-            case "es":
-                languageInstruction = "IMPORTANT: The user's prompt is in Spanish. Please understand and respond accordingly. ";
-                break;
-            case "fr":
-                languageInstruction = "IMPORTANT: The user's prompt is in French. Please understand and respond accordingly. ";
-                break;
-            case "de":
-                languageInstruction = "IMPORTANT: The user's prompt is in German. Please understand and respond accordingly. ";
-                break;
-            case "it":
-                languageInstruction = "IMPORTANT: The user's prompt is in Italian. Please understand and respond accordingly. ";
-                break;
-            case "ja":
-                languageInstruction = "IMPORTANT: The user's prompt is in Japanese. Please understand and respond accordingly. ";
-                break;
-            case "ko":
-                languageInstruction = "IMPORTANT: The user's prompt is in Korean. Please understand and respond accordingly. ";
-                break;
-            case "zh-CN":
-                languageInstruction = "IMPORTANT: The user's prompt is in Chinese (Simplified). Please understand and respond accordingly. ";
-                break;
-            case "ru":
-                languageInstruction = "IMPORTANT: The user's prompt is in Russian. Please understand and respond accordingly. ";
-                break;
-            case "ar":
-                languageInstruction = "IMPORTANT: The user's prompt is in Arabic. Please understand and respond accordingly. ";
-                break;
-            case "hi":
-                languageInstruction = "IMPORTANT: The user's prompt is in Hindi. Please understand and respond accordingly. ";
-                break;
-            default: // "en" or any other
-                languageInstruction = "";
-                break;
+        // Check each provider's settings (only if enabled)
+        boolean groqEnabled = ds.getBoolean("ai-groq-enabled", false);
+        boolean openAIEnabled = ds.getBoolean("ai-openai-enabled", false);
+        boolean claudeEnabled = ds.getBoolean("ai-claude-enabled", false);
+        
+        // Return the first enabled provider's model
+        if (groqEnabled) {
+            String groqModel = ds.getString(GroqClient.SETTINGS_KEY_MODEL, "");
+            if (!groqModel.isEmpty()) return groqModel;
         }
         
-        return languageInstruction + userPrompt;
+        if (openAIEnabled) {
+            String openAIModel = ds.getString(OpenAIClient.SETTINGS_KEY_MODEL, "");
+            if (!openAIModel.isEmpty()) return openAIModel;
+        }
+        
+        if (claudeEnabled) {
+            String claudeModel = ds.getString(ClaudeClient.SETTINGS_KEY_MODEL, "");
+            if (!claudeModel.isEmpty()) return claudeModel;
+        }
+        
+        // Default to Groq if no enabled providers found
+        return "llama-3.3-70b-versatile";
     }
+    
+    /**
+     * Determine provider from model name
+     */
+    private String getProviderFromModel(String model) {
+        if (model.startsWith("gpt-") || model.startsWith("chatgpt-")) {
+            return "openai";
+        } else if (model.startsWith("claude-")) {
+            return "claude";
+        } else {
+            return "groq";
+        }
+    }
+    
 }
 
 
