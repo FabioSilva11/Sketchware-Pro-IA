@@ -344,6 +344,15 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         };
         close.post(ticker);
 
+        // Auto-dismiss after 30 seconds and mark as seen
+        content.postDelayed(() -> {
+            if (adsNoticeDialog != null && adsNoticeDialog.isShowing()) {
+                getSharedPreferences(PREFS_ADS_NOTICE, MODE_PRIVATE)
+                        .edit().putBoolean(KEY_ADS_NOTICE_SHOWN, true).apply();
+                adsNoticeDialog.dismiss();
+            }
+        }, 30_000L);
+
         adsNoticeDialog.show();
     }
 
