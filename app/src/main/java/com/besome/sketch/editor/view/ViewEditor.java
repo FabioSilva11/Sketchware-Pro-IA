@@ -38,6 +38,9 @@ import com.besome.sketch.editor.view.palette.PaletteFavorite;
 import com.besome.sketch.editor.view.palette.PaletteWidget;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -130,6 +133,8 @@ public class ViewEditor extends RelativeLayout implements View.OnClickListener, 
     private int colorError;
     private final Runnable ea = this::e;
     private int colorErrorContainer;
+    private AdView bannerAdView;
+    private FrameLayout bannerAdContainer;
 
     public ViewEditor(Context context) {
         this(context, null);
@@ -517,6 +522,7 @@ public class ViewEditor extends RelativeLayout implements View.OnClickListener, 
         deleteView = findViewById(R.id.delete_view);
         FrameLayout shape = findViewById(R.id.shape);
         paletteGroup = findViewById(R.id.palette_group);
+        bannerAdContainer = findViewById(R.id.native_ad_container);
 
         addPaletteGroupItems();
 
@@ -593,6 +599,9 @@ public class ViewEditor extends RelativeLayout implements View.OnClickListener, 
         colorError = ThemeUtils.getColor(deleteView, R.attr.colorOnErrorContainer);
 
         initialDeleteViewUi();
+        
+        // Initialize banner ad
+        initializeBannerAd();
     }
 
     public void b(ArrayList<ViewBean> arrayList, boolean z) {
@@ -1137,6 +1146,88 @@ public class ViewEditor extends RelativeLayout implements View.OnClickListener, 
                     R.drawable.selector_palette_tab_ic_sketchware :
                     R.drawable.selector_palette_tab_ic_bookmark);
             setOnClickListener(this);
+        }
+    }
+
+    /**
+     * Initialize banner ad in the editor area
+     */
+    private void initializeBannerAd() {
+        if (bannerAdContainer == null) return;
+
+        // Remove existing ad if any
+        if (bannerAdView != null) {
+            bannerAdContainer.removeView(bannerAdView);
+            bannerAdView.destroy();
+            bannerAdView = null;
+        }
+
+        // Wait for the layout to be rendered to get the exact width of the drop area
+        bannerAdContainer.post(() -> {
+            // Get the actual width of the drop area (same as the shape container width)
+            final int adWidth;
+            int tempWidth = bannerAdContainer.getWidth();
+            if (tempWidth == 0) {
+                // If container width is still 0, calculate it based on screen width minus palette width
+                adWidth = displayWidth - (int) (120.0F * f); // 120dp palette width
+            } else {
+                adWidth = tempWidth;
+            }
+
+            bannerAdView = new AdView(getContext());
+            bannerAdView.setAdUnitId("ca-app-pub-6598765502914364/1327212196");
+
+            // Calculate ad size to prevent cutting
+            float density = getResources().getDisplayMetrics().density;
+            int adWidthDp = Math.max(1, (int) (adWidth / density));
+            
+            // Use adaptive banner size to prevent cutting
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(getContext(), adWidthDp);
+            bannerAdView.setAdSize(adSize);
+
+            // Set margins to prevent cutting
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMargins((int) (f * 10f), 0, (int) (f * 10f), (int) (f * 10f)); // 10dp margins
+            bannerAdView.setLayoutParams(params);
+
+            bannerAdContainer.addView(bannerAdView);
+            
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAdView.loadAd(adRequest);
+            
+            // Show the banner container
+            bannerAdContainer.setVisibility(View.VISIBLE);
+        });
+    }
+
+    /**
+     * Show banner ad
+     */
+    public void showBannerAd() {
+        if (bannerAdContainer != null) {
+            bannerAdContainer.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Hide banner ad
+     */
+    public void hideBannerAd() {
+        if (bannerAdContainer != null) {
+            bannerAdContainer.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Destroy banner ad
+     */
+    public void destroyBannerAd() {
+        if (bannerAdView != null) {
+            bannerAdView.destroy();
+            bannerAdView = null;
         }
     }
 }

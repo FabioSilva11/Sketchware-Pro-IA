@@ -25,8 +25,12 @@
             android:id="@+id/body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Soon, Sketchware will display ads in a few places (like banners).\n\n🔹 Ads will be unobtrusive and won’t interfere with usability.\n🔹 100% of the revenue will be reinvested into Sketchware to ensure continuous improvements."
+            android:lineSpacingExtra="4dp"
+            android:padding="8dp"
+            android:text="📢 Soon, Sketchware will start displaying some ads in specific areas of the app, such as banners or small sections within the interface.\n\n🔹 These ads will be unobtrusive and carefully placed so they won’t disrupt your experience.\n🔹 Navigation, project creation, and editing will continue to run smoothly without interruptions.\n🔹 100% of the revenue generated from ads will be reinvested back into Sketchware.\n🔹 This means continuous improvements, bug fixes, new features, and long-term maintenance of the app for the whole community.\n\n💡 Our goal is to ensure the sustainability of the project and keep providing you with more resources to develop your apps with freedom and quality."
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+
+
     </ScrollView>
 
     <LinearLayout
