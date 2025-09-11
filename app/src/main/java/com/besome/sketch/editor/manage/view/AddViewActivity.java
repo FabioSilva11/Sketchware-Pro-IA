@@ -34,7 +34,7 @@ import pro.sketchware.databinding.ManageScreenActivityAddTempBinding;
 public class AddViewActivity extends BaseAppCompatActivity {
 
     private YB nameValidator;
-    private boolean featureStatusBar, featureToolbar, featureFab, featureDrawer;
+    private boolean featureStatusBar, featureToolbar, featureFab, featureDrawer, featureFlagSecure;
     private int requestCode;
     private ProjectFileBean projectFileBean;
     private String P;
@@ -87,6 +87,9 @@ public class AddViewActivity extends BaseAppCompatActivity {
                 } else {
                     slideOutHorizontally(binding.previewFab, "right");
                 }
+            }
+            case 4 -> {
+                // No visual preview change for FLAG_SECURE
             }
         }
     }
@@ -154,6 +157,7 @@ public class AddViewActivity extends BaseAppCompatActivity {
         featureStatusBar = (option & ProjectFileBean.OPTION_ACTIVITY_FULLSCREEN) != ProjectFileBean.OPTION_ACTIVITY_FULLSCREEN;
         featureFab = (option & ProjectFileBean.OPTION_ACTIVITY_FAB) == ProjectFileBean.OPTION_ACTIVITY_FAB;
         featureDrawer = (option & ProjectFileBean.OPTION_ACTIVITY_DRAWER) == ProjectFileBean.OPTION_ACTIVITY_DRAWER;
+        featureFlagSecure = (option & ProjectFileBean.OPTION_ACTIVITY_FLAG_SECURE) == ProjectFileBean.OPTION_ACTIVITY_FLAG_SECURE;
     }
 
     private void initializeItems() {
@@ -162,6 +166,7 @@ public class AddViewActivity extends BaseAppCompatActivity {
         featureItems.add(new FeatureItem(1, R.drawable.ic_toolbar_color_48dp, "Toolbar", featureToolbar));
         featureItems.add(new FeatureItem(2, R.drawable.ic_drawer_color_48dp, "Drawer", featureDrawer));
         featureItems.add(new FeatureItem(3, R.drawable.fab_color, "FAB", featureFab));
+        featureItems.add(new FeatureItem(4, R.drawable.ic_mtrl_shield_lock, "No screenshots/video", featureFlagSecure));
         featuresAdapter.notifyDataSetChanged();
     }
 
@@ -233,6 +238,9 @@ public class AddViewActivity extends BaseAppCompatActivity {
                 if (featureDrawer) {
                     options = options | ProjectFileBean.OPTION_ACTIVITY_DRAWER;
                 }
+                if (featureFlagSecure) {
+                    options = options | ProjectFileBean.OPTION_ACTIVITY_FLAG_SECURE;
+                }
                 projectFileBean.options = options;
                 Intent intent = new Intent();
                 intent.putExtra("project_file", projectFileBean);
@@ -242,6 +250,9 @@ public class AddViewActivity extends BaseAppCompatActivity {
             } else if (isValid(nameValidator)) {
                 String var4 = Helper.getText(binding.edName) + getSuffix(binding.viewTypeSelector);
                 ProjectFileBean projectFileBean = new ProjectFileBean(ProjectFileBean.PROJECT_FILE_TYPE_ACTIVITY, var4, getSelectedButtonIndex(binding.screenOrientationSelector), getSelectedButtonIndex(binding.keyboardSettingsSelector), featureToolbar, !featureStatusBar, featureFab, featureDrawer);
+                if (featureFlagSecure) {
+                    projectFileBean.options |= ProjectFileBean.OPTION_ACTIVITY_FLAG_SECURE;
+                }
                 Intent intent = new Intent();
                 intent.putExtra("project_file", projectFileBean);
                 if (P != null) {
@@ -349,6 +360,7 @@ public class AddViewActivity extends BaseAppCompatActivity {
                 case 1 -> featureToolbar = featureItem.isEnabled;
                 case 2 -> featureDrawer = featureItem.isEnabled;
                 case 3 -> featureFab = featureItem.isEnabled;
+                case 4 -> featureFlagSecure = featureItem.isEnabled;
             }
 
             if (featureFab || featureDrawer) {

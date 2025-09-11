@@ -45,8 +45,15 @@ public class ViewSelectorActivity extends BaseAppCompatActivity {
     private FileSelectorPopupSelectXmlBinding binding;
 
     private int getViewIcon(int i) {
-        String replace = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
-        return getApplicationContext().getResources().getIdentifier("activity_" + replace, "drawable", getApplicationContext().getPackageName());
+        // Try 5-bit (including FLAG_SECURE as highest bit) e.g., activity_00010
+        String fiveBits = String.format("%5s", Integer.toBinaryString(i)).replace(' ', '0');
+        int resId = getApplicationContext().getResources().getIdentifier("activity_" + fiveBits, "drawable", getApplicationContext().getPackageName());
+        if (resId != 0) return resId;
+
+        // Fallback: legacy 4-bit icons (mask to lower 4 bits)
+        int legacy = i & 0x0F;
+        String fourBits = String.format("%4s", Integer.toBinaryString(legacy)).replace(' ', '0');
+        return getApplicationContext().getResources().getIdentifier("activity_" + fourBits, "drawable", getApplicationContext().getPackageName());
     }
 
     @Override

@@ -359,6 +359,10 @@ public class Jx {
             sb.append("protected void onCreate(Bundle _savedInstanceState) {").append(EOL);
             sb.append("super.onCreate(_savedInstanceState);").append(EOL);
 
+            if (projectFileBean.hasActivityOption(ProjectFileBean.OPTION_ACTIVITY_FLAG_SECURE)) {
+                sb.append("getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);").append(EOL);
+            }
+
             if (isViewBindingEnabled) {
                 sb.append("binding = ").append(bindingName).append(".inflate(getLayoutInflater());").append(EOL);
                 sb.append("setContentView(binding.getRoot());").append(EOL);
