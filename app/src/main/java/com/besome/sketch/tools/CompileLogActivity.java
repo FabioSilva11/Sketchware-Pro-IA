@@ -3,6 +3,8 @@ package com.besome.sketch.tools;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -24,6 +26,19 @@ import mod.jbk.diagnostic.CompileErrorSaver;
 import mod.jbk.util.AddMarginOnApplyWindowInsetsListener;
 import pro.sketchware.databinding.CompileLogBinding;
 import pro.sketchware.utility.SketchwareUtil;
+import pro.sketchware.ai.GroqClient;
+
+import org.json.JSONException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CompileLogActivity extends BaseAppCompatActivity {
 
@@ -34,6 +49,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
     private SharedPreferences logViewerPreferences;
 
     private CompileLogBinding binding;
+    private String lastLogRaw;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -108,6 +124,9 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
         binding.formatButton.setOnClickListener(v -> options.show());
 
+        // Explain with AI
+        binding.aiExplainButton.setOnClickListener(v -> explainWithAi());
+
         applyLogViewerPreferences();
 
         setErrorText();
@@ -125,6 +144,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         binding.optionsLayout.setVisibility(View.VISIBLE);
         binding.noContentLayout.setVisibility(View.GONE);
 
+        lastLogRaw = error;
         binding.tvCompileLog.setText(CompileLogHelper.getColoredLogs(this, error));
         binding.tvCompileLog.setTextIsSelectable(true);
     }
@@ -200,5 +220,163 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void explainWithAi() {
+        if (lastLogRaw == null || lastLogRaw.trim().isEmpty()) {
+            SketchwareUtil.toastError("No log to explain.");
+            return;
+        }
+
+        var loadingDialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Analyzing log with AI")
+                .setMessage("Please wait…")
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+
+        new Thread(() -> {
+            try {
+                String scId = getIntent().getStringExtra("sc_id");
+                String fileContext = tryGetRelatedFileContent(lastLogRaw, scId);
+
+                String system = "You are an expert Android build and Gradle error explainer. " +
+                        "Given a raw compile log, identify the root cause in plain language, " +
+                        "then provide clear, step-by-step fixes. If multiple issues exist, list them. " +
+                        "Prefer actionable instructions (what file to open, code lines to change, Gradle dependencies to add).";
+                String user = "Here is the compile log:\n\n" + lastLogRaw + "\n\n" +
+                        (fileContext != null ? ("Related file content for context:\n" + fileContext + "\n\n") : "") +
+                        "Return in this format:\n" +
+                        "1) Summary of cause\n2) How to fix (steps)\n3) Extra tips (if any).";
+
+                var client = new GroqClient();
+                var messages = GroqClient.Message.of(system, user);
+                String reply = client.chat(messages);
+
+                runOnUiThread(() -> {
+                    loadingDialog.dismiss();
+                    if (reply == null || reply.trim().isEmpty()) {
+                        SketchwareUtil.toastError("AI returned no content");
+                        return;
+                    }
+                    String plain = stripMarkdown(reply);
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("AI explanation")
+                            .setMessage(plain)
+                            .setPositiveButton("Copy", (d, w) -> {
+                                ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                if (cm != null) {
+                                    cm.setPrimaryClip(ClipData.newPlainText("ai_explanation", plain));
+                                    SketchwareUtil.toast("Copied to clipboard");
+                                }
+                            })
+                            .setNegativeButton("Close", null)
+                            .show();
+                });
+            } catch (JSONException | java.io.IOException e) {
+                runOnUiThread(() -> {
+                    loadingDialog.dismiss();
+                    String msg = String.valueOf(e.getMessage());
+                    if (msg != null && (msg.contains("Missing Groq API key") || msg.contains("Groq API error"))) {
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("AI not configured")
+                                .setMessage(msg)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show();
+                    } else {
+                        SketchwareUtil.toastError("AI error: " + e.getMessage());
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private String stripMarkdown(String input) {
+        // Remove code fences
+        String out = input.replaceAll("(?s)```+\\w*\\n", "");
+        out = out.replace("```", "");
+        // Remove inline code backticks
+        out = out.replace("`", "");
+        // Replace headings with plain text
+        out = out.replaceAll("(?m)^#{1,6}\\s*", "");
+        // Bold/italic markers
+        out = out.replace("**", "").replace("__", "").replace("*", "").replace("_", "");
+        // Links: [text](url) -> text (url)
+        out = out.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1 ($2)");
+        // Bullets: keep dashes
+        return out.trim();
+    }
+
+    private String tryGetRelatedFileContent(String log, String scId) {
+        try {
+            List<String> candidates = extractFilePathCandidates(log, scId);
+            for (String p : candidates) {
+                if (p == null) continue;
+                File f = new File(p);
+                if (f.exists() && f.isFile() && f.length() > 0) {
+                    return readTextFile(p);
+                }
+            }
+        } catch (Exception ignored) { }
+        return null;
+    }
+
+    private List<String> extractFilePathCandidates(String log, String scId) {
+        List<String> paths = new ArrayList<>();
+        // 1) Absolute paths in log
+        Matcher abs = Pattern.compile("(/[^\\s:]+\\.(?:java|kt|xml))", Pattern.CASE_INSENSITIVE).matcher(log);
+        while (abs.find()) paths.add(abs.group(1));
+
+        // 2) javac format: SomeFile.java:123:
+        Matcher javac = Pattern.compile("([A-Za-z0-9_./\\\\-]+\\.(?:java|kt|xml)):\\d+", Pattern.CASE_INSENSITIVE).matcher(log);
+        while (javac.find()) paths.add(javac.group(1));
+
+        // 3) Stacktrace: (Class.java:123) with package
+        Matcher stack = Pattern.compile("at\\s+([a-zA-Z_][\\w.]+)\\([A-Za-z0-9_]+\\.(java|kt):\\d+\\)").matcher(log);
+        if (stack.find()) {
+            String pkg = stack.group(1);
+            String file = stack.group(2) != null ? stack.group(2) : "";
+        }
+
+        // 4) If relative path: try common Sketchware project locations
+        List<String> normalized = new ArrayList<>();
+        for (String p : paths) {
+            if (p == null) continue;
+            String np = p.replace("\\\\", "/");
+            normalized.add(np);
+        }
+
+        // 5) Try known roots
+        if (scId != null) {
+            String base = "/storage/emulated/0/.sketchware/mysc/" + scId + "/app/src/main/";
+            List<String> tryRoots = new ArrayList<>();
+            tryRoots.add(base + "java/");
+            tryRoots.add(base + "kotlin/");
+            tryRoots.add(base + "res/");
+
+            // If we only have filename, try searching under these roots
+            Matcher onlyName = Pattern.compile("([A-Za-z0-9_]+\\.(?:java|kt|xml))").matcher(log);
+            while (onlyName.find()) {
+                String name = onlyName.group(1);
+                for (String r : tryRoots) {
+                    paths.add(r + name);
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    private String readTextFile(String path) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
