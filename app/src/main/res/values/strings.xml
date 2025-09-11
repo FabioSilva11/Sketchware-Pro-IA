@@ -2307,8 +2307,8 @@ Please try again later"</string>
     <!--  links  -->
     <string name="link_github_release">https://github.com/FabioSilva11/Sketchware-Pro-IA/releases</string>
     <string name="link_docs_url">https://docs.sketchware.pro</string>
-    <string name="link_ideas_url">https://t.me/+8rUUdcvjZxk0YTIx</string>
-    <string name="link_telegram_invite">https://t.me/+8rUUdcvjZxk0YTIx</string>
+    <string name="link_ideas_url">https://t.me/sketcware_ia</string>
+    <string name="link_telegram_invite">https://t.me/sketcware_ia</string>
     <string name="link_about_team">https://sketchware-pro.github.io/Sketchware-Pro/about.json</string>
     <string name="link_github_commits_url"><![CDATA[https://api.github.com/repos/FabioSilva11/Sketchware-Pro-IA/commits?per_page=%s&page=%s]]></string>
     <string name="github_api_error_message">Something went wrong. Please wait and try again.</string>

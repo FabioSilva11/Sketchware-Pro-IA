@@ -6,8 +6,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import pro.sketchware.activities.main.fragments.projects.ProjectsFragment;
-import pro.sketchware.activities.main.fragments.loja.LojaFragment;
-import pro.sketchware.activities.main.fragments.freelance.FreelanceFeedFragment;
+import pro.sketchware.activities.main.fragments.ChatBotFragment;
+import pro.sketchware.activities.main.fragments.ZabbarFragment;
 
 public class MainPagerAdapter extends FragmentStateAdapter {
 
@@ -22,9 +22,9 @@ public class MainPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return new ProjectsFragment();
             case 1:
-                return new FreelanceFeedFragment();
+                return ZabbarFragment.newInstance();
             case 2:
-                return new LojaFragment();
+                return ChatBotFragment.newInstance();  
             default:
                 return new ProjectsFragment();
         }
@@ -32,6 +32,7 @@ public class MainPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 3; // Projects, Freelance, Loja
+        // Projects, ChatBot, Zabbar
+        return 3;
     }
 }

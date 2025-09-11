@@ -285,11 +285,7 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         setupTabs();
 
         // Navegar para a aba correta
-        if (currentNavItemId == R.id.item_projects) {
-            binding.viewPager.setCurrentItem(0);
-        } else if (currentNavItemId == R.id.item_loja) {
-            binding.viewPager.setCurrentItem(1);
-        }
+        binding.viewPager.setCurrentItem(0);
     }
 
     private void maybeShowAdsNoticeOnce() {
@@ -371,10 +367,10 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                     tab.setText("Projects");
                     break;
                 case 1:
-                    tab.setText("Freela");
+                    tab.setText("Import/Export");
                     break;
                 case 2:
-                    tab.setText("Loja");
+                    tab.setText("ChatBot");
                     break;
             }
         }).attach();
@@ -389,10 +385,10 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                         currentNavItemId = R.id.item_projects;
                         break;
                     case 1:
-                        currentNavItemId = R.id.item_loja; // reuse id for now
+                        currentNavItemId = R.id.item_projects; // não há ids separados
                         break;
                     case 2:
-                        currentNavItemId = R.id.item_loja;
+                        currentNavItemId = R.id.item_projects;
                         break;
                 }
             }

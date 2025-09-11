@@ -84,7 +84,7 @@ Cada contribuição aceita será registrada na atividade "Sobre a equipe", usand
 
 Quer conversar conosco, discutir mudanças ou apenas bater papo? Temos um canal no Telegram para isso.
 
-[Junte-se ao nosso canal do Telegram!](https://t.me/+8rUUdcvjZxk0YTIx)
+[Junte-se ao nosso canal do Telegram!](https://t.me/sketcware_ia)
 
 ---
 
