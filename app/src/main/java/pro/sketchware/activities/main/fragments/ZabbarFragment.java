@@ -30,7 +30,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment; // 변경
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -60,10 +63,12 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-// AppCompatActivity এর পরিবর্তে Fragment ব্যবহার করা হয়েছে
+// Fragment hosting the Zabbar screen list with import/export utilities
 public class ZabbarFragment extends Fragment {
 
     private ListView listView;
+    private ProjectAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private final ArrayList<HashMap<String, Object>> projectList = new ArrayList<>();
     private String currentScId = "";
     private String currentBasePath = "";
@@ -83,14 +88,14 @@ public class ZabbarFragment extends Fragment {
     private ActivityResultLauncher<Intent> exportLauncher;
     private ActivityResultLauncher<Intent> importLauncher;
 
-    // Fragment এর জন্য একটি খালি constructor দরকার
+    // Empty constructor required for Fragment
     public ZabbarFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ActivityResultLauncher গুলোকে onCreate এ রেজিস্টার করা হয়
+        // Register ActivityResultLaunchers in onCreate
         exportLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), res -> {
             if (res.getResultCode() == Activity.RESULT_OK && res.getData() != null) {
                 Uri uri = res.getData().getData();
@@ -125,21 +130,29 @@ public class ZabbarFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // UI এলিমেন্টগুলো এখানে তৈরি করা হবে এবং root view রিটার্ন করা হবে
-        // 'this' এর পরিবর্তে 'requireContext()' ব্যবহার করা হয়েছে
+        // Create UI elements here and return the root view
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
 
-        
-        TextView hint = new TextView(requireContext());
-        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        hint.setTextColor(0xFF555555);
-        hint.setPadding(dp(0), dp(0), dp(0), dp(0));
-        root.addView(hint);
+        // Empty view message
+        TextView empty = new TextView(requireContext());
+        empty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        empty.setTextColor(0xFF777777);
+        empty.setText("No projects. Pull to refresh.");
+        empty.setPadding(dp(16), dp(24), dp(16), dp(24));
+        empty.setVisibility(View.GONE);
+        root.addView(empty);
+
+        // Wrap ListView with SwipeRefreshLayout for pull-to-refresh
+        swipeRefreshLayout = new SwipeRefreshLayout(requireContext());
+        swipeRefreshLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         listView = new ListView(requireContext());
-        listView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-        root.addView(listView);
+        listView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        listView.setEmptyView(empty);
+
+        swipeRefreshLayout.addView(listView);
+        root.addView(swipeRefreshLayout);
 
         // setContentView এর পরিবর্তে view রিটার্ন করা হয়েছে
         return root;
@@ -150,11 +163,23 @@ public class ZabbarFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // View তৈরি হয়ে যাওয়ার পর এই মেথড কল হয়
-        // এখানে View সম্পর্কিত কাজগুলো করা হয়
+        // After view creation, set up data and interactions
         loadProjects();
-        listView.setAdapter(new ProjectAdapter());
+        adapter = new ProjectAdapter();
+        listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, v, position, id) -> openProjectActions(projectList.get(position)));
+        if (adapter != null) adapter.notifyDataSetChanged();
+
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setOnRefreshListener(() -> {
+                try {
+                    loadProjects();
+                    if (adapter != null) adapter.notifyDataSetChanged();
+                } finally {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
+        }
     }
 
 
@@ -177,7 +202,7 @@ public class ZabbarFragment extends Fragment {
                 if (map != null) {
                     map.putIfAbsent("sc_id", scId);
                     boolean useCustomIcon = "true".equals(String.valueOf(map.get("custom_icon")));
-                    // 'this' এর পরিবর্তে 'requireContext()' ব্যবহার
+                    // Use requireContext()
                     Drawable iconDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.app_ico);
 
                     if (useCustomIcon) {
@@ -217,6 +242,7 @@ public class ZabbarFragment extends Fragment {
 
         @Override
         public View getView(int pos, View convertView, ViewGroup parent) {
+            ViewHolder holder;
             if (convertView == null) {
                 // এখানে parent.getContext() ব্যবহার করা সঠিক
                 LinearLayout row = new LinearLayout(parent.getContext());
@@ -228,7 +254,6 @@ public class ZabbarFragment extends Fragment {
                 LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(dp(48), dp(48));
                 ip.rightMargin = dp(12);
                 icon.setLayoutParams(ip);
-                icon.setId(101);
                 icon.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 row.addView(icon);
 
@@ -236,22 +261,40 @@ public class ZabbarFragment extends Fragment {
                 col.setOrientation(LinearLayout.VERTICAL);
                 col.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-                TextView title = makeText(16, 0xFF111111, true); title.setId(102);
-                TextView sub = makeText(13, 0xFF666666, false); sub.setId(103);
-                TextView sc = makeText(12, 0xFF888888, false); sc.setId(104);
+                TextView title = makeText(16, 0xFF111111, true);
+                TextView sub = makeText(13, 0xFF666666, false);
+                TextView sc = makeText(12, 0xFF888888, false);
 
                 col.addView(title); col.addView(sub); col.addView(sc);
                 row.addView(col);
+
+                holder = new ViewHolder(icon, title, sub, sc);
+                row.setTag(holder);
                 convertView = row;
+            } else {
+                holder = (ViewHolder) convertView.getTag();
             }
 
             HashMap<String, Object> m = projectList.get(pos);
-            ((TextView) convertView.findViewById(102)).setText(String.valueOf(m.getOrDefault("my_app_name", "(no name)")));
-            ((TextView) convertView.findViewById(103)).setText(String.valueOf(m.getOrDefault("my_sc_pkg_name", "")));
-            ((TextView) convertView.findViewById(104)).setText("sc_id: " + m.getOrDefault("sc_id", ""));
-            ((ImageView) convertView.findViewById(101)).setImageDrawable((Drawable) m.get("icon"));
+            holder.title.setText(String.valueOf(m.getOrDefault("my_app_name", "(no name)")));
+            holder.sub.setText(String.valueOf(m.getOrDefault("my_sc_pkg_name", "")));
+            holder.scId.setText("sc_id: " + m.getOrDefault("sc_id", ""));
+            holder.icon.setImageDrawable((Drawable) m.get("icon"));
 
             return convertView;
+        }
+
+        class ViewHolder {
+            final ImageView icon;
+            final TextView title;
+            final TextView sub;
+            final TextView scId;
+            ViewHolder(ImageView icon, TextView title, TextView sub, TextView scId) {
+                this.icon = icon;
+                this.title = title;
+                this.sub = sub;
+                this.scId = scId;
+            }
         }
     }
 
@@ -259,54 +302,46 @@ public class ZabbarFragment extends Fragment {
         currentScId = String.valueOf(item.get("sc_id"));
         currentBasePath = FileUtil.getExternalStorageDir() + "/.sketchware/data/" + currentScId;
 
-        // 'this' এর পরিবর্তে 'requireContext()' ব্যবহার
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Project " + currentScId)
-            .setItems(new String[]{"Import", "Export"}, (dialog, which) -> {
-                pendingAction = (which == 0) ? 2 : 1;
-                pickTypeThenContinue();
-            })
-            .setNegativeButton("Close", null)
-            .show();
+        // Custom dialog (XML) for choosing action
+        showRadioSelectorDialog("Project " + currentScId,
+                new String[]{"Import", "Export"},
+                index -> {
+                    pendingAction = (index == 0) ? 2 : 1;
+                    pickTypeThenContinue();
+                });
     }
 
     private void pickTypeThenContinue() {
-        // 'this' এর পরিবর্তে 'requireContext()' ব্যবহার
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle((pendingAction == 2) ? "Import: Choose type" : "Export: Choose type")
-            .setItems(new String[]{"Activity", "Custom"}, (dialog, which) -> {
-                pendingType = (which == 0) ? TYPE_ACTIVITY : TYPE_CUSTOM;
+        // Custom dialog (XML) for choosing type
+        String title = (pendingAction == 2) ? "Import: Choose type" : "Export: Choose type";
+        showRadioSelectorDialog(title, new String[]{"Activity", "Custom"}, which -> {
+            pendingType = (which == 0) ? TYPE_ACTIVITY : TYPE_CUSTOM;
 
-                if (pendingAction == 1) { // Export
-                    ArrayList<String> names = listScreenNamesFromFile(pendingType == TYPE_ACTIVITY);
-                    if (names.isEmpty()) {
-                        toast("No " + ((pendingType == TYPE_ACTIVITY) ? "Activity" : "Custom") + " found.");
-                        return;
-                    }
-
-                    // 'ZabbarActivity.this' এর পরিবর্তে 'requireContext()' ব্যবহার
-                    new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Select " + ((pendingType == TYPE_ACTIVITY) ? "Activity" : "Custom"))
-                        .setItems(names.toArray(new CharSequence[0]), (dialog2, idx) -> doExport(names.get(idx)))
-                        .setNegativeButton("Cancel", null)
-                        .show();
-
-                } else { // Import
-                    Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                        .addCategory(Intent.CATEGORY_OPENABLE)
-                        .setType("*/*")
-                        .putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
-                            "application/octet-stream", "application/zip", "text/plain", "application/json"})
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                    importLauncher.launch(Intent.createChooser(i, "Select a file to import"));
+            if (pendingAction == 1) { // Export
+                ArrayList<String> names = listScreenNamesFromFile(pendingType == TYPE_ACTIVITY);
+                if (names.isEmpty()) {
+                    toast("No " + ((pendingType == TYPE_ACTIVITY) ? "Activity" : "Custom") + " found.");
+                    return;
                 }
-            })
-            .setNegativeButton("Back", null)
-            .show();
+
+                // Custom dialog for item selection using the same XML layout
+                showRadioSelectorDialog("Select " + ((pendingType == TYPE_ACTIVITY) ? "Activity" : "Custom"),
+                        names.toArray(new String[0]), idx -> doExport(names.get(idx)));
+
+            } else { // Import
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("*/*")
+                    .putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                        "application/octet-stream", "application/zip", "text/plain", "application/json"})
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                importLauncher.launch(Intent.createChooser(i, "Select a file to import"));
+            }
+        });
     }
     
-    // বাকি মেথডগুলো অপরিবর্তিত থাকবে, শুধু যেখানে Context এর প্রয়োজন সেখানে পরিবর্তন করা হয়েছে
+    // Other methods remain; only context usage is modernized where necessary
     
     private void doExport(String selectedName) {
     try {
@@ -322,7 +357,7 @@ public class ZabbarFragment extends Fragment {
         addSectionIfExists(allLines, h3, out);
 
         if (pendingType == TYPE_ACTIVITY) {
-            // XML base → Java base (e.g. main → MainActivity.java)
+            // XML base → Java base (e.g., main → MainActivity.java)
             String javaFileName = toJavaFromXmlBase(selectedName);        // MainActivity.java
             String javaBaseNoExt = javaFileName.substring(0, javaFileName.length() - 5); // MainActivity
 
@@ -354,29 +389,29 @@ public class ZabbarFragment extends Fragment {
 
         // ---- Embed referenced images from this view (base64) ----
         try {
-            // শুধু current screen-এর view সেকশনগুলো নিয়ে কাজ
+            // Work only with current screen's view sections
             ArrayList<String> viewOnly = new ArrayList<>();
             addSectionIfExists(allLines, h1, viewOnly);
             addSectionIfExists(allLines, h2, viewOnly);
             addSectionIfExists(allLines, h3, viewOnly);
 
-            ArrayList<String> imgNames = extractImageNames(viewOnly); // আপনার বিদ্যমান হেল্পার
+            ArrayList<String> imgNames = extractImageNames(viewOnly);
             if (!imgNames.isEmpty()) {
-                // ডুপ্লিকেট বাদ
+                // Remove duplicates
                 java.util.LinkedHashSet<String> unique = new java.util.LinkedHashSet<>(imgNames);
                 String imagesRoot = FileUtil.getExternalStorageDir() + "/.sketchware/resources/images/" + currentScId + "/";
 
                 for (String n : unique) {
                     String fname = n.endsWith(".png") ? n : (n + ".png");
                     File f = new File(imagesRoot + fname);
-                    if (!f.exists()) continue; // না পেলে স্কিপ
+                    if (!f.exists()) continue; // Skip if not found
 
                     byte[] bytes = FileUtil.readAll(f);
                     String b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
-                    // সেকশন হেডার: @image:NAME.png
+                    // Section header: @image:NAME.png
                     out.add("@image:" + fname);
-                    // সেকশন বডি: base64
+                    // Section body: base64
                     out.add(b64);
                 }
             }
@@ -489,17 +524,17 @@ public class ZabbarFragment extends Fragment {
         for (Section s : sections) {
             if (s.header != null && s.header.startsWith("@image:")) {
                 try {
-                    String fname = s.header.substring("@image:".length()).trim(); // e.g. "aaa.png"
+                    String fname = s.header.substring("@image:".length()).trim(); // e.g., "aaa.png"
                     if (TextUtils.isEmpty(fname)) continue;
 
-                    // Base64 বডি (একাধিক লাইন থাকলেও join করা হবে)
+                    // Base64 body (join even if multiple lines)
                     StringBuilder sb = new StringBuilder();
                     for (String line : s.body) sb.append(line.trim());
                     if (sb.length() == 0) continue;
 
                     byte[] bytes = Base64.decode(sb.toString(), Base64.DEFAULT);
 
-                    // গন্তব্য: গ্লোবাল ইমেজ স্টোর (Sketchware যা দেখে)
+                    // Destination: global image store (visible to Sketchware)
                     String imagesRoot = FileUtil.getExternalStorageDir() + "/.sketchware/resources/images/" + currentScId + "/";
                     new File(imagesRoot).mkdirs();
 
@@ -509,7 +544,7 @@ public class ZabbarFragment extends Fragment {
                         fos.flush();
                     }
 
-                    // resource তালিকায় @images এন্ট্রি নিশ্চিত করুন
+                    // Ensure an @images entry exists in resource index
                     updateResourceFile(resLines, fname);
                     anyImageWritten = true;
 
@@ -827,6 +862,49 @@ public class ZabbarFragment extends Fragment {
             }
             return bos.toByteArray();
         }
+    }
+
+    // Simple callback for radio dialog selection
+    private interface OnIndexSelected { void onSelected(int index); }
+
+    // Show a custom XML-based radio selection dialog using property_popup_selector_single
+    private void showRadioSelectorDialog(String title, String[] items, OnIndexSelected onIndexSelected) {
+        View custom = LayoutInflater.from(requireContext()).inflate(R.layout.property_popup_selector_single, null, false);
+        RadioGroup group = custom.findViewById(R.id.rg_content);
+        if (group == null) {
+            // Fallback to a basic dialog if layout is not present
+            new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(title)
+                .setItems(items, (d, which) -> { if (onIndexSelected != null) onIndexSelected.onSelected(which); })
+                .setNegativeButton(R.string.common_word_cancel, null)
+                .show();
+            return;
+        }
+
+        // Build radio options
+        for (int i = 0; i < items.length; i++) {
+            RadioButton rb = new RadioButton(requireContext());
+            rb.setText(items[i]);
+            rb.setTag(i);
+            group.addView(rb);
+        }
+
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setView(custom)
+            .setPositiveButton(R.string.common_word_select, (dialog, which) -> {
+                int selectedIndex = 0;
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    View child = group.getChildAt(i);
+                    if (child instanceof RadioButton && ((RadioButton) child).isChecked()) {
+                        selectedIndex = (int) child.getTag();
+                        break;
+                    }
+                }
+                if (onIndexSelected != null) onIndexSelected.onSelected(selectedIndex);
+            })
+            .setNegativeButton(R.string.common_word_cancel, null)
+            .show();
     }
 
     private String lastName(String path) {
