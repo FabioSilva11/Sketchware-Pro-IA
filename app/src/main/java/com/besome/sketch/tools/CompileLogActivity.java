@@ -557,11 +557,12 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
 
     private void errorChecker(String errorLog) {
-        // parse error log -> find candidate names
-        Set<String> errorVars = collectNamesFromErrorLog(errorLog);
+        // Use AI to analyze error and extract smart search keywords
+        List<String> smartKeywords = extractSmartKeywords(errorLog);
+        ErrorType errorType = analyzeErrorType(errorLog);
 
-        if (errorVars.isEmpty()) {
-            Toast.makeText(this, "No unresolved names found in error log", Toast.LENGTH_SHORT).show();
+        if (smartKeywords.isEmpty() && errorType == ErrorType.UNKNOWN) {
+            Toast.makeText(this, "No identifiable errors found in log", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -572,16 +573,13 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                 return;
             }
 
-            List<BlockMatch> matches = findMatchingBlocks(decrypted, errorVars);
+            // Convert smart keywords to a set for compatibility
+            Set<String> keywordSet = new HashSet<>(smartKeywords);
+            List<BlockMatch> matches = findMatchingBlocks(decrypted, keywordSet, errorType);
 
             if (matches.isEmpty()) {
-                // show friendly dialog explaining scanned names (Material3)
-                String scanned = errorVars.toString();
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle("No matches")
-                        .setMessage("Scanned Name " + scanned + "\nNo matching blocks found in logic.")
-                        .setPositiveButton("OK", null)
-                        .show();
+                // Show smart guidance with AI-extracted keywords
+                showSmartNoMatchesDialog(smartKeywords, errorType, errorLog);
                 return;
             }
 
@@ -614,7 +612,270 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         Matcher m3 = p3.matcher(errorLog);
         while (m3.find()) names.add(m3.group(1));
 
+        // Add patterns from CompileLogHelper for consistency
+        // ERROR pattern: ----------\n([0-9]+\. ERROR)
+        Pattern p4 = Pattern.compile("----------\\n([0-9]+\\. ERROR)", Pattern.MULTILINE);
+        Matcher m4 = p4.matcher(errorLog);
+        while (m4.find()) names.add("ERROR_" + m4.group(1));
+
+        // WARNING pattern: ----------\n([0-9]+\. WARNING)
+        Pattern p5 = Pattern.compile("----------\\n([0-9]+\\. WARNING)", Pattern.MULTILINE);
+        Matcher m5 = p5.matcher(errorLog);
+        while (m5.find()) names.add("WARNING_" + m5.group(1));
+
+        // XML error pattern: error:
+        Pattern p6 = Pattern.compile("error:", Pattern.MULTILINE);
+        Matcher m6 = p6.matcher(errorLog);
+        while (m6.find()) names.add("XML_ERROR");
+
+        // Additional common error patterns
+        // Symbol not found
+        Pattern p7 = Pattern.compile("symbol:\\s+([A-Za-z0-9_]+)", Pattern.CASE_INSENSITIVE);
+        Matcher m7 = p7.matcher(errorLog);
+        while (m7.find()) names.add(m7.group(1));
+
+        // Package not found
+        Pattern p8 = Pattern.compile("package\\s+([A-Za-z0-9_.]+)\\s+does not exist", Pattern.CASE_INSENSITIVE);
+        Matcher m8 = p8.matcher(errorLog);
+        while (m8.find()) names.add(m8.group(1));
+
+        // Class not found
+        Pattern p9 = Pattern.compile("class\\s+([A-Za-z0-9_.]+)\\s+not found", Pattern.CASE_INSENSITIVE);
+        Matcher m9 = p9.matcher(errorLog);
+        while (m9.find()) names.add(m9.group(1));
+
+        // Import errors
+        Pattern p10 = Pattern.compile("import\\s+([A-Za-z0-9_.]+);", Pattern.CASE_INSENSITIVE);
+        Matcher m10 = p10.matcher(errorLog);
+        while (m10.find()) names.add(m10.group(1));
+
         return names;
+    }
+
+    // AI-powered smart keyword extraction for better block matching
+    private List<String> extractSmartKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        if (errorLog == null) return keywords;
+        
+        String lowerError = errorLog.toLowerCase();
+        
+        // For syntax errors, extract specific problematic elements
+        if (lowerError.contains("string literal is not properly closed")) {
+            // Look for the problematic string or variable name
+            keywords.addAll(extractStringLiteralKeywords(errorLog));
+        }
+        
+        // For variable errors, extract the actual variable names
+        if (lowerError.contains("cannot be resolved")) {
+            keywords.addAll(extractVariableKeywords(errorLog));
+        }
+        
+        // For XML errors, extract layout/view names
+        if (lowerError.contains("xml") && lowerError.contains("error")) {
+            keywords.addAll(extractXMLKeywords(errorLog));
+        }
+        
+        // For method errors, extract method names
+        if (lowerError.contains("method") && lowerError.contains("not found")) {
+            keywords.addAll(extractMethodKeywords(errorLog));
+        }
+        
+        // For import errors, extract package/class names
+        if (lowerError.contains("package") || lowerError.contains("import")) {
+            keywords.addAll(extractImportKeywords(errorLog));
+        }
+        
+        // General smart extraction - look for identifiers that might be relevant
+        keywords.addAll(extractGeneralIdentifiers(errorLog));
+        
+        // Remove duplicates and empty strings
+        return keywords.stream()
+                .distinct()
+                .filter(s -> s != null && !s.trim().isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // Extract keywords from string literal errors
+    private List<String> extractStringLiteralKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Look for variable names near the error
+        Pattern varPattern = Pattern.compile("([A-Za-z][A-Za-z0-9_]*)\\s*=", Pattern.CASE_INSENSITIVE);
+        Matcher varMatcher = varPattern.matcher(errorLog);
+        while (varMatcher.find()) {
+            keywords.add(varMatcher.group(1));
+        }
+        
+        // Look for method calls that might contain the problematic string
+        Pattern methodPattern = Pattern.compile("([A-Za-z][A-Za-z0-9_]*)\\s*\\(", Pattern.CASE_INSENSITIVE);
+        Matcher methodMatcher = methodPattern.matcher(errorLog);
+        while (methodMatcher.find()) {
+            keywords.add(methodMatcher.group(1));
+        }
+        
+        return keywords;
+    }
+
+    // Extract keywords from variable errors
+    private List<String> extractVariableKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Extract variable names that cannot be resolved
+        Pattern varPattern = Pattern.compile("([A-Za-z][A-Za-z0-9_]*)\\s+cannot be resolved", Pattern.CASE_INSENSITIVE);
+        Matcher varMatcher = varPattern.matcher(errorLog);
+        while (varMatcher.find()) {
+            keywords.add(varMatcher.group(1));
+        }
+        
+        // Extract binding references
+        Pattern bindingPattern = Pattern.compile("binding\\.([A-Za-z][A-Za-z0-9_]*)", Pattern.CASE_INSENSITIVE);
+        Matcher bindingMatcher = bindingPattern.matcher(errorLog);
+        while (bindingMatcher.find()) {
+            keywords.add(bindingMatcher.group(1));
+        }
+        
+        return keywords;
+    }
+
+    // Extract keywords from XML errors
+    private List<String> extractXMLKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Extract view IDs from XML
+        Pattern viewIdPattern = Pattern.compile("android:id=\"@\\+id/([A-Za-z][A-Za-z0-9_]*)", Pattern.CASE_INSENSITIVE);
+        Matcher viewIdMatcher = viewIdPattern.matcher(errorLog);
+        while (viewIdMatcher.find()) {
+            keywords.add(viewIdMatcher.group(1));
+        }
+        
+        // Extract layout names
+        Pattern layoutPattern = Pattern.compile("layout/([A-Za-z][A-Za-z0-9_]*)", Pattern.CASE_INSENSITIVE);
+        Matcher layoutMatcher = layoutPattern.matcher(errorLog);
+        while (layoutMatcher.find()) {
+            keywords.add(layoutMatcher.group(1));
+        }
+        
+        return keywords;
+    }
+
+    // Extract keywords from method errors
+    private List<String> extractMethodKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Extract method names
+        Pattern methodPattern = Pattern.compile("method\\s+([A-Za-z][A-Za-z0-9_]*)\\s*\\(", Pattern.CASE_INSENSITIVE);
+        Matcher methodMatcher = methodPattern.matcher(errorLog);
+        while (methodMatcher.find()) {
+            keywords.add(methodMatcher.group(1));
+        }
+        
+        return keywords;
+    }
+
+    // Extract keywords from import errors
+    private List<String> extractImportKeywords(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Extract package names
+        Pattern packagePattern = Pattern.compile("package\\s+([A-Za-z][A-Za-z0-9_.]*)", Pattern.CASE_INSENSITIVE);
+        Matcher packageMatcher = packagePattern.matcher(errorLog);
+        while (packageMatcher.find()) {
+            String pkg = packageMatcher.group(1);
+            // Split package and add individual parts
+            String[] parts = pkg.split("\\.");
+            for (String part : parts) {
+                if (part.length() > 2) { // Only add meaningful parts
+                    keywords.add(part);
+                }
+            }
+        }
+        
+        return keywords;
+    }
+
+    // Extract general identifiers that might be relevant
+    private List<String> extractGeneralIdentifiers(String errorLog) {
+        List<String> keywords = new ArrayList<>();
+        
+        // Extract Java identifiers (variables, methods, classes)
+        Pattern identifierPattern = Pattern.compile("\\b([A-Za-z][A-Za-z0-9_]{2,})\\b");
+        Matcher identifierMatcher = identifierPattern.matcher(errorLog);
+        while (identifierMatcher.find()) {
+            String identifier = identifierMatcher.group(1);
+            // Filter out common Java keywords and short identifiers
+            if (!isJavaKeyword(identifier) && identifier.length() > 2) {
+                keywords.add(identifier);
+            }
+        }
+        
+        return keywords;
+    }
+
+    // Check if a string is a Java keyword
+    private boolean isJavaKeyword(String word) {
+        String[] keywords = {
+            "public", "private", "protected", "static", "final", "abstract", "class", "interface",
+            "extends", "implements", "if", "else", "for", "while", "do", "switch", "case",
+            "break", "continue", "return", "try", "catch", "finally", "throw", "throws",
+            "new", "this", "super", "null", "true", "false", "int", "long", "short", "byte",
+            "char", "boolean", "float", "double", "void", "String", "Object", "System"
+        };
+        
+        for (String keyword : keywords) {
+            if (keyword.equalsIgnoreCase(word)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Analyze the type of error in the log
+    private ErrorType analyzeErrorType(String errorLog) {
+        if (errorLog == null) return ErrorType.UNKNOWN;
+        
+        String lowerError = errorLog.toLowerCase();
+        
+        // Syntax errors
+        if (lowerError.contains("string literal is not properly closed") ||
+            lowerError.contains("missing semicolon") ||
+            lowerError.contains("unexpected token") ||
+            lowerError.contains("syntax error")) {
+            return ErrorType.SYNTAX_ERROR;
+        }
+        
+        // Variable errors
+        if (lowerError.contains("cannot be resolved") ||
+            lowerError.contains("symbol not found")) {
+            return ErrorType.VARIABLE_ERROR;
+        }
+        
+        // XML errors
+        if (lowerError.contains("xml") && lowerError.contains("error")) {
+            return ErrorType.XML_ERROR;
+        }
+        
+        // Import errors
+        if (lowerError.contains("package") && lowerError.contains("does not exist") ||
+            lowerError.contains("import") && lowerError.contains("not found")) {
+            return ErrorType.IMPORT_ERROR;
+        }
+        
+        // Method errors
+        if (lowerError.contains("method") && lowerError.contains("not found")) {
+            return ErrorType.METHOD_ERROR;
+        }
+        
+        return ErrorType.UNKNOWN;
+    }
+
+    // Error types for better categorization
+    private enum ErrorType {
+        SYNTAX_ERROR,      // String literal not closed, missing semicolon, etc.
+        VARIABLE_ERROR,    // Variable not found, cannot be resolved
+        XML_ERROR,         // XML parsing errors
+        IMPORT_ERROR,      // Import/package errors
+        METHOD_ERROR,      // Method not found
+        UNKNOWN           // Other types
     }
 
     // Representation of a matched block
@@ -627,7 +888,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
     }
 
     // Find matching blocks for given names; returns list of BlockMatch
-    private List<BlockMatch> findMatchingBlocks(String decrypted, Set<String> errorVars) {
+    private List<BlockMatch> findMatchingBlocks(String decrypted, Set<String> errorVars, ErrorType errorType) {
         List<BlockMatch> result = new ArrayList<>();
         String[] lines = decrypted.split("\\r?\\n");
 
@@ -657,7 +918,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                         if (p == null) p = "";
                         p = p.replace("\"", "").trim(); // remove quotes if any
                         for (String var : errorVars) {
-                            if (p.equalsIgnoreCase(var) || p.equalsIgnoreCase("\"" + var + "\"") || p.contains(var)) {
+                            if (isErrorMatch(p, var)) {
                                 matched = true;
                                 break;
                             }
@@ -670,9 +931,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                 if (!matched) {
                     String objStr = obj.toString();
                     for (String var : errorVars) {
-                        // word-boundary pattern
-                        Pattern wp = Pattern.compile("\\b" + Pattern.quote(var) + "\\b", Pattern.CASE_INSENSITIVE);
-                        if (wp.matcher(objStr).find()) {
+                        if (isErrorMatch(objStr, var)) {
                             matched = true;
                             break;
                         }
@@ -695,6 +954,289 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         }
 
         return result;
+    }
+
+    // Improved error matching logic that handles different error types
+    private boolean isErrorMatch(String text, String errorVar) {
+        if (text == null || errorVar == null) return false;
+        
+        // Handle special error types from CompileLogHelper patterns
+        if (errorVar.startsWith("ERROR_") || errorVar.startsWith("WARNING_")) {
+            // For numbered errors/warnings, check if the text contains the error number
+            String errorNum = errorVar.substring(errorVar.indexOf("_") + 1);
+            return text.contains(errorNum);
+        }
+        
+        if (errorVar.equals("XML_ERROR")) {
+            // For XML errors, check if text contains XML-related error indicators
+            return text.toLowerCase().contains("error") && 
+                   (text.toLowerCase().contains("xml") || text.toLowerCase().contains("layout"));
+        }
+        
+        // For regular variable names, use improved matching
+        String cleanText = text.replace("\"", "").trim();
+        String cleanVar = errorVar.replace("\"", "").trim();
+        
+        // Exact match (case-insensitive)
+        if (cleanText.equalsIgnoreCase(cleanVar)) return true;
+        
+        // Quoted match
+        if (cleanText.equalsIgnoreCase("\"" + cleanVar + "\"")) return true;
+        
+        // Contains match for partial matches
+        if (cleanText.toLowerCase().contains(cleanVar.toLowerCase())) return true;
+        
+        // Word boundary match for more precise matching
+        Pattern wp = Pattern.compile("\\b" + Pattern.quote(cleanVar) + "\\b", Pattern.CASE_INSENSITIVE);
+        if (wp.matcher(cleanText).find()) return true;
+        
+        // Handle package/class names with dots
+        if (cleanVar.contains(".")) {
+            String[] parts = cleanVar.split("\\.");
+            boolean allPartsMatch = true;
+            for (String part : parts) {
+                if (!cleanText.toLowerCase().contains(part.toLowerCase())) {
+                    allPartsMatch = false;
+                    break;
+                }
+            }
+            if (allPartsMatch) return true;
+        }
+        
+        return false;
+    }
+
+    // Show smart guidance with AI-extracted keywords
+    private void showSmartNoMatchesDialog(List<String> smartKeywords, ErrorType errorType, String errorLog) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        
+        String title = "Smart Search Suggestions";
+        String message;
+        
+        // Create smart search suggestions based on extracted keywords
+        StringBuilder suggestions = new StringBuilder();
+        suggestions.append("🔍 **Smart Search Keywords:**\n\n");
+        
+        if (!smartKeywords.isEmpty()) {
+            suggestions.append("Try searching for these specific terms in your blocks:\n\n");
+            for (int i = 0; i < Math.min(smartKeywords.size(), 5); i++) {
+                suggestions.append("• **").append(smartKeywords.get(i)).append("**\n");
+            }
+            if (smartKeywords.size() > 5) {
+                suggestions.append("• And ").append(smartKeywords.size() - 5).append(" more...\n");
+            }
+        }
+        
+        switch (errorType) {
+            case SYNTAX_ERROR:
+                title = "🔧 Syntax Error - Smart Fix";
+                message = suggestions.toString() + "\n" +
+                         "**Error Type:** Syntax Error (String literal not closed)\n\n" +
+                         "**What to do:**\n" +
+                         "1. Look for blocks containing the keywords above\n" +
+                         "2. Check for unclosed quotes in string operations\n" +
+                         "3. Look for text/string related blocks\n\n" +
+                         "**Common blocks to check:**\n" +
+                         "• Text/String manipulation blocks\n" +
+                         "• Variable assignment blocks\n" +
+                         "• Method call blocks with string parameters";
+                break;
+                
+            case XML_ERROR:
+                title = "📱 XML Error - Smart Fix";
+                message = suggestions.toString() + "\n" +
+                         "**Error Type:** XML Layout Error\n\n" +
+                         "**What to do:**\n" +
+                         "1. Search for blocks with the view IDs above\n" +
+                         "2. Check layout-related blocks\n" +
+                         "3. Look for view binding or findViewById blocks\n\n" +
+                         "**Common blocks to check:**\n" +
+                         "• findViewById blocks\n" +
+                         "• View binding blocks\n" +
+                         "• Layout inflation blocks";
+                break;
+                
+            case VARIABLE_ERROR:
+                title = "🔍 Variable Error - Smart Fix";
+                message = suggestions.toString() + "\n" +
+                         "**Error Type:** Variable Not Found\n\n" +
+                         "**What to do:**\n" +
+                         "1. Search for blocks using these variable names\n" +
+                         "2. Check if variables are properly declared\n" +
+                         "3. Look for variable assignment or usage blocks\n\n" +
+                         "**Common blocks to check:**\n" +
+                         "• Variable declaration blocks\n" +
+                         "• Variable assignment blocks\n" +
+                         "• Method parameter blocks";
+                break;
+                
+            case IMPORT_ERROR:
+                title = "📦 Import Error - Smart Fix";
+                message = suggestions.toString() + "\n" +
+                         "**Error Type:** Import/Package Error\n\n" +
+                         "**What to do:**\n" +
+                         "1. Search for blocks using these package names\n" +
+                         "2. Check library import blocks\n" +
+                         "3. Look for class instantiation blocks\n\n" +
+                         "**Common blocks to check:**\n" +
+                         "• Library import blocks\n" +
+                         "• Class instantiation blocks\n" +
+                         "• Method call blocks from external libraries";
+                break;
+                
+            default:
+                title = "🔍 Smart Search Suggestions";
+                message = suggestions.toString() + "\n" +
+                         "**What to do:**\n" +
+                         "1. Use the keywords above to search your blocks\n" +
+                         "2. Look for blocks that might contain these terms\n" +
+                         "3. Check related functionality blocks\n\n" +
+                         "**Tip:** The keywords are extracted from your error log and are most likely to help you find the problematic block.";
+                break;
+        }
+        
+        builder.setTitle(title);
+        builder.setMessage(message);
+        
+        // Add action buttons
+        builder.setPositiveButton("Search Blocks", (dialog, which) -> {
+            showBlockSearchDialog(smartKeywords);
+        });
+        
+        if (errorType == ErrorType.SYNTAX_ERROR || errorType == ErrorType.XML_ERROR) {
+            builder.setNeutralButton("Show Error Details", (dialog, which) -> {
+                showErrorDetailsDialog(errorLog);
+            });
+        }
+        
+        builder.setNegativeButton("Close", null);
+        builder.show();
+    }
+
+    // Show a more helpful dialog when no matches are found
+    private void showNoMatchesDialog(Set<String> errorVars, ErrorType errorType, String errorLog) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        
+        String title = "No matching blocks found";
+        String message;
+        
+        switch (errorType) {
+            case SYNTAX_ERROR:
+                title = "Syntax Error Detected";
+                message = "This appears to be a syntax error (like unclosed quotes).\n\n" +
+                         "These errors usually need to be fixed in the source code, not by deleting blocks.\n\n" +
+                         "Check your Java/XML files for syntax issues.";
+                break;
+                
+            case XML_ERROR:
+                title = "XML Error Detected";
+                message = "This appears to be an XML parsing error.\n\n" +
+                         "Check your layout files for XML syntax issues.";
+                break;
+                
+            case IMPORT_ERROR:
+                title = "Import Error Detected";
+                message = "This appears to be an import/package error.\n\n" +
+                         "Check if all required libraries are properly imported.";
+                break;
+                
+            case VARIABLE_ERROR:
+                title = "Variable Error Detected";
+                message = "Scanned names: " + errorVars.toString() + "\n\n" +
+                         "No matching blocks found in logic.\n\n" +
+                         "These variables might be defined in source files or need to be created.";
+                break;
+                
+            default:
+                message = "Scanned names: " + errorVars.toString() + "\n\n" +
+                         "No matching blocks found in logic.";
+                break;
+        }
+        
+        builder.setTitle(title);
+        builder.setMessage(message);
+        
+        // Add action buttons based on error type
+        if (errorType == ErrorType.SYNTAX_ERROR || errorType == ErrorType.XML_ERROR) {
+            builder.setPositiveButton("Show Error Details", (dialog, which) -> {
+                showErrorDetailsDialog(errorLog);
+            });
+        } else {
+            builder.setPositiveButton("OK", null);
+        }
+        
+        builder.setNegativeButton("Close", null);
+        builder.show();
+    }
+
+    // Show detailed error information
+    private void showErrorDetailsDialog(String errorLog) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Error Details");
+        builder.setMessage(errorLog);
+        builder.setPositiveButton("OK", null);
+        builder.show();
+    }
+
+    // Show dialog for manual block search with smart keywords
+    private void showBlockSearchDialog(List<String> smartKeywords) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("🔍 Search Blocks with Smart Keywords");
+        
+        // Create a list of keywords for selection
+        String[] keywordArray = smartKeywords.toArray(new String[0]);
+        boolean[] selectedKeywords = new boolean[keywordArray.length];
+        
+        builder.setMultiChoiceItems(keywordArray, selectedKeywords, (dialog, which, isChecked) -> {
+            selectedKeywords[which] = isChecked;
+        });
+        
+        builder.setPositiveButton("Search Selected", (dialog, which) -> {
+            // Get selected keywords
+            List<String> selected = new ArrayList<>();
+            for (int i = 0; i < selectedKeywords.length; i++) {
+                if (selectedKeywords[i]) {
+                    selected.add(keywordArray[i]);
+                }
+            }
+            
+            if (selected.isEmpty()) {
+                Toast.makeText(this, "Please select at least one keyword to search", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // Perform search with selected keywords
+            performSmartBlockSearch(selected);
+        });
+        
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    // Perform smart block search with selected keywords
+    private void performSmartBlockSearch(List<String> keywords) {
+        try {
+            String decrypted = decryptLogicFile(LOGIC_PATH);
+            if (decrypted == null) {
+                Toast.makeText(this, "Logic file empty or cannot be read", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Set<String> keywordSet = new HashSet<>(keywords);
+            List<BlockMatch> matches = findMatchingBlocks(decrypted, keywordSet, ErrorType.UNKNOWN);
+
+            if (matches.isEmpty()) {
+                Toast.makeText(this, "No blocks found with selected keywords", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Show found matches
+            showMatchesDialog(matches);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Search failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 
     // Show a dialog listing matches; DO NOT show JSON code. On selection show confirm-delete dialog (Material3)
