@@ -122,6 +122,16 @@
             android:contentDescription="Explain with AI"
             android:src="@drawable/selector_info_popup" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/errorFixButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:contentDescription="Fix errors"
+            android:src="@drawable/ic_mtrl_fix" />
+
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

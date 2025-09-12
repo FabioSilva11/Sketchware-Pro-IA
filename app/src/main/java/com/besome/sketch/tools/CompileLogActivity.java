@@ -14,6 +14,22 @@ import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
 
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -45,11 +61,29 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class CompileLogActivity extends BaseAppCompatActivity {
 
     private static final String PREFERENCE_WRAPPED_TEXT = "wrapped_text";
     private static final String PREFERENCE_USE_MONOSPACED_FONT = "use_monospaced_font";
     private static final String PREFERENCE_FONT_SIZE = "font_size";
+    private String LOGIC_PATH;
+
     private CompileErrorSaver compileErrorSaver;
     private SharedPreferences logViewerPreferences;
 
@@ -154,8 +188,14 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         applyLogViewerPreferences();
 
         setErrorText();
-    }
 
+        LOGIC_PATH = "/storage/emulated/0/.sketchware/data/" + sc_id + "/logic";
+
+        binding.errorFixButton.setOnClickListener(v -> {
+            errorChecker(binding.tvCompileLog.getText().toString());
+        });
+
+    }
     private void setErrorText() {
         String error = getIntent().getStringExtra("error");
         if (error == null) error = compileErrorSaver.getLogsFromFile();
@@ -427,7 +467,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
     private String stripMarkdown(String input) {
         if (input == null) return "";
-        // Remove code fences like ```lang\n ... ```
+        // Remove code fences
         String out = input.replaceAll("(?s)```+\\w*\\n", "");
         out = out.replace("```", "");
         // Remove inline code backticks
@@ -438,6 +478,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         out = out.replace("**", "").replace("__", "").replace("*", "").replace("_", "");
         // Links: [text](url) -> text (url)
         out = out.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1 ($2)");
+        // Bullets: keep dashes
         return out.trim();
     }
 
@@ -511,6 +552,441 @@ public class CompileLogActivity extends BaseAppCompatActivity {
             return sb.toString();
         } catch (Exception e) {
             return null;
+        }
+    }
+
+
+    private void errorChecker(String errorLog) {
+        // parse error log -> find candidate names
+        Set<String> errorVars = collectNamesFromErrorLog(errorLog);
+
+        if (errorVars.isEmpty()) {
+            Toast.makeText(this, "No unresolved names found in error log", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            String decrypted = decryptLogicFile(LOGIC_PATH);
+            if (decrypted == null || decrypted.trim().isEmpty()) {
+                Toast.makeText(this, "Logic file empty or cannot be read", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            List<BlockMatch> matches = findMatchingBlocks(decrypted, errorVars);
+
+            if (matches.isEmpty()) {
+                // show friendly dialog explaining scanned names (Material3)
+                String scanned = errorVars.toString();
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No matches")
+                        .setMessage("Scanned Name " + scanned + "\nNo matching blocks found in logic.")
+                        .setPositiveButton("OK", null)
+                        .show();
+                return;
+            }
+
+            // show list dialog of matches (NO code/JSON shown)
+            showMatchesDialog(matches);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing logic: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
+    // Collect names like textviewkk from the error log
+    private Set<String> collectNamesFromErrorLog(String errorLog) {
+        Set<String> names = new HashSet<>();
+        if (errorLog == null) return names;
+
+        // pattern: NAME cannot be resolved
+        Pattern p1 = Pattern.compile("([A-Za-z0-9_]+)\\s+cannot be resolved", Pattern.CASE_INSENSITIVE);
+        Matcher m1 = p1.matcher(errorLog);
+        while (m1.find()) names.add(m1.group(1));
+
+        // binding.NAME style
+        Pattern p2 = Pattern.compile("binding\\.([A-Za-z0-9_]+)", Pattern.CASE_INSENSITIVE);
+        Matcher m2 = p2.matcher(errorLog);
+        while (m2.find()) names.add(m2.group(1));
+
+        // optional: The method NAME(
+        Pattern p3 = Pattern.compile("The method\\s+([A-Za-z0-9_]+)\\s*\\(", Pattern.CASE_INSENSITIVE);
+        Matcher m3 = p3.matcher(errorLog);
+        while (m3.find()) names.add(m3.group(1));
+
+        return names;
+    }
+
+    // Representation of a matched block
+    private static class BlockMatch {
+        int id;
+        int lineIndex; // 0-based index in decrypted lines
+        String header; // e.g., @MainActivity.java_button2_onClick
+        String rawLine; // original raw json line (kept but we won't show it in dialogs)
+        JSONObject obj; // parsed JSON object
+    }
+
+    // Find matching blocks for given names; returns list of BlockMatch
+    private List<BlockMatch> findMatchingBlocks(String decrypted, Set<String> errorVars) {
+        List<BlockMatch> result = new ArrayList<>();
+        String[] lines = decrypted.split("\\r?\\n");
+
+        String currentHeader = null;
+        for (int i = 0; i < lines.length; i++) {
+            String raw = lines[i];
+            String trimmed = raw.trim();
+            if (trimmed.isEmpty()) continue;
+
+            if (trimmed.startsWith("@")) {
+                currentHeader = trimmed; // remember header for subsequent blocks
+                continue;
+            }
+
+            // try parse JSON
+            try {
+                JSONObject obj = new JSONObject(trimmed);
+                int id = getIntFromJsonField(obj, "id", -1);
+                if (id == -1) continue;
+
+                // check parameters array first (strip quotes and compare case-insensitive)
+                boolean matched = false;
+                JSONArray params = obj.optJSONArray("parameters");
+                if (params != null) {
+                    for (int k = 0; k < params.length(); k++) {
+                        String p = params.optString(k, "");
+                        if (p == null) p = "";
+                        p = p.replace("\"", "").trim(); // remove quotes if any
+                        for (String var : errorVars) {
+                            if (p.equalsIgnoreCase(var) || p.equalsIgnoreCase("\"" + var + "\"") || p.contains(var)) {
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (matched) break;
+                    }
+                }
+
+                // fallback: check opCode/spec/whole object with word-boundary
+                if (!matched) {
+                    String objStr = obj.toString();
+                    for (String var : errorVars) {
+                        // word-boundary pattern
+                        Pattern wp = Pattern.compile("\\b" + Pattern.quote(var) + "\\b", Pattern.CASE_INSENSITIVE);
+                        if (wp.matcher(objStr).find()) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (matched) {
+                    BlockMatch bm = new BlockMatch();
+                    bm.id = id;
+                    bm.lineIndex = i;
+                    bm.header = currentHeader != null ? currentHeader : "(no-header)";
+                    bm.rawLine = raw;
+                    bm.obj = obj;
+                    result.add(bm);
+                }
+
+            } catch (JSONException je) {
+                // ignore non-json
+            }
+        }
+
+        return result;
+    }
+
+    // Show a dialog listing matches; DO NOT show JSON code. On selection show confirm-delete dialog (Material3)
+    private void showMatchesDialog(final List<BlockMatch> matches) {
+        CharSequence[] items = new CharSequence[matches.size()];
+        for (int i = 0; i < matches.size(); i++) {
+            BlockMatch m = matches.get(i);
+            // show header and id only — no JSON/code
+            items[i] = m.header + "\nID: " + m.id;
+        }
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Found " + matches.size() + " matching blocks (no code shown)");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                final BlockMatch sel = matches.get(which);
+                // Build confirm message WITHOUT code/JSON, include header and id and optional line number
+                String msg = "Activity: " + sel.header + "\nBlock ID: " + sel.id; // no code
+
+                MaterialAlertDialogBuilder detail = new MaterialAlertDialogBuilder(CompileLogActivity.this);
+                detail.setTitle("Delete block?");
+                detail.setMessage(msg);
+                detail.setPositiveButton("Delete block", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog2, int which2) {
+                        // perform deletion of this single block id
+                        Set<Integer> toDelete = new HashSet<>();
+                        toDelete.add(sel.id);
+                        performDeleteBlocksAndSave(toDelete);
+                    }
+                });
+                detail.setNegativeButton("Cancel", null);
+                detail.show();
+            }
+        });
+
+        builder.setNegativeButton("Close", null);
+        builder.show();
+    }
+
+    // ==============================
+    // New robust delete: parse file line-by-line into LineInfo, remove only chosen IDs and fix nextBlock chain
+    // ==============================
+    private void performDeleteBlocksAndSave(Set<Integer> toDelete) {
+        try {
+            if (toDelete == null || toDelete.isEmpty()) {
+                Toast.makeText(this, "No blocks selected for deletion", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String decrypted = decryptLogicFile(LOGIC_PATH);
+            if (decrypted == null) {
+                Toast.makeText(this, "Logic file read failed", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // keep lines exactly (preserve blanks)
+            List<String> originalLines = Arrays.asList(decrypted.split("\\r?\\n", -1));
+
+            // line info structure
+            class LineInfo {
+                String raw;
+                boolean isHeader;
+                boolean isJson;
+                Integer id; // if json
+                JSONObject obj; // parsed json if any
+                String headerForLine;
+            }
+
+            List<LineInfo> lineInfos = new ArrayList<>();
+            Map<Integer, LineInfo> idToLineInfo = new LinkedHashMap<>();
+            Map<Integer, Integer> originalNextMap = new HashMap<>();
+
+            String currentHeader = null;
+            for (String ln : originalLines) {
+                LineInfo li = new LineInfo();
+                li.raw = ln;
+                li.isHeader = false;
+                li.isJson = false;
+                li.id = null;
+                li.obj = null;
+                li.headerForLine = currentHeader;
+
+                String trimmed = ln.trim();
+                if (trimmed.startsWith("@")) {
+                    currentHeader = trimmed;
+                    li.isHeader = true;
+                    li.headerForLine = currentHeader;
+                    lineInfos.add(li);
+                    continue;
+                }
+
+                if (trimmed.isEmpty()) {
+                    lineInfos.add(li);
+                    continue;
+                }
+
+                // try parse json
+                try {
+                    JSONObject obj = new JSONObject(trimmed);
+                    int id = getIntFromJsonField(obj, "id", -1);
+                    int next = getIntFromJsonField(obj, "nextBlock", -1);
+                    if (id != -1) {
+                        li.isJson = true;
+                        li.id = id;
+                        li.obj = obj;
+                        idToLineInfo.put(id, li);
+                        originalNextMap.put(id, next);
+                        lineInfos.add(li);
+                        continue;
+                    }
+                } catch (JSONException je) {
+                    // not a json line
+                }
+
+                // fallback: normal non-json line
+                lineInfos.add(li);
+            }
+
+            if (idToLineInfo.isEmpty()) {
+                Toast.makeText(this, "No json blocks to edit", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // filter only those ids that actually exist
+            Set<Integer> actuallyFound = new HashSet<>();
+            for (Integer id : toDelete) if (idToLineInfo.containsKey(id)) actuallyFound.add(id);
+
+            if (actuallyFound.isEmpty()) {
+                Toast.makeText(this, "No matching block ids found in logic (already removed?)", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // backup
+            try {
+                File src = new File(LOGIC_PATH);
+                if (src.exists()) {
+                    File bak = new File(LOGIC_PATH + ".bak");
+                    copyFile(src, bak);
+                }
+            } catch (Exception e) { /* ignore backup errors */ }
+
+            // helper to resolve next: skip over deleted ids
+            java.util.function.IntUnaryOperator resolveNext = new java.util.function.IntUnaryOperator() {
+                @Override
+                public int applyAsInt(int startId) {
+                    int cur = startId;
+                    Set<Integer> visited = new HashSet<>();
+                    while (cur != -1 && actuallyFound.contains(cur) && !visited.contains(cur)) {
+                        visited.add(cur);
+                        cur = originalNextMap.getOrDefault(cur, -1);
+                    }
+                    return cur;
+                }
+            };
+
+            // update nextBlock for remaining blocks that point to deleted IDs
+            for (Map.Entry<Integer, LineInfo> entry : idToLineInfo.entrySet()) {
+                int id = entry.getKey();
+                LineInfo li = entry.getValue();
+                if (actuallyFound.contains(id)) continue; // skip deleted ones
+                if (li.obj == null) continue;
+                int next = getIntFromJsonField(li.obj, "nextBlock", -1);
+                if (actuallyFound.contains(next)) {
+                    int newNext = resolveNext.applyAsInt(next);
+                    try {
+                        li.obj.put("nextBlock", newNext);
+                    } catch (JSONException je) { /* ignore */ }
+                }
+            }
+
+            // reconstruct content: keep headers and non-json as-is, skip deleted json lines and write updated json for others
+            StringBuilder newContent = new StringBuilder();
+            for (LineInfo li : lineInfos) {
+                if (li.isHeader) {
+                    newContent.append(li.raw).append("\n");
+                    continue;
+                }
+                if (li.isJson) {
+                    if (li.id != null && actuallyFound.contains(li.id)) {
+                        // skip this deleted block (do not append)
+                        continue;
+                    } else {
+                        if (li.obj != null) newContent.append(li.obj.toString()).append("\n");
+                        else newContent.append(li.raw).append("\n");
+                    }
+                } else {
+                    // normal line or blank
+                    newContent.append(li.raw).append("\n");
+                }
+            }
+
+            // save
+            encryptAndSave(LOGIC_PATH, newContent.toString());
+
+            // done
+            Toast.makeText(this, "Deleted blocks: " + actuallyFound.toString(), Toast.LENGTH_SHORT).show();
+
+        } catch (Exception ex) {
+            Toast.makeText(this, "Delete failed: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+            ex.printStackTrace();
+        }
+    }
+
+    // ==============================
+    // resolveNext (unused now, kept for compatibility)
+    // ==============================
+    private int resolveNext(int startId, Map<Integer, Integer> idToNext, Set<Integer> toDeleteIds, Map<Integer, Integer> cache) {
+        if (startId == -1) return -1;
+        if (cache.containsKey(startId)) return cache.get(startId);
+
+        int cur = startId;
+        Set<Integer> visited = new HashSet<>();
+        while (cur != -1 && toDeleteIds.contains(cur) && !visited.contains(cur)) {
+            visited.add(cur);
+            cur = idToNext.getOrDefault(cur, -1);
+        }
+        cache.put(startId, cur);
+        return cur;
+    }
+
+    // ==============================
+    // Decrypt & encrypt helpers (AES/CBC/PKCS5Padding, key/iv = "sketchwaresecure")
+    // ==============================
+    private String decryptLogicFile(String path) throws Exception {
+        javax.crypto.Cipher instance = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] keyIv = "sketchwaresecure".getBytes(StandardCharsets.UTF_8);
+        instance.init(javax.crypto.Cipher.DECRYPT_MODE,
+                new javax.crypto.spec.SecretKeySpec(keyIv, "AES"),
+                new javax.crypto.spec.IvParameterSpec(keyIv));
+
+        RandomAccessFile raf = new RandomAccessFile(path, "r");
+        byte[] bArr = new byte[(int) raf.length()];
+        raf.readFully(bArr);
+        raf.close();
+
+        byte[] plain = instance.doFinal(bArr);
+        return new String(plain, StandardCharsets.UTF_8);
+    }
+
+    private void encryptAndSave(String path, String plainText) throws Exception {
+        javax.crypto.Cipher instance = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] keyIv = "sketchwaresecure".getBytes(StandardCharsets.UTF_8);
+        instance.init(javax.crypto.Cipher.ENCRYPT_MODE,
+                new javax.crypto.spec.SecretKeySpec(keyIv, "AES"),
+                new javax.crypto.spec.IvParameterSpec(keyIv));
+
+        byte[] encrypted = instance.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+
+        RandomAccessFile raf = new RandomAccessFile(path, "rw");
+        raf.setLength(0);
+        raf.write(encrypted);
+        raf.close();
+    }
+
+    // safe int extractor
+    private int getIntFromJsonField(JSONObject obj, String key, int def) {
+        if (obj == null || !obj.has(key)) return def;
+        try {
+            Object o = obj.get(key);
+            if (o instanceof Number) return ((Number) o).intValue();
+            String s = obj.optString(key, "");
+            if (s == null || s.length() == 0) return def;
+            try {
+                return Integer.parseInt(s);
+            } catch (NumberFormatException nfe) {
+                return def;
+            }
+        } catch (JSONException je) {
+            return def;
+        }
+    }
+
+    // file copy for backup
+    private void copyFile(File src, File dst) throws Exception {
+        if (!src.exists()) return;
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+            out = new FileOutputStream(dst);
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            out.flush();
+        } finally {
+            try { if (in != null) in.close(); } catch (Exception ignored) {}
+            try { if (out != null) out.close(); } catch (Exception ignored) {}
         }
     }
 }
