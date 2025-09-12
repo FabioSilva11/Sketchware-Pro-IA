@@ -131,6 +131,16 @@
             android:contentDescription="Fix errors"
             android:src="@drawable/ic_mtrl_fix" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/aiFixButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:contentDescription="AI Auto Fix"
+            android:src="@drawable/ic_edit" />
+
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

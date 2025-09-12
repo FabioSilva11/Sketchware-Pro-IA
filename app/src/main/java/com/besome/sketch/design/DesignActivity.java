@@ -1710,6 +1710,14 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 jC.a(sc_id).j();
                 jC.d(sc_id).x();
                 jC.c(sc_id).l();
+                
+                // Clear unsaved data flags after saving to prevent restore dialog on next entry
+                jC.c(sc_id).i();
+                jC.b(sc_id).i();
+                jC.d(sc_id).s();
+                jC.a(sc_id).g();
+                jC.a(sc_id).e();
+                
                 activity.runOnUiThread(() -> {
                     bB.a(activity.getApplicationContext(), Helper.getResString(R.string.common_message_complete_save), bB.TOAST_NORMAL).show();
                     activity.saveVersionCodeInformationToProject();
@@ -1744,6 +1752,14 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 jC.d(sc_id).x();
                 jC.c(sc_id).l();
                 jC.d(sc_id).h();
+                
+                // Clear unsaved data flags after saving to prevent restore dialog on next entry
+                jC.c(sc_id).i();
+                jC.b(sc_id).i();
+                jC.d(sc_id).s();
+                jC.a(sc_id).g();
+                jC.a(sc_id).e();
+                
                 activity.runOnUiThread(() -> {
                     bB.a(activity.getApplicationContext(), Helper.getResString(R.string.common_message_complete_save), bB.TOAST_NORMAL).show();
                     activity.saveVersionCodeInformationToProject();
