@@ -29,10 +29,15 @@ import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.ai.GroqClient;
 
 import org.json.JSONException;
+import org.json.JSONArray;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +55,25 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
     private CompileLogBinding binding;
     private String lastLogRaw;
+
+    // language labels and codes (add/remove as you like)
+    private static final String[] LANG_NAMES = new String[]{
+            "Original (no translation)",
+            "English", "Bangla (বাংলা)", "Hindi (हिन्दी)", "Spanish (Español)",
+            "French (Français)", "German (Deutsch)", "Chinese - Simplified (简体中文)",
+            "Arabic (العربية)", "Portuguese (Português)", "Russian (Русский)",
+            "Japanese (日本語)", "Korean (한국어)", "Italian (Italiano)", "Turkish (Türkçe)",
+            "Dutch (Nederlands)", "Português (Brasil)"
+    };
+
+    private static final String[] LANG_CODES = new String[]{
+            "orig",
+            "en", "bn", "hi", "es",
+            "fr", "de", "zh-CN",
+            "ar", "pt", "ru",
+            "ja", "ko", "it", "tr",
+            "nl", "pt-BR"
+    };
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -125,7 +149,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         binding.formatButton.setOnClickListener(v -> options.show());
 
         // Explain with AI
-        binding.aiExplainButton.setOnClickListener(v -> explainWithAi());
+        binding.aiExplainButton.setOnClickListener(v -> showLanguagePickerAndExplain());
 
         applyLogViewerPreferences();
 
@@ -222,7 +246,32 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                 .show();
     }
 
-    private void explainWithAi() {
+    /**
+     * Show a language picker dialog first, then run explainWithAi flow.
+     */
+    private void showLanguagePickerAndExplain() {
+        // default selection = 0 => Original (no translation)
+        final int[] selectedIndex = {0};
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Select language")
+                .setSingleChoiceItems(LANG_NAMES, selectedIndex[0], (dialog, which) -> {
+                    selectedIndex[0] = which;
+                })
+                .setPositiveButton("OK", (dialog, which) -> {
+                    int idx = selectedIndex[0];
+                    String target = LANG_CODES[Math.max(0, Math.min(idx, LANG_CODES.length - 1))];
+                    explainWithAi(target);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Main explain flow. If targetLang == "orig" => don't translate.
+     * Otherwise try to translate AI reply into targetLang.
+     */
+    private void explainWithAi(String targetLang) {
         if (lastLogRaw == null || lastLogRaw.trim().isEmpty()) {
             SketchwareUtil.toastError("No log to explain.");
             return;
@@ -253,15 +302,31 @@ public class CompileLogActivity extends BaseAppCompatActivity {
                 var messages = GroqClient.Message.of(system, user);
                 String reply = client.chat(messages);
 
+                // default to original if no reply
+                String toShow = reply;
+
+                if (reply != null && !reply.trim().isEmpty() && !"orig".equalsIgnoreCase(targetLang)) {
+                    try {
+                        String translated = translateText(reply, targetLang);
+                        if (translated != null && !translated.trim().isEmpty()) {
+                            toShow = translated;
+                        } // else keep original
+                    } catch (Exception e) {
+                        // translation failed, we'll show original
+                        toShow = reply;
+                    }
+                }
+
+                final String finalToShow = toShow;
                 runOnUiThread(() -> {
                     loadingDialog.dismiss();
-                    if (reply == null || reply.trim().isEmpty()) {
+                    if (finalToShow == null || finalToShow.trim().isEmpty()) {
                         SketchwareUtil.toastError("AI returned no content");
                         return;
                     }
-                    String plain = stripMarkdown(reply);
+                    String plain = stripMarkdown(finalToShow);
                     new MaterialAlertDialogBuilder(this)
-                            .setTitle("AI explanation")
+                            .setTitle("AI explanation (" + (("orig".equalsIgnoreCase(targetLang)) ? "original" : getLangNameForCode(targetLang)) + ")")
                             .setMessage(plain)
                             .setPositiveButton("Copy", (d, w) -> {
                                 ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -291,8 +356,78 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         }).start();
     }
 
+    /**
+     * Translate text using Google Translate "translate_a/single" endpoint.
+     * Returns translated text or null on failure.
+     *
+     * Warning: This endpoint is unofficial and might be rate-limited or blocked.
+     */
+    private String translateText(String original, String targetLang) throws Exception {
+        if (original == null || original.trim().isEmpty()) return null;
+        if (targetLang == null || targetLang.trim().isEmpty() || "orig".equalsIgnoreCase(targetLang)) return original;
+
+        String encoded = URLEncoder.encode(original, StandardCharsets.UTF_8.name());
+        // sl=auto to detect source language automatically
+        String urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + URLEncoder.encode(targetLang, "UTF-8") + "&dt=t&q=" + encoded;
+
+        HttpURLConnection conn = null;
+        BufferedReader br = null;
+        try {
+            URL url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(20000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            int code = conn.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                return null;
+            }
+
+            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            String resp = sb.toString();
+            // Parse JSON array response: [[["translated segment", "orig", ...], ...], ...]
+            JSONArray root = new JSONArray(resp);
+            if (root.length() > 0) {
+                JSONArray sentences = root.optJSONArray(0);
+                if (sentences != null) {
+                    StringBuilder result = new StringBuilder();
+                    for (int i = 0; i < sentences.length(); i++) {
+                        JSONArray seg = sentences.optJSONArray(i);
+                        if (seg != null && seg.length() > 0) {
+                            String part = seg.optString(0, "");
+                            result.append(part);
+                        }
+                    }
+                    return result.toString().trim();
+                }
+            }
+            return null;
+        } finally {
+            try {
+                if (br != null) br.close();
+                if (conn != null) conn.disconnect();
+            } catch (Exception ignored) { }
+        }
+    }
+
+    private String getLangNameForCode(String code) {
+        if (code == null) return "unknown";
+        for (int i = 0; i < LANG_CODES.length; i++) {
+            if (code.equalsIgnoreCase(LANG_CODES[i])) return LANG_NAMES[i];
+        }
+        return code;
+    }
+
     private String stripMarkdown(String input) {
-        // Remove code fences
+        if (input == null) return "";
+        // Remove code fences like ```lang\n ... ```
         String out = input.replaceAll("(?s)```+\\w*\\n", "");
         out = out.replace("```", "");
         // Remove inline code backticks
@@ -303,7 +438,6 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         out = out.replace("**", "").replace("__", "").replace("*", "").replace("_", "");
         // Links: [text](url) -> text (url)
         out = out.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "$1 ($2)");
-        // Bullets: keep dashes
         return out.trim();
     }
 
