@@ -92,11 +92,29 @@ public class TranslationManager {
             return;
         }
 
+        // Validar tamanho do texto para evitar erro 400
+        if (original.length() > 5000) {
+            if (callback != null) callback.onTranslationError(new Exception("Text too long for translation (max 5000 characters)"));
+            return;
+        }
+
         new Thread(() -> {
             try {
-                String encoded = URLEncoder.encode(original, StandardCharsets.UTF_8.name());
-                // sl=auto para detectar idioma de origem automaticamente
-                String urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + URLEncoder.encode(targetLang, "UTF-8") + "&dt=t&q=" + encoded;
+                // Limpar e validar texto de entrada
+                String cleanText = original.trim();
+                if (cleanText.isEmpty()) {
+                    if (callback != null) callback.onTranslationComplete(original);
+                    return;
+                }
+
+                String encoded = URLEncoder.encode(cleanText, StandardCharsets.UTF_8.name());
+                
+                // Validar tamanho da URL para evitar erro 400
+                String urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + URLEncoder.encode(targetLang.trim(), "UTF-8") + "&dt=t&q=" + encoded;
+                if (urlStr.length() > 2000) { // Limite de URL
+                    if (callback != null) callback.onTranslationError(new Exception("Translation request too large"));
+                    return;
+                }
 
                 HttpURLConnection conn = null;
                 BufferedReader br = null;
@@ -106,11 +124,44 @@ public class TranslationManager {
                     conn.setRequestMethod("GET");
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(20000);
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                    conn.setRequestProperty("Accept", "application/json");
+                    conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
 
                     int code = conn.getResponseCode();
+                    
+                    // Tratamento específico para erro 400
+                    if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                        String errorMsg = "Bad request (400) - Invalid translation parameters";
+                        try {
+                            if (conn.getErrorStream() != null) {
+                                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                                StringBuilder errorSb = new StringBuilder();
+                                String errorLine;
+                                while ((errorLine = errorReader.readLine()) != null) {
+                                    errorSb.append(errorLine);
+                                }
+                                String errorBody = errorSb.toString();
+                                if (errorBody.contains("INVALID_ARGUMENT")) {
+                                    errorMsg = "Invalid language code or text format";
+                                } else if (errorBody.contains("QUOTA_EXCEEDED")) {
+                                    errorMsg = "Translation quota exceeded";
+                                }
+                            }
+                        } catch (Exception ignored) {}
+                        
+                        if (callback != null) callback.onTranslationError(new Exception(errorMsg));
+                        return;
+                    }
+                    
                     if (code != HttpURLConnection.HTTP_OK) {
-                        if (callback != null) callback.onTranslationComplete(null);
+                        String errorMsg = "Translation failed with HTTP " + code;
+                        if (code == 429) {
+                            errorMsg = "Translation rate limit exceeded";
+                        } else if (code == 403) {
+                            errorMsg = "Translation access forbidden";
+                        }
+                        if (callback != null) callback.onTranslationError(new Exception(errorMsg));
                         return;
                     }
 
@@ -121,6 +172,12 @@ public class TranslationManager {
                         sb.append(line);
                     }
                     String resp = sb.toString();
+                    
+                    if (resp == null || resp.trim().isEmpty()) {
+                        if (callback != null) callback.onTranslationComplete(null);
+                        return;
+                    }
+                    
                     // Parse da resposta do array JSON: [[["segmento traduzido", "orig", ...], ...], ...]
                     JSONArray root = new JSONArray(resp);
                     if (root.length() > 0) {
@@ -131,7 +188,9 @@ public class TranslationManager {
                                 JSONArray seg = sentences.optJSONArray(i);
                                 if (seg != null && seg.length() > 0) {
                                     String part = seg.optString(0, "");
-                                    result.append(part);
+                                    if (part != null && !part.isEmpty()) {
+                                        result.append(part);
+                                    }
                                 }
                             }
                             String translated = result.toString().trim();
@@ -230,9 +289,25 @@ public class TranslationManager {
                 return original;
             }
 
+            // Validar tamanho do texto para evitar erro 400
+            if (original.length() > 5000) {
+                return null; // Texto muito longo
+            }
+
             try {
-                String encoded = URLEncoder.encode(original, StandardCharsets.UTF_8.name());
-                String urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + URLEncoder.encode(targetLang, "UTF-8") + "&dt=t&q=" + encoded;
+                // Limpar e validar texto de entrada
+                String cleanText = original.trim();
+                if (cleanText.isEmpty()) {
+                    return original;
+                }
+
+                String encoded = URLEncoder.encode(cleanText, StandardCharsets.UTF_8.name());
+                String urlStr = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + URLEncoder.encode(targetLang.trim(), "UTF-8") + "&dt=t&q=" + encoded;
+                
+                // Validar tamanho da URL para evitar erro 400
+                if (urlStr.length() > 2000) {
+                    return null; // URL muito longa
+                }
 
                 HttpURLConnection conn = null;
                 BufferedReader br = null;
@@ -242,11 +317,19 @@ public class TranslationManager {
                     conn.setRequestMethod("GET");
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(20000);
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                    conn.setRequestProperty("Accept", "application/json");
+                    conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
 
                     int code = conn.getResponseCode();
+                    
+                    // Tratamento específico para erro 400
+                    if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                        return null; // Bad request
+                    }
+                    
                     if (code != HttpURLConnection.HTTP_OK) {
-                        return null;
+                        return null; // Outros erros HTTP
                     }
 
                     br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
@@ -257,6 +340,10 @@ public class TranslationManager {
                     }
                     String resp = sb.toString();
                     
+                    if (resp == null || resp.trim().isEmpty()) {
+                        return null;
+                    }
+                    
                     JSONArray root = new JSONArray(resp);
                     if (root.length() > 0) {
                         JSONArray sentences = root.optJSONArray(0);
@@ -266,7 +353,9 @@ public class TranslationManager {
                                 JSONArray seg = sentences.optJSONArray(i);
                                 if (seg != null && seg.length() > 0) {
                                     String part = seg.optString(0, "");
-                                    result.append(part);
+                                    if (part != null && !part.isEmpty()) {
+                                        result.append(part);
+                                    }
                                 }
                             }
                             return result.toString().trim();

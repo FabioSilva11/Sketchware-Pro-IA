@@ -3,6 +3,7 @@ package pro.sketchware.managers;
 import android.content.Context;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Intent;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -88,6 +89,18 @@ public class AIExplanationManager {
             SketchwareUtil.toastError("No log to explain.");
             return;
         }
+        
+        // Validar tamanho do log para evitar erro 400
+        if (errorLog.length() > 50000) { // ~50KB
+            SketchwareUtil.toastError("Error log too large for AI analysis (max 50KB). Please use a shorter log.");
+            return;
+        }
+        
+        // Validar caracteres especiais que podem causar erro 400
+        if (containsInvalidCharacters(errorLog)) {
+            SketchwareUtil.toastError("Error log contains invalid characters that may cause AI request to fail.");
+            return;
+        }
 
         var loadingDialog = new MaterialAlertDialogBuilder(context)
                 .setTitle("Analyzing log with AI")
@@ -154,11 +167,43 @@ public class AIExplanationManager {
                     loadingDialog.dismiss();
                     String msg = String.valueOf(e.getMessage());
                     if (msg != null && (msg.contains("Missing Groq API key") || msg.contains("Groq API error"))) {
-                        new MaterialAlertDialogBuilder(context)
-                                .setTitle("AI not configured")
-                                .setMessage(msg)
-                                .setPositiveButton(android.R.string.ok, null)
-                                .show();
+                        if (msg.contains("HTTP 400")) {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("Bad Request (400)")
+                                    .setMessage("The AI request was malformed. This could be due to:\n\n" +
+                                              "• Invalid characters in the error log\n" +
+                                              "• Request too large\n" +
+                                              "• Invalid request format\n\n" +
+                                              "Try with a shorter error log or check for special characters.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        } else if (msg.contains("HTTP 401")) {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("Invalid API Key")
+                                    .setMessage("The Groq API key is invalid or expired. Please check your API key in settings.")
+                                    .setPositiveButton("Configure AI", (dialog, which) -> {
+                                        try {
+                                            Intent intent = new Intent(context, pro.sketchware.activities.ai.ManageAiActivity.class);
+                                            context.startActivity(intent);
+                                        } catch (Exception ex) {
+                                            SketchwareUtil.toastError("Failed to open AI configuration: " + ex.getMessage());
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", null)
+                                    .show();
+                        } else if (msg.contains("HTTP 429")) {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("Rate Limit Exceeded")
+                                    .setMessage("Too many AI requests. Please wait a moment before trying again.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        } else {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("AI Error")
+                                    .setMessage(msg)
+                                    .setPositiveButton(android.R.string.ok, null)
+                                    .show();
+                        }
                     } else {
                         SketchwareUtil.toastError("AI error: " + e.getMessage());
                     }
@@ -247,6 +292,29 @@ public class AIExplanationManager {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    /**
+     * Verifica se o texto contém caracteres que podem causar erro 400
+     */
+    private boolean containsInvalidCharacters(String text) {
+        if (text == null) return false;
+        
+        // Verificar caracteres de controle que podem causar problemas
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            // Caracteres de controle exceto quebras de linha e tabs
+            if (Character.isISOControl(c) && c != '\n' && c != '\r' && c != '\t') {
+                return true;
+            }
+        }
+        
+        // Verificar se contém sequências muito longas de caracteres repetidos
+        if (text.contains("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            return true;
+        }
+        
+        return false;
     }
     
     /**
