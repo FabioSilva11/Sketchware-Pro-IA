@@ -2,6 +2,7 @@ package com.besome.sketch.tools;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -30,10 +31,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.besome.sketch.design.DesignActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import mod.hey.studios.util.CompileLogHelper;
 import mod.hey.studios.util.Helper;
+import mod.hey.studios.project.ProjectTracker;
 import mod.jbk.diagnostic.CompileErrorSaver;
 import mod.jbk.util.AddMarginOnApplyWindowInsetsListener;
 import pro.sketchware.databinding.CompileLogBinding;
@@ -53,6 +56,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
     private static final String PREFERENCE_WRAPPED_TEXT = "wrapped_text";
     private static final String PREFERENCE_USE_MONOSPACED_FONT = "use_monospaced_font";
     private static final String PREFERENCE_FONT_SIZE = "font_size";
+    private static final String PREFERENCE_SAVED_PROJECT_ID = "saved_project_id";
     private String LOGIC_PATH;
 
     private CompileErrorSaver compileErrorSaver;
@@ -60,6 +64,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
     private CompileLogBinding binding;
     private String lastLogRaw;
+    private String savedProjectId; // ID do projeto que foi salvo quando esta tela foi aberta
 
     // Managers para funcionalidades específicas
     private BlockDeletionManager blockDeletionManager;
@@ -81,6 +86,9 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
         logViewerPreferences = getPreferences(Context.MODE_PRIVATE);
 
+        // Carregar o ID do projeto salvo das preferências
+        savedProjectId = logViewerPreferences.getString(PREFERENCE_SAVED_PROJECT_ID, null);
+
         binding.topAppBar.setNavigationOnClickListener(Helper.getBackPressedClickListener(this));
 
         if (getIntent().getBooleanExtra("showingLastError", false)) {
@@ -94,6 +102,9 @@ public class CompileLogActivity extends BaseAppCompatActivity {
             finish();
             return;
         }
+
+        // Salvar o ID do projeto atual
+        saveCurrentProject(sc_id);
 
         compileErrorSaver = new CompileErrorSaver(sc_id);
 
@@ -584,6 +595,37 @@ public class CompileLogActivity extends BaseAppCompatActivity {
 
         builder.setNegativeButton("Close", null);
         builder.show();
+    }
+
+    /**
+     * Salva o ID do projeto atual
+     */
+    private void saveCurrentProject(String sc_id) {
+        // Salvar o ID do projeto atual nas preferências
+        savedProjectId = sc_id;
+        logViewerPreferences.edit()
+                .putString(PREFERENCE_SAVED_PROJECT_ID, savedProjectId)
+                .apply();
+    }
+
+    /**
+     * Reabre o projeto que foi salvo quando esta tela foi aberta
+     */
+    private void reopenSavedProject() {
+        if (savedProjectId != null && !savedProjectId.isEmpty()) {
+            Intent intent = new Intent(this, DesignActivity.class);
+            intent.putExtra("sc_id", savedProjectId);
+            intent.putExtra("from_compile_log", true); // Flag para indicar que veio da tela de log
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Reabrir o projeto salvo quando o usuário pressionar voltar
+        reopenSavedProject();
     }
 
 }

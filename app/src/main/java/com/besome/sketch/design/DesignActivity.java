@@ -329,6 +329,8 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
                 intent.putExtra("sc_id", sc_id);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                // Fechar a DesignActivity atual ao abrir a tela de log
+                finish();
             }
         });
         snackbar.show();
@@ -344,8 +346,36 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
     }
 
     private void checkForUnsavedProjectData() {
-        if (jC.c(sc_id).g() || jC.b(sc_id).g() || jC.d(sc_id).q() || jC.a(sc_id).d() || jC.a(sc_id).c()) {
+        // Verificar se a reabertura veio da CompileLogActivity
+        boolean fromCompileLog = getIntent().getBooleanExtra("from_compile_log", false);
+        
+        if (fromCompileLog) {
+            // Se veio da tela de log, não exibir o diálogo de restore e limpar os dados não salvos
+            clearUnsavedProjectData();
+        } else if (jC.c(sc_id).g() || jC.b(sc_id).g() || jC.d(sc_id).q() || jC.a(sc_id).d() || jC.a(sc_id).c()) {
             askIfToRestoreOldUnsavedProjectData();
+        }
+    }
+
+    /**
+     * Limpa os dados não salvos do projeto sem exibir diálogo (usado quando reabre da CompileLogActivity)
+     */
+    private void clearUnsavedProjectData() {
+        // Limpar todos os dados não salvos automaticamente (equivalente a clicar "No" no diálogo)
+        if (jC.c(sc_id).g()) {
+            jC.c(sc_id).h();
+        }
+        if (jC.b(sc_id).g()) {
+            jC.b(sc_id).h();
+        }
+        if (jC.d(sc_id).q()) {
+            jC.d(sc_id).r();
+        }
+        if (jC.a(sc_id).d()) {
+            jC.a(sc_id).h();
+        }
+        if (jC.a(sc_id).c()) {
+            jC.a(sc_id).f();
         }
     }
 
