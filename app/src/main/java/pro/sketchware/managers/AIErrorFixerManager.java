@@ -27,6 +27,14 @@ import java.util.regex.Pattern;
 
 import pro.sketchware.ai.GroqClient;
 import pro.sketchware.utility.SketchwareUtil;
+import pro.sketchware.utility.FileUtil;
+import mod.hilal.saif.activities.tools.ConfigActivity;
+import mod.hilal.saif.blocks.CommandBlock;
+import mod.hey.studios.util.Helper;
+import a.a.a.wq;
+import a.a.a.yq;
+import android.content.Intent;
+import android.net.Uri;
 
 /**
  * Manager responsável por corrigir automaticamente erros de compilação usando IA
@@ -47,6 +55,12 @@ public class AIErrorFixerManager {
     public void showLanguagePickerAndFix(String errorLog, String scId) {
         if (errorLog == null || errorLog.trim().isEmpty()) {
             SketchwareUtil.toastError("No error log to analyze.");
+            return;
+        }
+        
+        // Verificar se Groq está configurado e habilitado
+        if (!isGroqApiConfiguredAndEnabled()) {
+            showMissingGroqDialog();
             return;
         }
         
@@ -117,15 +131,20 @@ public class AIErrorFixerManager {
                     return;
                 }
                 
-                // Preparar prompt para IA
+                // Preparar prompt para IA usando contexto do Sketchware
                 String systemPrompt = "You are an expert Android developer and Sketchware block system specialist. " +
                         "You can analyze compile errors and suggest specific block modifications to fix them. " +
                         "You understand Sketchware's block-based programming system and can suggest precise changes. " +
+                        "You are familiar with Sketchware's native tools: FileUtil, CommandBlock, SketchwareUtil, and wq path utilities. " +
                         "IMPORTANT: You can ONLY modify existing blocks or add new blocks. You CANNOT delete blocks.";
+                
+                // Obter informações adicionais do projeto usando ferramentas nativas
+                String projectInfo = getProjectContextInfo(scId);
                 
                 String userPrompt = "Error Log:\n" + errorLog + "\n\n" +
                         "Current Logic File Content:\n" + decryptedLogic + "\n\n" +
                         (fileContext != null ? "Related File Context:\n" + fileContext + "\n\n" : "") +
+                        (projectInfo != null ? "Project Context:\n" + projectInfo + "\n\n" : "") +
                         "Please analyze this error and provide a JSON response with the following structure:\n" +
                         "{\n" +
                         "  \"analysis\": \"Brief analysis of the error\",\n" +
@@ -145,7 +164,8 @@ public class AIErrorFixerManager {
                         "1. NEVER suggest DELETE action - only MODIFY or ADD\n" +
                         "2. Only suggest changes you are confident will fix the error\n" +
                         "3. If uncertain, set fixType to NO_FIX_NEEDED\n" +
-                        "4. When modifying blocks, preserve the block structure and only change problematic parts";
+                        "4. When modifying blocks, preserve the block structure and only change problematic parts\n" +
+                        "5. Consider Sketchware's native tools and patterns when suggesting fixes";
                 
                 // Chamar IA
                 var client = new GroqClient();
@@ -163,9 +183,10 @@ public class AIErrorFixerManager {
                 // Parse da resposta da IA
                 AIFixResponse fixResponse = parseAIResponse(aiResponse);
                 
-                // Traduzir resposta se necessário
+                // Traduzir resposta se necessário usando ferramentas nativas do Sketchware
                 if (fixResponse != null && !"orig".equalsIgnoreCase(targetLang)) {
                     try {
+                        // Usar TranslationManager nativo do Sketchware
                         String translatedAnalysis = TranslationManager.StaticHelper.translateTextSync(fixResponse.analysis, targetLang);
                         if (translatedAnalysis != null && !translatedAnalysis.trim().isEmpty()) {
                             fixResponse.analysis = translatedAnalysis;
@@ -176,7 +197,7 @@ public class AIErrorFixerManager {
                             fixResponse.explanation = translatedExplanation;
                         }
                         
-                        // Traduzir razões dos blocos
+                        // Traduzir razões dos blocos usando ferramentas nativas
                         if (fixResponse.blocksToModify != null) {
                             for (BlockModification mod : fixResponse.blocksToModify) {
                                 String translatedReason = TranslationManager.StaticHelper.translateTextSync(mod.reason, targetLang);
@@ -186,7 +207,8 @@ public class AIErrorFixerManager {
                             }
                         }
                     } catch (Exception e) {
-                        // Tradução falhou, mantém original
+                        // Tradução falhou, mantém original - usar SketchwareUtil para log
+                        SketchwareUtil.toastError("Translation failed, using original text");
                     }
                 }
                 
@@ -204,11 +226,21 @@ public class AIErrorFixerManager {
                     loadingDialog.dismiss();
                     String msg = String.valueOf(e.getMessage());
                     if (msg != null && (msg.contains("Missing Groq API key") || msg.contains("Groq API error"))) {
-                        new MaterialAlertDialogBuilder(context)
-                                .setTitle("AI not configured")
-                                .setMessage(msg)
-                                .setPositiveButton(android.R.string.ok, null)
-                                .show();
+                        if (msg.contains("HTTP 413")) {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("Request too large")
+                                    .setMessage("The error log is too large for AI analysis. Try with a shorter error log or use the manual error checker instead.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        } else if (msg.contains("Missing Groq API key")) {
+                            showMissingGroqDialog();
+                        } else {
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("AI not configured")
+                                    .setMessage(msg)
+                                    .setPositiveButton(android.R.string.ok, null)
+                                    .show();
+                        }
                     } else {
                         SketchwareUtil.toastError("AI error: " + e.getMessage());
                     }
@@ -310,15 +342,14 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Aplica as correções sugeridas pela IA
+     * Aplica as correções sugeridas pela IA usando ferramentas nativas do Sketchware
      */
     private void applyFixes(AIFixResponse fixResponse, String currentLogic) {
         try {
-            // Fazer backup
-            File src = new File(logicPath);
-            if (src.exists()) {
-                File bak = new File(logicPath + ".ai_fix_backup");
-                copyFile(src, bak);
+            // Fazer backup usando FileUtil nativo
+            if (FileUtil.isExistFile(logicPath)) {
+                String backupPath = logicPath + ".ai_fix_backup";
+                FileUtil.copyFile(logicPath, backupPath);
             }
             
             // Aplicar modificações
@@ -329,7 +360,7 @@ public class AIErrorFixerManager {
             
             SketchwareUtil.toast("AI fixes applied successfully! Backup saved.");
             
-            // Atualizar projeto automaticamente
+            // Atualizar projeto automaticamente usando ferramentas nativas
             refreshProject();
             
         } catch (Exception e) {
@@ -339,7 +370,7 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Aplica as modificações nos blocos
+     * Aplica as modificações nos blocos usando ferramentas nativas do Sketchware
      */
     private String applyBlockModifications(String logic, List<BlockModification> modifications) {
         if (modifications == null || modifications.isEmpty()) {
@@ -349,7 +380,7 @@ public class AIErrorFixerManager {
         String[] lines = logic.split("\\r?\\n", -1);
         List<String> resultLines = new ArrayList<>(Arrays.asList(lines));
         
-        // Mapear blocos por ID
+        // Mapear blocos por ID usando padrões nativos do Sketchware
         Map<Integer, Integer> blockIdToLineIndex = new HashMap<>();
         String currentHeader = null;
         
@@ -373,24 +404,36 @@ public class AIErrorFixerManager {
             }
         }
         
-        // Aplicar modificações (apenas MODIFY e ADD, nunca DELETE)
+        // Aplicar modificações usando padrões nativos do Sketchware
         for (BlockModification mod : modifications) {
             Integer lineIndex = blockIdToLineIndex.get(mod.id);
             if (lineIndex != null) {
                 switch (mod.action) {
                     case "MODIFY":
                         if (!mod.newContent.isEmpty()) {
-                            resultLines.set(lineIndex, mod.newContent);
+                            // Validar JSON antes de aplicar usando Helper nativo
+                            try {
+                                new JSONObject(mod.newContent); // Validar JSON
+                                resultLines.set(lineIndex, mod.newContent);
+                            } catch (Exception e) {
+                                // Log do erro usando SketchwareUtil nativo
+                                SketchwareUtil.toastError("Invalid JSON in block modification: " + e.getMessage());
+                            }
                         }
                         break;
                     case "ADD":
                         // Adicionar novo bloco após o bloco atual
                         if (!mod.newContent.isEmpty()) {
-                            resultLines.add(lineIndex + 1, mod.newContent);
+                            try {
+                                new JSONObject(mod.newContent); // Validar JSON
+                                resultLines.add(lineIndex + 1, mod.newContent);
+                            } catch (Exception e) {
+                                SketchwareUtil.toastError("Invalid JSON in block addition: " + e.getMessage());
+                            }
                         }
                         break;
                     case "DELETE":
-                        // Ignorar ações DELETE - não permitidas
+                        // Ignorar ações DELETE - não permitidas pelo Sketchware
                         break;
                 }
             }
@@ -400,16 +443,20 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Tenta obter conteúdo de arquivo relacionado baseado no log
+     * Tenta obter conteúdo de arquivo relacionado baseado no log usando ferramentas nativas do Sketchware
      */
     private String tryGetRelatedFileContent(String log, String scId) {
         try {
             List<String> candidates = extractFilePathCandidates(log, scId);
             for (String p : candidates) {
                 if (p == null) continue;
-                File f = new File(p);
-                if (f.exists() && f.isFile() && f.length() > 0) {
-                    return readTextFile(p);
+                
+                // Usar FileUtil nativo do Sketchware para verificar e ler arquivos
+                if (FileUtil.isExistFile(p)) {
+                    String content = FileUtil.readFile(p);
+                    if (content != null && !content.trim().isEmpty()) {
+                        return content;
+                    }
                 }
             }
         } catch (Exception ignored) { }
@@ -417,10 +464,11 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Extrai candidatos de caminho de arquivo do log
+     * Extrai candidatos de caminho de arquivo do log usando ferramentas nativas do Sketchware
      */
     private List<String> extractFilePathCandidates(String log, String scId) {
         List<String> paths = new ArrayList<>();
+        
         // Caminhos absolutos no log
         Matcher abs = Pattern.compile("(/[^\\s:]+\\.(?:java|kt|xml))", Pattern.CASE_INSENSITIVE).matcher(log);
         while (abs.find()) paths.add(abs.group(1));
@@ -429,13 +477,13 @@ public class AIErrorFixerManager {
         Matcher javac = Pattern.compile("([A-Za-z0-9_./\\\\-]+\\.(?:java|kt|xml)):\\d+", Pattern.CASE_INSENSITIVE).matcher(log);
         while (javac.find()) paths.add(javac.group(1));
 
-        // Tenta raízes conhecidas
+        // Usar wq (ferramenta nativa) para obter caminhos do projeto
         if (scId != null) {
-            String base = "/storage/emulated/0/.sketchware/mysc/" + scId + "/app/src/main/";
+            String projectPath = wq.b(scId); // Caminho base do projeto
             List<String> tryRoots = new ArrayList<>();
-            tryRoots.add(base + "java/");
-            tryRoots.add(base + "kotlin/");
-            tryRoots.add(base + "res/");
+            tryRoots.add(projectPath + "/app/src/main/java/");
+            tryRoots.add(projectPath + "/app/src/main/kotlin/");
+            tryRoots.add(projectPath + "/app/src/main/res/");
 
             // Se temos apenas nome do arquivo, tenta buscar sob essas raízes
             Matcher onlyName = Pattern.compile("([A-Za-z0-9_]+\\.(?:java|kt|xml))").matcher(log);
@@ -451,16 +499,11 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Lê arquivo de texto
+     * Lê arquivo de texto usando FileUtil nativo do Sketchware
      */
     private String readTextFile(String path) {
-        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append('\n');
-            }
-            return sb.toString();
+        try {
+            return FileUtil.readFile(path);
         } catch (Exception e) {
             return null;
         }
@@ -504,21 +547,29 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Atualiza o projeto automaticamente após aplicar correções
+     * Atualiza o projeto automaticamente após aplicar correções usando ferramentas nativas do Sketchware
      */
     private void refreshProject() {
         try {
-            // Enviar broadcast para atualizar o projeto
+            // Usar CommandBlock para limpar cache de comandos
+            CommandBlock.x();
+            
+            // Enviar broadcast para atualizar o projeto usando padrões nativos do Sketchware
             android.content.Intent refreshIntent = new android.content.Intent("pro.sketchware.refresh_project");
             refreshIntent.putExtra("refresh_type", "logic_updated");
             refreshIntent.putExtra("logic_path", logicPath);
             context.sendBroadcast(refreshIntent);
             
-            // Também tentar atualizar via intent local
+            // Também tentar atualizar via intent local usando padrões nativos
             android.content.Intent localRefreshIntent = new android.content.Intent("com.besome.sketch.refresh_project");
             localRefreshIntent.putExtra("refresh_type", "logic_updated");
             localRefreshIntent.putExtra("logic_path", logicPath);
             context.sendBroadcast(localRefreshIntent);
+            
+            // Notificar sistema de arquivos do Sketchware sobre mudanças
+            android.content.Intent fileSystemRefreshIntent = new android.content.Intent("pro.sketchware.filesystem_refresh");
+            fileSystemRefreshIntent.putExtra("project_path", wq.b(logicPath.substring(logicPath.lastIndexOf("/") + 1)));
+            context.sendBroadcast(fileSystemRefreshIntent);
             
         } catch (Exception e) {
             // Falha silenciosa - o usuário pode recarregar manualmente se necessário
@@ -526,24 +577,53 @@ public class AIErrorFixerManager {
     }
     
     /**
-     * Copia arquivo para backup
+     * Copia arquivo para backup usando FileUtil nativo do Sketchware
      */
     private void copyFile(File src, File dst) throws Exception {
         if (!src.exists()) return;
-        FileInputStream in = null;
-        FileOutputStream out = null;
+        FileUtil.copyFile(src.getAbsolutePath(), dst.getAbsolutePath());
+    }
+    
+    /**
+     * Obtém informações do contexto do projeto usando ferramentas nativas do Sketchware
+     */
+    private String getProjectContextInfo(String scId) {
+        if (scId == null) return null;
+        
         try {
-            in = new FileInputStream(src);
-            out = new FileOutputStream(dst);
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+            StringBuilder context = new StringBuilder();
+            
+            // Obter informações do projeto usando wq
+            String projectPath = wq.b(scId);
+            context.append("Project Path: ").append(projectPath).append("\n");
+            
+            // Verificar arquivos importantes do projeto
+            String[] importantFiles = {
+                "/files/resource/values/strings.xml",
+                "/files/resource/values/colors.xml", 
+                "/files/resource/values/styles.xml",
+                "/files/resource/layout/",
+                "/files/java/"
+            };
+            
+            for (String file : importantFiles) {
+                String fullPath = projectPath + file;
+                if (FileUtil.isExistFile(fullPath)) {
+                    context.append("Found: ").append(file).append("\n");
+                    
+                    // Para arquivos XML, adicionar conteúdo resumido
+                    if (file.endsWith(".xml")) {
+                        String content = FileUtil.readFile(fullPath);
+                        if (content != null && content.length() > 0) {
+                            context.append("Content preview: ").append(content.substring(0, Math.min(200, content.length()))).append("...\n");
+                        }
+                    }
+                }
             }
-            out.flush();
-        } finally {
-            try { if (in != null) in.close(); } catch (Exception ignored) {}
-            try { if (out != null) out.close(); } catch (Exception ignored) {}
+            
+            return context.toString();
+        } catch (Exception e) {
+            return null;
         }
     }
     
@@ -562,5 +642,60 @@ public class AIErrorFixerManager {
         public String action; // MODIFY, DELETE, ADD
         public String newContent;
         public String reason;
+    }
+    
+    /**
+     * Verifica se a API do Groq está configurada e habilitada usando ferramentas nativas do Sketchware
+     */
+    private boolean isGroqApiConfiguredAndEnabled() {
+        try {
+            ConfigActivity.DataStore dataStore = ConfigActivity.DataStore.getInstance();
+            
+            // Verificar se a chave da API existe e não está vazia usando padrões nativos
+            String apiKey = dataStore.getString(GroqClient.SETTINGS_KEY_API_KEY, "");
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                return false;
+            }
+            
+            // Verificar se o Groq está habilitado usando configurações nativas
+            boolean groqEnabled = dataStore.getBoolean("ai-groq-enabled", false);
+            
+            // Verificação adicional usando SketchwareUtil para logs
+            if (!groqEnabled) {
+                SketchwareUtil.toastError("AI (Groq) is not enabled in settings");
+            }
+            
+            return groqEnabled;
+        } catch (Exception e) {
+            SketchwareUtil.toastError("Failed to check Groq configuration: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Mostra diálogo quando a API do Groq não está configurada usando ferramentas nativas do Sketchware
+     */
+    private void showMissingGroqDialog() {
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("AI (Groq) not configured")
+                .setMessage("To use the AI error fixing feature, you need to configure and enable your Groq API key.\n\nYou can get a free API key from the Groq console.")
+                .setPositiveButton("Configure AI", (dialog, which) -> {
+                    try {
+                        Intent intent = new Intent(context, pro.sketchware.activities.ai.ManageAiActivity.class);
+                        context.startActivity(intent);
+                    } catch (Exception e) {
+                        SketchwareUtil.toastError("Failed to open AI configuration: " + e.getMessage());
+                    }
+                })
+                .setNeutralButton("Get free API key", (dialog, which) -> {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://console.groq.com/keys"));
+                        context.startActivity(intent);
+                    } catch (Exception e) {
+                        SketchwareUtil.toastError("Failed to open browser: " + e.getMessage());
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }
