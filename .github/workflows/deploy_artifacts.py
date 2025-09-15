@@ -111,11 +111,24 @@ async def send_file(file_path):
     print(f"Enviando arquivo: {file_path} para o grupo Telegram")
 
     message = (
-        f"**Commit por:** {commit_author}\n"
-        f"**Mensagem:** {commit_message}\n"
-        f"**Hash:** #{commit_hash_short}\n"
-        f"**Versão:** Android >= 8"
+     f"🇧🇷 **Novo APK estável disponível** ✅\n\n"
+     f"👤 **Autor do commit:** {commit_author}\n"
+     f"📝 **Mensagem:** {commit_message}\n"
+     f"🔖 **Hash:** #{commit_hash_short}\n"
+     f"📱 **Compatibilidade:** Android 8 ou superior\n\n"
+     f"ℹ️ Esta é uma **versão estável**. Caso encontre algum bug, por favor reporte no repositório.\n\n"
+     f"---\n\n"
+     f"🇺🇸 **New stable APK available** ✅\n\n"
+     f"👤 **Commit author:** {commit_author}\n"
+     f"📝 **Message:** {commit_message}\n"
+     f"🔖 **Hash:** #{commit_hash_short}\n"
+     f"📱 **Compatibility:** Android 8 or higher\n\n"
+     f"ℹ️ This is a **stable version**. If you find any bugs, please report them in the repository.\n\n"
+     f"---\n\n"
+     f"🤝 Contribua com o projeto / Contribute to the project: "
+     f"[Sketchware-Pro-IA no GitHub](https://github.com/FabioSilva11/Sketchware-Pro-IA)" 
     )
+
 
     try:
         await client.send_file(
