@@ -38,6 +38,7 @@
             app:adUnitId="ca-app-pub-6598765502914364/1327212196" />
     </LinearLayout>
 
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
