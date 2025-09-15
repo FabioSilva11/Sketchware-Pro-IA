@@ -26,6 +26,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -71,6 +74,7 @@ public class CompileLogActivity extends BaseAppCompatActivity {
     private TranslationManager translationManager;
     private AIExplanationManager aiExplanationManager;
     private AIErrorFixerManager aiErrorFixerManager;
+    private AdView bannerAdView;
 
 
     @SuppressLint("SetTextI18n")
@@ -80,6 +84,14 @@ public class CompileLogActivity extends BaseAppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = CompileLogBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        try {
+            MobileAds.initialize(this);
+            bannerAdView = binding.bannerAdCompile;
+            if (bannerAdView != null) {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                bannerAdView.loadAd(adRequest);
+            }
+        } catch (Throwable ignored) {}
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.optionsLayout,
                 new AddMarginOnApplyWindowInsetsListener(WindowInsetsCompat.Type.navigationBars(), WindowInsetsCompat.CONSUMED));

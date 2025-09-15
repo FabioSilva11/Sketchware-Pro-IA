@@ -66,6 +66,9 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.topjohnwu.superuser.Shell;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -149,6 +152,7 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
     private TextView fileName;
     private String currentJavaFileName;
     private ViewEditorFragment viewTabAdapter;
+    private AdView bannerAdDesign;
     private final ActivityResultLauncher<Intent> openCollectionManager = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK) {
             if (viewTabAdapter != null) {
@@ -503,6 +507,14 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
 
         coordinatorLayout = findViewById(R.id.layout_coordinator);
         fileName = findViewById(R.id.file_name);
+        try {
+            MobileAds.initialize(this);
+            bannerAdDesign = findViewById(R.id.banner_ad_design);
+            if (bannerAdDesign != null) {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                bannerAdDesign.loadAd(adRequest);
+            }
+        } catch (Throwable ignored) {}
 
         findViewById(R.id.file_name_container).setOnClickListener(this);
 

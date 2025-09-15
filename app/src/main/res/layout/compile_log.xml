@@ -1,9 +1,10 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -20,127 +21,162 @@
             app:titleCentered="false" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/err_vScroll"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:paddingTop="8dp"
-        android:paddingBottom="50dp"
-        android:overScrollMode="ifContentScrolls"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <HorizontalScrollView
-            android:id="@+id/err_hScroll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="horizontal">
-
-            <TextView
-                android:id="@+id/tv_compile_log"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:paddingBottom="48dp"
-                android:lineSpacingExtra="2dp"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
-                android:typeface="monospace"
-                tools:text="Errors will show up here" />
-        </HorizontalScrollView>
-    </androidx.core.widget.NestedScrollView>
-
+    <!-- Main content area -->
     <LinearLayout
-        android:id="@+id/noContentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:paddingBottom="100dp"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Awesome, no bugs to fix!"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="20sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:text="Let's continue working on the project"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="14sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/optionsLayout"
+        android:id="@+id/ad_container_compile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="10dp"
-        android:animateLayoutChanges="true"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/formatButton"
-            android:layout_width="wrap_content"
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/banner_ad_compile"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_mtrl_formattext"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/clearButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_mtrl_delete" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/aiExplainButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="Explain with AI"
-            android:src="@drawable/selector_info_popup" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/errorFixButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="Fix errors"
-            android:src="@drawable/ic_mtrl_fix" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/aiFixButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="AI Auto Fix"
-            android:src="@drawable/ic_edit" />
-
+            android:layout_margin="5dp"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-6598765502914364/1327212196" />
     </LinearLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/content_root"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/err_vScroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:fillViewport="true"
+                android:paddingTop="8dp"
+                android:paddingBottom="50dp"
+                android:overScrollMode="ifContentScrolls">
+
+                <HorizontalScrollView
+                    android:id="@+id/err_hScroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_compile_log"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="16dp"
+                        android:paddingRight="16dp"
+                        android:paddingBottom="48dp"
+                        android:lineSpacingExtra="2dp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="11sp"
+                        android:typeface="monospace"
+                        tools:text="Errors will show up here" />
+                </HorizontalScrollView>
+            </androidx.core.widget.NestedScrollView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/noContentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="100dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Awesome, no bugs to fix!"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Let's continue working on the project"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Bottom container: Ad sits above, FAB bar at the very bottom -->
+    <LinearLayout
+        android:id="@+id/bottom_container_compile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/optionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:animateLayoutChanges="true"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/formatButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/ic_mtrl_formattext"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/clearButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/ic_mtrl_delete" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/aiExplainButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="Explain with AI"
+                android:src="@drawable/selector_info_popup" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/errorFixButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="Fix errors"
+                android:src="@drawable/ic_mtrl_fix" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/aiFixButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="AI Auto Fix"
+                android:src="@drawable/ic_edit" />
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
 
