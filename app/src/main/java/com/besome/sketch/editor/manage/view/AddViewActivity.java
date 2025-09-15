@@ -31,6 +31,7 @@ import mod.hey.studios.util.Helper;
 import pro.sketchware.R;
 import pro.sketchware.databinding.ManageScreenActivityAddTempBinding;
 
+
 public class AddViewActivity extends BaseAppCompatActivity {
 
     private YB nameValidator;
