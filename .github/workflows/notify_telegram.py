@@ -22,10 +22,20 @@ def main():
     commit_author, commit_message, commit_hash, commit_hash_short = get_git_commit_info()
 
     message = (
-        f"Um novo [commit](https://github.com/FabioSilva11/Sketchware-Pro-IA/commit/{commit_hash}) foi adicionado ao repositório por *{commit_author}*.\n\n"
-        f"*O que foi alterado:*\n>{commit_message}\n\n"
-        f"Estou iniciando a compilação e enviarei os APKs aqui em aproximadamente ~6 minutos se a build for bem-sucedida.\n\n#{commit_hash_short}"
-    )
+    f"🔗 [Commit no GitHub](https://github.com/FabioSilva11/Sketchware-Pro-IA/commit/{commit_hash})\n\n"
+    f"🇧🇷 **Novo commit adicionado por {commit_author}:**\n\n"
+    f"📌 **Alterações:**\n> {commit_message}\n\n"
+    f"🛠️ Iniciando compilação... os APKs estarão disponíveis aqui em ~6 minutos, caso a build seja concluída com sucesso.\n\n"
+    f"🔖 #{commit_hash_short}\n\n"
+    f"---\n\n"
+    f"🇺🇸 **New commit added by {commit_author}:**\n\n"
+    f"📌 **Changes:**\n> {commit_message}\n\n"
+    f"🛠️ Starting compilation... APKs will be available here in ~6 minutes if the build succeeds.\n\n"
+    f"🔖 #{commit_hash_short}\n\n"
+    f"---\n\n"
+    f"🤝 Contribua com o projeto: [Sketchware-Pro-IA no GitHub](https://github.com/FabioSilva11/Sketchware-Pro-IA)"
+)
+
     
     escaped_message = escape_markdown_v2(message)
     
