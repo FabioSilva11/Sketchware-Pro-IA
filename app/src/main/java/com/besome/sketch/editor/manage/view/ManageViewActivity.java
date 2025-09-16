@@ -26,6 +26,8 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -56,6 +58,7 @@ public class ManageViewActivity extends BaseAppCompatActivity implements OnClick
     private xw customViewsFragment;
     private ViewPager viewPager;
     private String sc_id;
+    private AdView bannerAd;
 
     public final String a(int var1, String var2) {
         String var3 = wq.b(var1);
@@ -295,6 +298,13 @@ public class ManageViewActivity extends BaseAppCompatActivity implements OnClick
         tabLayout.setupWithViewPager(viewPager);
         s = findViewById(R.id.fab);
         s.setOnClickListener(this);
+
+        // Initialize AdMob banner
+        bannerAd = findViewById(R.id.banner_ad);
+        if (bannerAd != null) {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAd.loadAd(adRequest);
+        }
     }
 
     @Override

@@ -18,6 +18,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import pro.sketchware.R;
 
@@ -26,6 +28,7 @@ public class ManageLottieActivity extends BaseAppCompatActivity implements ViewP
     private ViewPager viewPager;
     private FloatingActionButton fab;
     private String sc_id;
+    private AdView bannerAd;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,13 @@ public class ManageLottieActivity extends BaseAppCompatActivity implements ViewP
             fab.setOnClickListener(v -> {
                 showAddLottieDialog();
             });
+        }
+
+        // Initialize AdMob banner
+        bannerAd = findViewById(R.id.banner_ad);
+        if (bannerAd != null) {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAd.loadAd(adRequest);
         }
     }
 

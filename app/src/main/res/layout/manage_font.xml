@@ -17,6 +17,14 @@
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:title="@string/design_actionbar_title_manager_font" />
 
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/banner_ad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-6598765502914364/1327212196" />
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"

@@ -12,6 +12,8 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import java.lang.ref.WeakReference;
 
@@ -28,6 +30,7 @@ public class ManageFontActivity extends BaseAppCompatActivity {
     public FontManagerFragment collectionFontsFragment;
     public ManageFontBinding binding;
     private String sc_id;
+    private AdView bannerAd;
 
     @Override
     public void onBackPressed() {
@@ -87,6 +90,12 @@ public class ManageFontActivity extends BaseAppCompatActivity {
         });
 
         binding.tabLayout.setupWithViewPager(binding.viewPager);
+        // Initialize AdMob banner
+        bannerAd = findViewById(R.id.banner_ad);
+        if (bannerAd != null) {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAd.loadAd(adRequest);
+        }
     }
 
     public void changeFabState(boolean state) {

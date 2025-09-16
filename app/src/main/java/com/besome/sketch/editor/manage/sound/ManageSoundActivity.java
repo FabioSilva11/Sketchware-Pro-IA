@@ -11,6 +11,8 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import java.lang.ref.WeakReference;
 
@@ -29,6 +31,7 @@ public class ManageSoundActivity extends BaseAppCompatActivity implements ViewPa
     public ow projectSounds;
     public Yv collectionSounds;
     private String sc_id;
+    private AdView bannerAd;
 
     @Override
     public void onPageScrollStateChanged(int state) {
@@ -77,6 +80,13 @@ public class ManageSoundActivity extends BaseAppCompatActivity implements ViewPa
         binding.viewPager.setOffscreenPageLimit(TAB_COUNT);
         binding.viewPager.addOnPageChangeListener(this);
         binding.tabLayout.setupWithViewPager(binding.viewPager);
+
+        // Initialize AdMob banner
+        bannerAd = findViewById(R.id.banner_ad);
+        if (bannerAd != null) {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAd.loadAd(adRequest);
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
+import com.google.android.gms.ads.AdRequest;
 
 import java.lang.ref.WeakReference;
 
@@ -30,6 +31,7 @@ public class ManageImageActivity extends BaseAppCompatActivity implements ViewPa
     private pu projectImagesFragment;
     private fu collectionImagesFragment;
     private ManageImageBinding binding;
+    private com.google.android.gms.ads.AdView bannerAd;
 
     public static int getImageGridColumnCount(Context context) {
         var displayMetrics = context.getResources().getDisplayMetrics();
@@ -96,6 +98,13 @@ public class ManageImageActivity extends BaseAppCompatActivity implements ViewPa
         binding.viewPager.setOffscreenPageLimit(2);
         binding.viewPager.addOnPageChangeListener(this);
         binding.tabLayout.setupWithViewPager(binding.viewPager);
+
+        // Initialize AdMob banner
+        bannerAd = findViewById(pro.sketchware.R.id.banner_ad);
+        if (bannerAd != null) {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            bannerAd.loadAd(adRequest);
+        }
     }
 
     @Override
