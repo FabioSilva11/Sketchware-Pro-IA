@@ -1325,6 +1325,8 @@ You must enter the API key to operate the map normally."</string>
     <string name="design_manager_sound_title_edit_sound_name">Edit sound name</string>
     <string name="design_manager_tab_title_my_collection">My collection</string>
     <string name="design_manager_tab_title_this_project">This project</string>
+    <string name="design_manager_lottie_title_add_lottie">Add Lottie</string>
+    <string name="design_manager_lottie_hint_enter_animation_name">Enter animation name</string>
     <string name="design_manager_title_add_to_collection">Add to My Collection</string>
     <string name="design_manager_view_description_guide_create_activity">To create a new Activity, add it here</string>
     <string name="design_manager_view_description_guide_create_custom_view">Create a new Custom View here</string>

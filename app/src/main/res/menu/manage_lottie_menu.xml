@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_lottie_import"
+        android:icon="@drawable/ic_mtrl_download"
+        android:title="@string/common_word_import"
+        app:showAsAction="ifRoom" />
+    <!-- Removed delete action to hide trash icon from toolbar as requested -->
+</menu>
+
