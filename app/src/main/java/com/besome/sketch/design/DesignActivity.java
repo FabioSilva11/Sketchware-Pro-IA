@@ -54,6 +54,7 @@ import com.besome.sketch.editor.manage.ViewSelectorActivity;
 import com.besome.sketch.editor.manage.font.ManageFontActivity;
 import com.besome.sketch.editor.manage.image.ManageImageActivity;
 import com.besome.sketch.editor.manage.library.ManageLibraryActivity;
+import com.besome.sketch.editor.manage.lottie.ManageLottieActivity;
 import com.besome.sketch.editor.manage.sound.ManageSoundActivity;
 import com.besome.sketch.editor.manage.view.ManageViewActivity;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
@@ -1291,6 +1292,13 @@ public class DesignActivity extends BaseAppCompatActivity implements View.OnClic
      */
     void toImageManager() {
         launchActivity(ManageImageActivity.class, openImageManager);
+    }
+
+    /**
+     * Opens {@link ManageLottieActivity}.
+     */
+    void toLottieManager() {
+        launchActivity(ManageLottieActivity.class, null);
     }
 
     /**

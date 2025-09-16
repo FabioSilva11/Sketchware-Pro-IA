@@ -1150,6 +1150,7 @@ ex)\"*/*\", \"image/*\", \"audio/*\", \"text/*\""</string>
     <string name="design_drawer_menu_description_font">Import different fonts</string>
     <string name="design_drawer_menu_description_image">Import photos and icons</string>
     <string name="design_drawer_menu_description_library">Component settings</string>
+    <string name="design_drawer_menu_description_lottie">Import and manage Lottie animations</string>
     <string name="design_drawer_menu_description_sound">Import music and sound effects</string>
     <string name="design_drawer_menu_description_source_code">View built-in Java and XML files</string>
     <string name="design_drawer_menu_description_theme">Color theme</string>
@@ -1160,6 +1161,7 @@ ex)\"*/*\", \"image/*\", \"audio/*\", \"text/*\""</string>
     <string name="design_drawer_menu_title_font">Font Manager</string>
     <string name="design_drawer_menu_title_image">Image Manager</string>
     <string name="design_drawer_menu_title_library">Library Manager</string>
+    <string name="design_drawer_menu_title_lottie">Lottie Manager</string>
     <string name="design_drawer_menu_title_sound">Sound Manager</string>
     <string name="design_drawer_menu_title_source_code">Show Source Code</string>
     <string name="design_drawer_menu_title_theme">Theme Manager</string>
