@@ -383,12 +383,21 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                 switch (position) {
                     case 0:
                         currentNavItemId = R.id.item_projects;
+                        if (binding.createNewProject != null) {
+                            binding.createNewProject.show();
+                        }
                         break;
                     case 1:
                         currentNavItemId = R.id.item_projects; // não há ids separados
+                        if (binding.createNewProject != null) {
+                            binding.createNewProject.hide();
+                        }
                         break;
                     case 2:
                         currentNavItemId = R.id.item_projects;
+                        if (binding.createNewProject != null) {
+                            binding.createNewProject.hide();
+                        }
                         break;
                 }
             }
