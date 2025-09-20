@@ -17,7 +17,7 @@ import pro.sketchware.activities.main.activities.MainActivity;
 
 public class SplashActivity extends Activity {
 
-    private static final int SPLASH_DELAY = 1800; // 1.8 segundos
+    private static final int SPLASH_DELAY = 1000; // 1 segundos
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +42,9 @@ public class SplashActivity extends Activity {
         subtitle.startAnimation(fadeIn);
 
         new Handler().postDelayed(() -> {
-            // Check if user is already logged in
-            AuthManager authManager = AuthManager.getInstance();
-            
+
             Intent intent;
-            if (authManager.isFirebaseAvailable() && authManager.isUserLoggedIn()) {
-                // User is already logged in, go to MainActivity
                 intent = new Intent(SplashActivity.this, MainActivity.class);
-            } else {
-                // User is not logged in or Firebase is not available, go to AuthChoiceActivity
-                intent = new Intent(SplashActivity.this, AuthChoiceActivity.class);
-            }
             
             startActivity(intent);
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

@@ -24,7 +24,7 @@
                 android:id="@+id/status_bar_overlapper"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|enterAlways|snap" />
+                />
 
             <LinearLayout
                 android:id="@+id/axion"
@@ -35,7 +35,7 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 app:cardBackgroundColor="?colorSurfaceContainer"
-                app:layout_scrollFlags="scroll|enterAlways|snap">
+                >
 
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
@@ -99,7 +99,6 @@
             android:layout_marginBottom="16dp"
             android:text="New project"
             app:icon="@drawable/ic_mtrl_add"
-            app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
             tools:ignore="ContentDescription" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
