@@ -354,6 +354,19 @@
         <activity android:name="pro.sketchware.activities.settings.SettingsActivity" />
         <activity android:name="pro.sketchware.activities.ai.ManageAiActivity"
             android:configChanges="orientation|screenSize" />
+        
+        <!-- Chat Activities -->
+        <activity
+            android:name="pro.sketchware.activities.chat.ChatActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
+        
+        <activity
+            android:name="pro.sketchware.activities.chat.ChatSettingsActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:theme="@style/Theme.SketchwarePro" />
 
         <activity android:name="pro.sketchware.activities.resourceseditor.ResourcesEditorActivity" />
 

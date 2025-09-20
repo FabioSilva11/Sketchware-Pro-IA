@@ -73,6 +73,7 @@ import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.UI;
 import androidx.viewpager2.widget.ViewPager2;
+import pro.sketchware.activities.chat.ChatActivity;
 
 public class MainActivity extends BasePermissionAppCompatActivity {
     private static final String PROJECTS_FRAGMENT_TAG = "projects_fragment";
@@ -383,22 +384,54 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                 switch (position) {
                     case 0:
                         currentNavItemId = R.id.item_projects;
+                        showCreateProjectFab();
+                        hideChatFab();
                         break;
                     case 1:
                         currentNavItemId = R.id.item_projects; // não há ids separados
+                        hideCreateProjectFab();
+                        hideChatFab();
                         break;
                     case 2:
                         currentNavItemId = R.id.item_projects;
+                        hideCreateProjectFab();
+                        showChatFab();
                         break;
                 }
             }
         });
+        
+        // Configurar FAB de chat
+        setupChatFab();
     }
 
     private void refreshProjectsList() {
         if (projectsFragment != null) {
             projectsFragment.refreshProjectsList();
         }
+    }
+    
+    private void showCreateProjectFab() {
+        binding.createNewProject.setVisibility(View.VISIBLE);
+    }
+    
+    private void hideCreateProjectFab() {
+        binding.createNewProject.setVisibility(View.GONE);
+    }
+    
+    private void setupChatFab() {
+        binding.chatFab.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ChatActivity.class);
+            startActivity(intent);
+        });
+    }
+    
+    private void showChatFab() {
+        binding.chatFab.setVisibility(View.VISIBLE);
+    }
+    
+    private void hideChatFab() {
+        binding.chatFab.setVisibility(View.GONE);
     }
 
     @Override

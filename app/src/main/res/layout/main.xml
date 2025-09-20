@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- AppBar -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar"
             android:layout_width="match_parent"
@@ -52,8 +53,7 @@
                 </com.google.android.material.appbar.MaterialToolbar>
             </LinearLayout>
 
-
-            <!-- TabLayout para as abas -->
+            <!-- Tabs -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
                 android:layout_width="match_parent"
@@ -68,28 +68,43 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- ViewPager2 para gerenciar os fragmentos das abas -->
+        <!-- Conteúdo com ViewPager -->
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+        <!-- FAB do chat -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/chat_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_anchor="@id/view_pager"
+            app:layout_anchorGravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="96dp"
+            android:contentDescription="AI Chat"
+            android:visibility="visible"
+            app:srcCompat="@drawable/ic_mtrl_speech" />
+
+        <!-- FAB de criar projeto -->
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/create_new_project"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
+            app:layout_anchor="@id/view_pager"
+            app:layout_anchorGravity="bottom|end"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:text="New project"
             app:icon="@drawable/ic_mtrl_add"
             app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
             tools:ignore="ContentDescription" />
 
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+    <!-- Drawer lateral -->
     <com.besome.sketch.MainDrawer
         android:id="@+id/left_drawer"
         android:layout_width="wrap_content"

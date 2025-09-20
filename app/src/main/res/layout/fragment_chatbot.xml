@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="?attr/colorSurface">
 
-    <Button
-        android:id="@+id/btn_telegram"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chat_history_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="16dp"
+        android:scrollbars="vertical" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/new_chat_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/chatbot_open_telegram" />
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="New Chat"
+        app:srcCompat="@drawable/ic_mtrl_add" />
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
